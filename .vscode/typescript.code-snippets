@@ -1,0 +1,60 @@
+{
+  "ORM": {
+    "prefix": "orm",
+    "body": [
+      "import { $2 } from '../generated/graphql'",
+      "import { camelToSnake } from '../../utils/commons'",
+      "",
+      "// Only not null GraphQL fields",
+      "export const $1: $2 = {",
+      "  id: '',",
+      "  creationDate: '',",
+      "  modificationDate: '',",
+      "}",
+      "",
+      "// All GraphQL fields -> All database columns",
+      "// GraphQL fields that must fetch from other table -> '{table}_id' | ''",
+      "export function $1FieldColumnMapping($1Field: keyof $2) {",
+      "  switch ($1Field) {",
+      "    default:",
+      "      return camelToSnake($1Field)",
+      "  }",
+      "}",
+      "",
+      "// All database columns -> All GraphQL Fields except nullable fields that must fetch from other table",
+      "export function $1ORM($1: Record<string, any>): $2 {",
+      "  return {",
+      "    id: $1.id,",
+      "    creationDate: $1.creation_date,",
+      "    modificationDate: $1.modification_date,",
+      "  }",
+      "}",
+      ""
+    ],
+    "description": "GraphQL Object Relation Mapping"
+  },
+  "Query": {
+    "prefix": "query",
+    "body": [
+      "import format from 'pg-format'",
+      "import { QueryResolvers } from 'src/graphql/generated/graphql'",
+      "import { importSQL } from '../../utils/commons'",
+      "import { poolQuery } from '../../database/postgres'",
+      "import { selectColumnFromField } from '../../utils/ORM'",
+      "",
+      "const $1 = importSQL(__dirname, 'sql/$1.sql')",
+      "",
+      "export const Query: QueryResolvers = {",
+      "  $1: async (_, __, { user }, info) => {",
+      "    const columns = selectColumnFromField(info, menuFieldColumnMapping)",
+      "    ",
+      "    const { rows } = await poolQuery(format(await $1, columns))",
+      "    ",
+      "    return rows.map((row) => menuORM(row))",
+      "  },",
+      "}",
+      ""
+    ],
+    "description": "GraphQL Query Resolver"
+  }
+}

@@ -1,0 +1,1 @@
+export const NO_JWT_SECRET_KEY_ERROR_CODE = 10

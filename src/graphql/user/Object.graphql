@@ -1,0 +1,34 @@
+"""
+OAuth 공급자
+"""
+enum Provider {
+  DESSERT_FIT
+  GOOGLE
+  NAVER
+  KAKAO
+}
+
+type User {
+  id: ID!
+  creationDate: DateTime!
+  modificationDate: DateTime!
+  email: EmailAddress!
+  providers: [Provider!]!
+  point: Int!
+  isEmailVerified: Boolean!
+
+  # nullable
+  name: String
+  phoneNumber: String
+  gender: String
+  birthDate: DateTime
+  imageUrls: [URL!]
+  deliveryAddresses: String
+  representativeDeliveryAddress: String
+
+  # from other table - nullable
+  favoriteMenus: [Menu!]
+  favoriteStores: [Store!]
+  preferences: [NonEmptyString!]
+  regularStores: [Store!]
+}

@@ -1,0 +1,12 @@
+overwrite: true
+schema: 'src/graphql/**/*.graphql'
+generates:
+  src/graphql/generated/graphql.ts:
+    plugins:
+      - add:
+          content: '/* eslint-disable */'
+      - 'typescript'
+      - 'typescript-resolvers'
+hooks:
+  afterAllFileWrite:
+    - prettier --write

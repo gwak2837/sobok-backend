@@ -1,0 +1,51 @@
+{
+  "env": {
+    "es2021": true,
+    "jest": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript",
+    "plugin:node/recommended",
+    "plugin:promise/recommended",
+    "standard",
+
+    "plugin:jest/recommended",
+    "plugin:jest/style",
+    "plugin:@typescript-eslint/recommended",
+
+    // Rules related with Prettier MUST be at the last of the array
+    "plugin:prettier/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "root": true,
+  "rules": {
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
+
+    "import/no-unresolved": "off",
+
+    "node/no-missing-import": "off",
+    "node/no-unpublished-import": "off",
+    "node/no-unsupported-features/es-syntax": "off",
+
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ]
+  }
+}

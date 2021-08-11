@@ -1,0 +1,263 @@
+<html>
+  <head>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"
+    ></script>
+    <style type="text/css">
+      #mynetwork {
+        width: 100%;
+        height: 100%;
+        border: 1px solid lightgray;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="mynetwork"></div>
+
+    <script type="text/javascript">
+      const oneMany = {
+        enabled: true,
+        type: 'image',
+        imageWidth: 16,
+        imageHeight: 12,
+        src: 'images/one-many.png',
+      }
+
+      const onlyOne = {
+        enabled: true,
+        type: 'image',
+        imageWidth: 16,
+        imageHeight: 16,
+        src: 'images/only-one.png',
+      }
+
+      const zeroMany = {
+        enabled: true,
+        type: 'image',
+        imageWidth: 16,
+        imageHeight: 16,
+        src: 'images/zero-many.png',
+      }
+
+      const zeroOne = {
+        enabled: true,
+        type: 'image',
+        imageWidth: 16,
+        imageHeight: 16,
+        src: 'images/zero-one.png',
+      }
+
+      // create an array with nodes
+      const nodes = new vis.DataSet([
+        { id: 'user', label: 'user', fixed: true },
+        { id: 'store', label: 'store' },
+        { id: 'menu_category', label: 'menu_category' },
+        { id: 'menu_theme', label: 'menu_theme' },
+        { id: 'menu', label: 'menu' },
+        { id: 'menu_option_category', label: 'menu_option_category' },
+        { id: 'menu_option', label: 'menu_option' },
+        { id: 'payment', label: 'payment' },
+        { id: 'coupon', label: 'coupon' },
+        { id: 'order', label: 'order' },
+        { id: 'review', label: 'review' },
+        { id: 'post', label: 'post' },
+        { id: 'hashtag', label: 'hashtag' },
+      ])
+
+      // create an array with edges
+      const edges = new vis.DataSet([
+        {
+          from: 'user',
+          to: 'menu',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'favorite',
+        },
+        {
+          from: 'user',
+          to: 'store',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'favorite',
+        },
+        {
+          from: 'user',
+          to: 'store',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'regular',
+        },
+        {
+          from: 'user',
+          to: 'store',
+          arrows: {
+            from: onlyOne,
+            to: zeroMany,
+          },
+          label: 'owner',
+        },
+        {
+          from: 'store',
+          to: 'order',
+          arrows: {
+            from: onlyOne,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'menu',
+          to: 'menu_option_category',
+          arrows: {
+            from: onlyOne,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'store',
+          to: 'menu',
+          arrows: {
+            from: onlyOne,
+            to: oneMany,
+          },
+        },
+        {
+          from: 'store',
+          to: 'coupon',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'store',
+          to: 'post',
+          arrows: {
+            from: onlyOne,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'menu_option_category',
+          to: 'menu_option',
+          arrows: {
+            from: onlyOne,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'order',
+          to: 'menu',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'selected',
+        },
+        {
+          from: 'order',
+          to: 'menu_option',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'selected',
+        },
+        {
+          from: 'user',
+          to: 'post',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'liked',
+        },
+        {
+          from: 'user',
+          to: 'store',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'requests',
+        },
+        {
+          from: 'user',
+          to: 'hashtag',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'store',
+          to: 'hashtag',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'menu',
+          to: 'hashtag',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'menu',
+          to: 'review',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'hashtag',
+          to: 'review',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'hashtag',
+          to: 'post',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+        },
+      ])
+
+      // create a network
+      const container = document.getElementById('mynetwork')
+
+      // provide the data in the vis format
+      const data = {
+        nodes: nodes,
+        edges: edges,
+      }
+
+      const options = {
+        nodes: {
+          shape: 'box',
+        },
+        edges: {
+          width: 2,
+          length: 400,
+        },
+      }
+
+      // initialize your network!
+      const network = new vis.Network(container, data, options)
+    </script>
+  </body>
+</html>

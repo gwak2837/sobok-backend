@@ -1,0 +1,15 @@
+{
+  "GraphQL Object": {
+    "prefix": "type",
+    "body": [
+      "type ${TM_FILENAME_BASE} {",
+      "  id: ID!",
+      "  creationDate: DateTime!",
+      "  modificationDate: DateTime!",
+      "  $1",
+      "}",
+      ""
+    ],
+    "description": "GraphQL Object Type"
+  }
+}
