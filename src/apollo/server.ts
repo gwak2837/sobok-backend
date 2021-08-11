@@ -24,6 +24,5 @@ export const apolloServer = new ApolloServer({
     return { user: userORM(rows[0]) }
   },
   introspection: true,
-  playground: true,
   schema,
 })
