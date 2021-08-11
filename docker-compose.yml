@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  graphql_server:
+    build: .
+    container_name: graphql-server
+    env_file:
+      - .env
+    ports:
+      - $PORT:$PORT

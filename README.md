@@ -1,19 +1,32 @@
-# 2021-1 Capstone Backend (Node.js)
+# ☁️ 소복 (Sobok) 백엔드
 
-## 실행 방법
+소소한 행복 :)
 
-### 개발 환경
+2021년 8월 11일 (수) ~ ing
+
+## 구성원
+
+|  이름  |                      GitHub                      | 역할 |
+| :----: | :----------------------------------------------: | :--: |
+| 곽태욱 | [@rmfpdlxmtidl](https://github.com/rmfpdlxmtidl) |      |
+| 김효진 |       [@hy57in](https://github.com/hy57in)       |      |
+
+## 개발 환경
 
 - macOS 11.2
-- Git 2.31
-- Node.js LTS
-- Yarn 1.22
+- [Git](https://git-scm.com/downloads) 2.32
+- [Node](https://nodejs.org/ko/download/) LTS
+- [Yarn](https://yarnpkg.com/getting-started/install#about-global-installs) 1.22
+- [Visual Studio Code](https://code.visualstudio.com/Download) 1.58
 - PostgreSQL 13.2
 - Docker 20.10
 - Docker Compose 1.28
-- Visual Studio Code 1.54
 
 GCP Cloud Run이 컨테이너 기반 환경이기 때문에 Docker는 컨테이너 환경을 테스트하고 싶을 때 설치합니다.
+
+## 프로젝트 구조
+
+## 설치 방법
 
 ### 프로젝트 다운로드
 
@@ -58,7 +71,7 @@ PORT=4000
 
 만약 로컬 데이터베이스를 사용하려면 `POSTGRES_HOST=localhost`로 설정하고 `localhost:5432` 주소에서 PostgreSQL 데이터베이스를 실행합니다.
 
-### 개발 모드 (Local)
+### 개발 모드
 
 ```shell
 > yarn dev
@@ -66,7 +79,7 @@ PORT=4000
 
 TypeScript 파일을 그대로 사용해 Nodemon으로 서비스를 실행합니다.
 
-### 프로덕션 모드 (Local)
+### 배포 모드
 
 ```shell
 > yarn build
@@ -75,7 +88,7 @@ TypeScript 파일을 그대로 사용해 Nodemon으로 서비스를 실행합니
 
 TypeScript 파일을 JavaScript로 트랜스파일한 후 Node.js로 서비스를 실행합니다.
 
-### 프로덕션 모드 (Docker)
+### 배포 모드 (Docker)
 
 ```shell
 > docker-compose up --detach --build --force-recreate
@@ -86,20 +99,18 @@ TypeScript 파일을 JavaScript로 트랜스파일한 후 Node.js로 서비스�
 ### 브라우저 실행
 
 ```
-http://localhost:4000
+http://localhost:4000/graphql
 ```
 
 브라우저에서 아래 주소로 접속하면 개발 중인 사이트를 볼 수 있습니다.
 
-## GCP Cloud Run 배포
+### GCP Cloud Run 배포
 
 GCP Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문에 GitHub로 commit을 push할 때마다 Cloud Run에 자동으로 배포됩니다.
 
 ## 데이터베이스 ERD
 
 [database/erd.html](database/erd.html)
-
-## 프로젝트 구조
 
 ## 의문점
 
