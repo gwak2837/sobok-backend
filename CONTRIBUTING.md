@@ -10,7 +10,7 @@
 
 - 프로젝트를 개발하기 위해 필요한 [개발 환경](README.md)을 확인합니다.
 - [Code of conduct](CODE_OF_CONDUCT.md)를 읽어보셨나요?
-- 프로젝트에 존재하는 [이슈](https://github.com/teamsindy20/capstone-frontend/issues)를 확인합니다.
+- 프로젝트에 존재하는 [이슈](https://github.com/teamsindy20/sobok-backend/issues)를 확인합니다.
 
 ## Git Flow
 
@@ -20,7 +20,7 @@
 
 다른 사람에게 자신의 진행 상황을 공유하기 위해 GitHub에 자신이 할 일을 이슈로 등록합니다.
 
-이슈 등록 시 [이슈 템플릿](https://github.com/teamsindy20/capstone-frontend/issues/new/choose)을 이용합니다. 이슈 제목은 제목을 보고 대략적으로 내용을 알 수 있을 정도로 한글 또는 영어로 작성합니다. 그리고 오른쪽의 Assignee는 자신으로, Labels과 Projects는 적절하게 선택하고 이슈 내용은 어떤 기능을 개발할 것인지 제목보다 상세하게 적습니다. 이슈 내용에 내용 이해를 돕는 이미지·영상을 첨부하면 더 좋습니다.
+이슈 등록 시 [이슈 템플릿](https://github.com/teamsindy20/sobok-backend/issues/new/choose)을 이용합니다. 이슈 제목은 제목을 보고 대략적으로 내용을 알 수 있을 정도로 한글 또는 영어로 작성합니다. 그리고 오른쪽의 Assignee는 자신으로, Labels과 Projects는 적절하게 선택하고 이슈 내용은 어떤 기능을 개발할 것인지 제목보다 상세하게 적습니다. 이슈 내용에 내용 이해를 돕는 이미지·영상을 첨부하면 더 좋습니다.
 
 ## Branch 생성
 
@@ -85,15 +85,7 @@ feature 브랜치에서 개발을 진행하고 자유롭게 커밋합니다.
 
 #### 기능 동작
 
-구현된 기능이 아래의 브라우저에서 특정 레이아웃 비율에서 의도한 대로 동작하는지 확인합니다.
-
-- Chrome
-- Safari
-- Edge
-- Whale (한국)
-- Firefox (외국)
-
-Whale은 한국에서 많이 사용하지만 외국에선 잘 사용하지 않고, Firefox는 외국에서 많이 사용하지만 한국에선 잘 사용하지 않는다고 합니다. [#브라우저 점유율 (대한민국)](https://gs.statcounter.com/browser-market-share/all/south-korea)
+기능이 잘 동작하는지 확인합니다.
 
 #### 코드 품질
 
