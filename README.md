@@ -26,7 +26,7 @@ Cloud Run이 컨테이너 기반 환경이기 때문에 컨테이너 환경을 �
 
 ## 프로젝트 구조
 
-![images/architecture.webp](images/architecture.webp)
+<img src="images/architecture.png" width="90%" />
 
 ## 설치 방법
 
