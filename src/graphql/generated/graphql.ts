@@ -23,8 +23,8 @@ export type Scalars = {
 export type Menu = {
   __typename?: 'Menu'
   id: Scalars['ID']
-  creationDate: Scalars['DateTime']
-  modificationDate: Scalars['DateTime']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
   name: Scalars['String']
   price: Scalars['Int']
   deliciousReviewCount: Scalars['Int']
@@ -137,8 +137,8 @@ export type RegisterInput = {
 export type Store = {
   __typename?: 'Store'
   id: Scalars['ID']
-  creationDate: Scalars['DateTime']
-  modificationDate: Scalars['DateTime']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
   name: Scalars['String']
   address: Scalars['String']
   businessRegistrationName: Scalars['String']
@@ -190,8 +190,8 @@ export type Store = {
 export type User = {
   __typename?: 'User'
   id: Scalars['ID']
-  creationDate: Scalars['DateTime']
-  modificationDate: Scalars['DateTime']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
   email: Scalars['EmailAddress']
   providers: Array<Provider>
   point: Scalars['Int']
@@ -358,8 +358,8 @@ export type MenuResolvers<
   ParentType extends ResolversParentTypes['Menu'] = ResolversParentTypes['Menu']
 > = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  creationDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
-  modificationDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   price?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
   deliciousReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
@@ -449,8 +449,8 @@ export type StoreResolvers<
   ParentType extends ResolversParentTypes['Store'] = ResolversParentTypes['Store']
 > = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  creationDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
-  modificationDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   address?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   businessRegistrationName?: Resolver<ResolversTypes['String'], ParentType, ContextType>
@@ -505,8 +505,8 @@ export type UserResolvers<
   ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']
 > = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  creationDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
-  modificationDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
   email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>
   providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>
   point?: Resolver<ResolversTypes['Int'], ParentType, ContextType>

@@ -10,8 +10,8 @@ enum Provider {
 
 type User {
   id: ID!
-  creationDate: DateTime!
-  modificationDate: DateTime!
+  creationTime: DateTime!
+  modificationTime: DateTime!
   email: EmailAddress!
   providers: [Provider!]!
   point: Int!

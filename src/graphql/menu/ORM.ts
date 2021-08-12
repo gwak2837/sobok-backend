@@ -4,8 +4,8 @@ import { store } from '../store/ORM'
 
 export const menu: Menu = {
   id: '',
-  creationDate: '',
-  modificationDate: '',
+  creationTime: '',
+  modificationTime: '',
   name: '',
   price: 0,
   category: '',
@@ -82,8 +82,8 @@ export function menuFieldColumnMapping(menuField: keyof Menu) {
 export function menuORM(menu: Record<string, any>): Menu {
   return {
     id: menu.id,
-    creationDate: menu.creation_date,
-    modificationDate: menu.modification_date,
+    creationTime: menu.creation_date,
+    modificationTime: menu.modification_date,
     name: menu.name,
     price: menu.price,
     deliciousReviewCount: menu.delicious_review_count,

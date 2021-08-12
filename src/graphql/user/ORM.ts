@@ -3,8 +3,8 @@ import { camelToSnake } from '../../utils/commons'
 
 export const user: User = {
   id: '',
-  creationDate: '',
-  modificationDate: '',
+  creationTime: '',
+  modificationTime: '',
   email: '',
   providers: [Provider.DessertFit],
   point: 0,
@@ -33,8 +33,8 @@ export function userFieldColumnMapping(userField: keyof User) {
 export function userORM(user: Record<string, any>): User {
   return {
     id: user.id,
-    creationDate: user.creation_date,
-    modificationDate: user.modification_date,
+    creationTime: user.creation_date,
+    modificationTime: user.modification_date,
     email: user.email,
     providers: getProviders(user),
     point: user.point,

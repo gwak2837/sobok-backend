@@ -4,8 +4,8 @@
     "body": [
       "type ${TM_FILENAME_BASE} {",
       "  id: ID!",
-      "  creationDate: DateTime!",
-      "  modificationDate: DateTime!",
+      "  creationTime: DateTime!",
+      "  modificationTime: DateTime!",
       "  $1",
       "}",
       ""

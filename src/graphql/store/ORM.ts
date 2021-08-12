@@ -5,8 +5,8 @@ import { user } from '../user/ORM'
 
 export const store: Store = {
   id: '',
-  creationDate: '',
-  modificationDate: '',
+  creationTime: '',
+  modificationTime: '',
   name: '',
   address: '',
   businessRegistrationName: '',
@@ -79,8 +79,8 @@ export function storeFieldColumnMapping(storeField: keyof Store) {
 export function storeORM(store: Record<string, any>): Store {
   return {
     id: store.id,
-    creationDate: store.creation_date,
-    modificationDate: store.modification_date,
+    creationTime: store.creation_date,
+    modificationTime: store.modification_date,
     name: store.name,
     address: store.address,
     businessRegistrationName: store.business_registration_name,
