@@ -15,16 +15,18 @@
 
 - macOS 11.2
 - [Git](https://git-scm.com/downloads) 2.32
-- [Node](https://nodejs.org/ko/download/) LTS
+- [Node](https://hub.docker.com/_/node) LTS Alpine
 - [Yarn](https://yarnpkg.com/getting-started/install#about-global-installs) 1.22
 - [Visual Studio Code](https://code.visualstudio.com/Download) 1.58
-- PostgreSQL 13.2
-- Docker 20.10
-- Docker Compose 1.28
+- [PostgreSQL](https://hub.docker.com/_/postgres) Alpine
+- (선택) [Docker](https://www.docker.com/get-started) 20.10
+- (선택) Docker Compose 1.29
 
-GCP Cloud Run이 컨테이너 기반 환경이기 때문에 Docker는 컨테이너 환경을 테스트하고 싶을 때 설치합니다.
+Cloud Run이 컨테이너 기반 환경이기 때문에 컨테이너 환경을 테스트하고 싶을 때 Docker를 설치합니다.
 
 ## 프로젝트 구조
+
+![images/architecture.webp](images/architecture.webp)
 
 ## 설치 방법
 
@@ -37,13 +39,33 @@ GCP Cloud Run이 컨테이너 기반 환경이기 때문에 Docker는 컨테이�
 > yarn
 ```
 
-프로젝트를 다운로드 받고 해당 폴더로 이동한 후 적절한 브랜치로 이동하고 프로젝트에 필요한 외부 패키지를 설치합니다.
+프로젝트를 다운로드 받고 해당 폴더로 이동한 후 적절한 브랜치(`main` 등)로 이동하고 프로젝트에 필요한 외부 패키지를 설치합니다.
 
-그리고 프로젝트 폴더에서 VSCode를 실행하면 오른쪽 아래에 '권장 확장 프로그램 설치' 알림이 뜹니다.
+그리고 프로젝트 폴더에서 VSCode를 실행하면 오른쪽 아래에 '권장 확장 프로그램 설치' 알림이 뜨는데, 프로젝트에서 권장하는 확장 프로그램(ESLint, Prettier 등)을 모두 설치합니다.
 
-프로젝트에서 권장하는 확장 프로그램(ESLint, Prettier 등)을 모두 설치해줍니다.
+### PostgreSQL 서버 실행
 
-만약 이미 프로젝트를 다운로드 받았다면 다른 사람의 변경 사항을 반영하기 위해 `git fetch, git pull` 도 실행해줍니다.
+```bash
+$ docker volume create {도커볼륨이름}
+$ docker build -t {도커이미지이름}:alpine database/Dockerfile
+$ docker run \
+  -d \
+  -e POSTGRES_PASSWORD={DB계정비밀번호} \
+  -e POSTGRES_USER={DB계정이름} \
+  -p 5432:5432 \
+  -v {도커볼륨이름}:/var/lib/postgresql/data \
+  --restart=always \
+  --name postgres \
+  {도커이미지이름}:alpine
+```
+
+도커 명령어를 통해 PostgreSQL 서버 컨테이너와 볼륨을 생성합니다.
+
+```bash
+$ CREATE DATABASE {데이터베이스이름} WITH OWNER {DB계정이름} TEMPLATE template0 ENCODING UTF8 LC_COLLATE 'C' LC_CTYPE "ko_KR.utf8";
+```
+
+PostgreSQL 서버에 접속해서 한국어에 최적화된 새로운 데이터베이스를 생성해줍니다.
 
 ### 환경 변수 설정
 
@@ -68,8 +90,6 @@ PORT=4000
 ```
 
 루트 폴더에 `.env`, `.env.development` 파일을 생성하고 거기에 프로젝트에 필요한 환경 변수를 설정합니다.
-
-만약 로컬 데이터베이스를 사용하려면 `POSTGRES_HOST=localhost`로 설정하고 `localhost:5432` 주소에서 PostgreSQL 데이터베이스를 실행합니다.
 
 ### 개발 모드
 
@@ -104,16 +124,10 @@ http://localhost:4000/graphql
 
 브라우저에서 아래 주소로 접속하면 개발 중인 사이트를 볼 수 있습니다.
 
-### GCP Cloud Run 배포
+### Cloud Run 배포
 
-GCP Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문에 GitHub로 commit을 push할 때마다 Cloud Run에 자동으로 배포됩니다.
+Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문에 GitHub로 commit을 push할 때마다 Cloud Run에 자동으로 배포됩니다.
 
 ## 데이터베이스 ERD
 
-[database/erd.html](database/erd.html)
-
-## 의문점
-
-- 스케일링에 의해 백엔드 컨테이너 수가 늘어날 수록 pg에서 제공하는 client pooling의 의미가 퇴색될까?
-
-- menu 개수에 비례해서 sql 수가 증가하는 문제점. query chaining. optional field는 sql에서 select 하지 않기
+[database/erd.html](https://teamsindy20.github.io/sobok-backend/database/erd.html)
