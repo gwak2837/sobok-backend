@@ -5,7 +5,6 @@
     "christian-kohler.path-intellisense",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "ms-azuretools.vscode-docker",
-    "bradymholt.pgformatter"
+    "ms-azuretools.vscode-docker"
   ]
 }

@@ -18,19 +18,10 @@
   "eslint.packageManager": "yarn",
 
   "[sql]": {
-    "editor.defaultFormatter": "bradymholt.pgformatter"
+    "editor.defaultFormatter": "mtxr.sqltools"
   },
-  "pgFormatter.commaBreak": true,
-  "sqltools.connections": [
-    {
-      "previewLimit": 50,
-      "server": "localhost",
-      "port": 5432,
-      "askForPassword": true,
-      "driver": "PostgreSQL",
-      "name": "Sobok - Localhost",
-      "database": "sobok",
-      "username": "sindy"
-    }
-  ]
+  "sqltools.format": {
+    "reservedWordCase": "upper",
+    "linesBetweenQueries": 2
+  }
 }
