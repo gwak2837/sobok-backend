@@ -57,25 +57,28 @@ $ yarn
 
 ```bash
 $ docker volume create {도커볼륨이름}
-$ docker build -t {도커이미지이름}:alpine database/Dockerfile
 $ docker run \
   -d \
-  -e POSTGRES_PASSWORD={DB계정비밀번호} \
   -e POSTGRES_USER={DB계정이름} \
+  -e POSTGRES_PASSWORD={DB계정비밀번호} \
+  -e POSTGRES_DB={DB이름} \
+  -e LANG=ko_KR.utf8 \
+  -e LC_COLLATE=C \
+  -e POSTGRES_INITDB_ARGS=--data-checksums \
   -p 5432:5432 \
   -v {도커볼륨이름}:/var/lib/postgresql/data \
   --name postgres \
   --restart=always \
-  {도커이미지이름}:alpine
+  postgres:alpine
 ```
 
 도커 명령어를 통해 PostgreSQL 서버 컨테이너와 볼륨을 생성합니다.
 
 ```bash
-$ CREATE DATABASE {데이터베이스이름} WITH OWNER {DB계정이름} TEMPLATE template0 ENCODING UTF8 LC_COLLATE 'C' LC_CTYPE "ko_KR.UTF-8";
+$ psql --user={DB계정이름} --dbname={DB이름}
 ```
 
-PostgreSQL 서버에 접속해서 한국어에 최적화된 새로운 데이터베이스를 생성해줍니다.
+PostgreSQL 서버에 접속해서 [`database/sql/initialization.sql`](database/sql/initialization.sql)에 있는 SQL DDL을 실행합니다.
 
 ### Redis 서버 실행
 
@@ -116,7 +119,7 @@ PORT=4000
 
 ### 개발 모드
 
-```shell
+```bash
 $ yarn dev
 ```
 
@@ -124,7 +127,7 @@ TypeScript 파일을 그대로 사용해 Nodemon으로 서비스를 실행합니
 
 ### 배포 모드
 
-```shell
+```bash
 $ yarn build
 $ yarn start
 ```
@@ -133,7 +136,7 @@ TypeScript 파일을 JavaScript로 트랜스파일한 후 Node.js로 서비스�
 
 ### 배포 모드 (Docker)
 
-```shell
+```bash
 $ docker-compose up --detach --build --force-recreate
 ```
 
