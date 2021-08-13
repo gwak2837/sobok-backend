@@ -53,6 +53,9 @@
         { id: 'user', label: 'user', fixed: true },
         { id: 'store', label: 'store' },
         { id: 'menu', label: 'menu' },
+        { id: 'news', label: 'news' },
+        { id: 'feed', label: 'feed' },
+        { id: 'comment', label: 'comment' },
       ])
 
       // create an array with edges
@@ -64,7 +67,7 @@
             from: zeroMany,
             to: zeroMany,
           },
-          label: 'favorite',
+          label: 'like',
         },
         {
           from: 'user',
@@ -73,16 +76,121 @@
             from: zeroMany,
             to: zeroMany,
           },
-          label: 'favorite',
+          label: 'like',
+        },
+        {
+          from: 'user',
+          to: 'menu',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'bucket list',
         },
         {
           from: 'user',
           to: 'store',
           arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'bucket list',
+        },
+        {
+          from: 'user',
+          to: 'user',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'follower',
+        },
+        {
+          from: 'news',
+          to: 'menu',
+          arrows: {
+            from: zeroMany,
+            to: zeroMany,
+          },
+          label: 'tagged',
+        },
+        {
+          from: 'feed',
+          to: 'menu',
+          arrows: {
+            from: zeroMany,
+            to: oneMany,
+          },
+          label: 'tagged',
+        },
+        {
+          from: 'user',
+          to: 'store',
+          arrows: {
+            from: zeroOne,
+            to: zeroMany,
+          },
+          label: '소유',
+        },
+        {
+          from: 'store',
+          to: 'menu',
+          arrows: {
+            from: onlyOne,
+            to: oneMany,
+          },
+        },
+        {
+          from: 'store',
+          to: 'news',
+          arrows: {
             from: onlyOne,
             to: zeroMany,
           },
-          label: 'owner',
+          label: '작성한 매장',
+        },
+        {
+          from: 'store',
+          to: 'feed',
+          arrows: {
+            from: onlyOne,
+            to: zeroMany,
+          },
+          label: 'tagged',
+        },
+        {
+          from: 'user',
+          to: 'feed',
+          arrows: {
+            from: onlyOne,
+            to: zeroMany,
+          },
+          label: '작성자',
+        },
+        {
+          from: 'user',
+          to: 'comment',
+          arrows: {
+            from: onlyOne,
+            to: zeroMany,
+          },
+          label: '작성자',
+        },
+        {
+          from: 'feed',
+          to: 'comment',
+          arrows: {
+            from: onlyOne,
+            to: zeroMany,
+          },
+        },
+        {
+          from: 'comment',
+          to: 'comment',
+          arrows: {
+            from: zeroOne,
+            to: zeroMany,
+          },
         },
       ])
 
