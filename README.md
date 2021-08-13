@@ -6,10 +6,10 @@
 
 ## 구성원
 
-|  이름  |                      GitHub                      | 역할 |
-| :----: | :----------------------------------------------: | :--: |
-| 곽태욱 | [@rmfpdlxmtidl](https://github.com/rmfpdlxmtidl) |      |
-| 김효진 |       [@hy57in](https://github.com/hy57in)       |      |
+|  이름  |                      GitHub                      |        역할        |
+| :----: | :----------------------------------------------: | :----------------: |
+| 곽태욱 | [@rmfpdlxmtidl](https://github.com/rmfpdlxmtidl) | 프로젝트 초기 설정 |
+| 김효진 |       [@hy57in](https://github.com/hy57in)       |                    |
 
 ## 개발 환경
 
@@ -19,18 +19,17 @@
 - [Yarn](https://yarnpkg.com/getting-started/install#about-global-installs) 1.22
 - [Visual Studio Code](https://code.visualstudio.com/Download) 1.58
 - [PostgreSQL](https://hub.docker.com/_/postgres) Alpine
-- (선택) [Docker](https://www.docker.com/get-started) 20.10
-- (선택) Docker Compose 1.29
-
-Cloud Run이 컨테이너 기반 환경이기 때문에 컨테이너 환경을 테스트하고 싶을 때 Docker를 설치합니다.
+- [Redis](https://hub.docker.com/_/redis) Alpine
+- [Docker](https://www.docker.com/get-started) 20.10
+- Docker Compose 1.29
 
 ```bash
 $ git --version
 $ node --version
 $ yarn --version
 $ code --version
-$ docker --version # 선택
-$ docker-compose --version # 선택
+$ docker --version
+$ docker-compose --version
 ```
 
 위 명령어를 통해 프로젝트에 필요한 모든 프로그램이 설치되어 있는지 확인합니다.
@@ -65,26 +64,39 @@ $ docker run \
   -e POSTGRES_USER={DB계정이름} \
   -p 5432:5432 \
   -v {도커볼륨이름}:/var/lib/postgresql/data \
-  --restart=always \
   --name postgres \
+  --restart=always \
   {도커이미지이름}:alpine
 ```
 
 도커 명령어를 통해 PostgreSQL 서버 컨테이너와 볼륨을 생성합니다.
 
 ```bash
-$ CREATE DATABASE {데이터베이스이름} WITH OWNER {DB계정이름} TEMPLATE template0 ENCODING UTF8 LC_COLLATE 'C' LC_CTYPE "ko_KR.utf8";
+$ CREATE DATABASE {데이터베이스이름} WITH OWNER {DB계정이름} TEMPLATE template0 ENCODING UTF8 LC_COLLATE 'C' LC_CTYPE "ko_KR.UTF-8";
 ```
 
 PostgreSQL 서버에 접속해서 한국어에 최적화된 새로운 데이터베이스를 생성해줍니다.
+
+### Redis 서버 실행
+
+```bash
+$ docker run \
+  -d \
+  -p 6379:6379 \
+  --name redis \
+  --restart=always \
+  redis:alpine
+```
+
+Redis 서버를 도커 컨테이너 위에서 실행합니다. 로컬 컴퓨터 환경에서 개발하는 경우에만 Redis 서버를 실행해주고, 아래의 [`docker-compose up` 명령어](#배포-모드-docker)를 사용하는 경우엔 실행하지 않아도 됩니다.
 
 ### 환경 변수 설정
 
 ```
 POSTGRES_HOST=
-POSTGRES_DB=
 POSTGRES_USER=
 POSTGRES_PASSWORD=
+POSTGRES_DB=
 
 JWT_SECRET_KEY=
 
@@ -100,7 +112,7 @@ BACKEND_URL=
 PORT=4000
 ```
 
-루트 폴더에 `.env`, `.env.development` 파일을 생성하고 거기에 프로젝트에 필요한 환경 변수를 설정합니다.
+루트 폴더에 `.env` (또는 `.env.development`) 파일을 생성하고 거기에 프로젝트에 필요한 환경 변수를 설정합니다.
 
 ### 개발 모드
 
@@ -125,7 +137,7 @@ TypeScript 파일을 JavaScript로 트랜스파일한 후 Node.js로 서비스�
 $ docker-compose up --detach --build --force-recreate
 ```
 
-배포 서버 환경이랑 동일한 Docker 환경을 생성합니다.
+Cloud Run 환경이랑 동일한 Docker 환경을 생성합니다.
 
 ### 브라우저 실행
 
