@@ -29,4 +29,4 @@ EXPOSE $PORT
 
 ENTRYPOINT [ "yarn" ]
 
-CMD [ "concurrently", "\"/usr/bin/redis-server --bind '0.0.0.0'\"", "\"sleep 5s; yarn start\""]
+CMD [ "concurrently", "\"/usr/bin/redis-server --bind 'localhost'\"", "\"yarn start\""]

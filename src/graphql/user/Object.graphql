@@ -2,7 +2,7 @@
 OAuth 공급자
 """
 enum Provider {
-  DESSERT_FIT
+  SOBOK
   GOOGLE
   NAVER
   KAKAO

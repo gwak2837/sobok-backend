@@ -13,6 +13,8 @@ export const Query: QueryResolvers = {
   me: async (_, __, { user }, info) => {
     if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
+    // 사용자 정보는 레디스 캐시에 넣어 두기
+
     const columns = selectColumnFromField(info, userFieldColumnMapping)
 
     const { rows } = await poolQuery(format(await userSQL, columns), [user.id])

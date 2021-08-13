@@ -30,8 +30,8 @@ export async function connectDatabase() {
       console.log('Connected to the PostgreSQL server')
       break
     } catch (error) {
-      await sleep(5000)
       console.warn(error)
+      await sleep(5000)
     }
   }
 }
