@@ -11,6 +11,7 @@
   "search.exclude": {
     "**/.git": true,
     "**/dist": true,
+    "node_modules": true,
     "yarn.lock": true
   },
   "typescript.tsdk": "node_modules/typescript/lib",
@@ -19,5 +20,17 @@
   "[sql]": {
     "editor.defaultFormatter": "bradymholt.pgformatter"
   },
-  "pgFormatter.commaBreak": true
+  "pgFormatter.commaBreak": true,
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "askForPassword": true,
+      "driver": "PostgreSQL",
+      "name": "Sobok - Localhost",
+      "database": "sobok",
+      "username": "sindy"
+    }
+  ]
 }
