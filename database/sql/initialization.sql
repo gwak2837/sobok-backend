@@ -487,6 +487,7 @@ inserted__news_x_hashtag AS (
   FROM inserted_news,
     hashtag_id
 ),
+inserted__ AS ()
 SELECT id
 FROM inserted_news;
 
