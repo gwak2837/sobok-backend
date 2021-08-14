@@ -352,17 +352,17 @@ inserted_hashtag AS (
   SELECT *
   FROM hashtag_name ON CONFLICT (name) DO NOTHING
 ),
-store_all_hashtag (id) AS (
+hashtag_id (id) AS (
   SELECT hashtag.id
   FROM hashtag_name
     JOIN hashtag USING (name)
 ),
-inserted__store_x_hashtags AS (
+inserted__store_x_hashtag AS (
   INSERT INTO store_x_hashtag (store_id, hashtag_id)
   SELECT inserted_store.id,
-    store_all_hashtag.id
+    hashtag_id.id
   FROM inserted_store,
-    store_all_hashtag
+    hashtag_id
 )
 SELECT id
 FROM inserted_store;
@@ -377,22 +377,46 @@ CREATE FUNCTION create_menu (
   store_id bigint,
   hashtags text [] DEFAULT NULL,
   out menu_id bigint
-) LANGUAGE SQL AS $$
-INSERT INTO menu (
-    name,
-    price,
-    image_urls,
-    category,
-    store_id
-  )
-VALUES (
-    name,
-    price,
-    image_urls,
-    category,
-    store_id
-  )
-RETURNING id;
+) LANGUAGE SQL AS $$ WITH inserted_menu AS(
+  INSERT INTO menu (
+      name,
+      price,
+      image_urls,
+      category,
+      store_id
+    )
+  VALUES (
+      name,
+      price,
+      image_urls,
+      category,
+      store_id
+    )
+  RETURNING id;
+
+),
+hashtag_name (name) AS (
+  SELECT unnest(hashtags)
+),
+inserted_hashtag AS (
+  INSERT INTO hashtag (name)
+  SELECT *
+  FROM hashtag_name ON CONFLICT (name) DO NOTHING
+),
+hashtag_id (id) AS (
+  SELECT hashtag.id
+  FROM hashtag_name
+    JOIN hashtag USING (name)
+),
+inserted__menu_x_hashtag AS (
+  INSERT INTO menu_x_hashtag (menu_id, hashtag_id)
+  SELECT inserted_menu.id,
+    hashtag_id.id
+  FROM inserted_menu,
+    hashtag_id
+)
+SELECT id
+FROM inserted_menu;
 
 $$;
 
@@ -405,10 +429,34 @@ CREATE FUNCTION create_news (
   image_urls text [] DEFAULT NULL,
   hashtags text [] DEFAULT NULL,
   out news_id bigint
-) LANGUAGE SQL AS $$
-INSERT INTO news (title, contents, category, store_id)
-VALUES (title, contents, category, store_id)
-RETURNING id;
+) LANGUAGE SQL AS $$ WITH inserted_news AS(
+  INSERT INTO news (title, contents, category, store_id)
+  VALUES (title, contents, category, store_id)
+  RETURNING id;
+
+),
+hashtag_name (name) AS (
+  SELECT unnest(hashtags)
+),
+inserted_hashtag AS (
+  INSERT INTO hashtag (name)
+  SELECT *
+  FROM hashtag_name ON CONFLICT (name) DO NOTHING
+),
+hashtag_id (id) AS (
+  SELECT hashtag.id
+  FROM hashtag_name
+    JOIN hashtag USING (name)
+),
+inserted__news_x_hashtag AS (
+  INSERT INTO news_x_hashtag (news_id, hashtag_id)
+  SELECT inserted_news.id,
+    hashtag_id.id
+  FROM inserted_news,
+    hashtag_id
+)
+SELECT id
+FROM inserted_news;
 
 $$;
 
@@ -422,24 +470,48 @@ CREATE FUNCTION create_feed (
   menu_ids bigint [] DEFAULT NULL,
   hashtags text [] DEFAULT NULL,
   out feed_id bigint
-) LANGUAGE SQL AS $$
-INSERT INTO news (
-    rating,
-    contents,
-    image_urls,
-    like_count,
-    user_id,
-    store_id
-  )
-VALUES (
-    rating,
-    contents,
-    image_urls,
-    like_count,
-    user_id,
-    store_id
-  )
-RETURNING id;
+) LANGUAGE SQL AS $$ WITH inserted_feed AS(
+  INSERT INTO feed (
+      rating,
+      contents,
+      image_urls,
+      like_count,
+      user_id,
+      store_id
+    )
+  VALUES (
+      rating,
+      contents,
+      image_urls,
+      like_count,
+      user_id,
+      store_id
+    )
+  RETURNING id;
+
+),
+hashtag_name (name) AS (
+  SELECT unnest(hashtags)
+),
+inserted_hashtag AS (
+  INSERT INTO hashtag (name)
+  SELECT *
+  FROM hashtag_name ON CONFLICT (name) DO NOTHING
+),
+hashtag_id (id) AS (
+  SELECT hashtag.id
+  FROM hashtag_name
+    JOIN hashtag USING (name)
+),
+inserted__feed_x_hashtag AS (
+  INSERT INTO feed_x_hashtag (feed_id, hashtag_id)
+  SELECT inserted_feed.id,
+    hashtag_id.id
+  FROM inserted_feed,
+    hashtag_id
+)
+SELECT id
+FROM inserted_feed;
 
 $$;
 
