@@ -398,3 +398,58 @@ SELECT create_user(
     '1995-01-14',
     'https://storage.googleapis.com/sobok/%EA%B8%B0%EC%9A%B0%ED%98%84.webp'
   );
+
+SELECT create_user(
+    'bok6@sindy.com',
+    '12345',
+    '김진효',
+    '010-4135-6866',
+    2,
+    '디저트 조아해요',
+    '1997-10-16',
+    'https://storage.googleapis.com/sobok/%EA%B9%80%EC%A7%84%ED%9A%A8.webp'
+  );
+
+SELECT create_user(
+    'bok7@sindy.com',
+    '12345',
+    '곽욱태',
+    '010-6827-9124',
+    1,
+    '유당불내증. 두유 커피가 최고!',
+    '1997-10-06',
+    'https://storage.googleapis.com/sobok/%EA%B3%BD%EC%9A%B1%ED%83%9C.webp'
+  );
+
+SELECT create_user(
+    'bok8@sindy.com',
+    '12345',
+    '박현수',
+    '010-7869-3665',
+    2,
+    '그곳에 마카롱이 있다면 어디든!',
+    '1998-12-04',
+    'https://storage.googleapis.com/sobok/%EB%B0%95%ED%98%84%EC%88%98.webp'
+  );
+
+SELECT create_user(
+    'bok9@sindy.com',
+    '12345',
+    '김호민',
+    '010-5980-7644',
+    1,
+    '주호민 아니고 김호민',
+    '1997-05-05',
+    'https://storage.googleapis.com/sobok/%EA%B9%80%ED%98%B8%EB%AF%BC.webp'
+  );
+
+SELECT create_user(
+    'bok10@sindy.com',
+    '12345',
+    '기우현',
+    '010-2395-6730',
+    1,
+    '내마음이 기우는 곳으로.',
+    '1996-12-09',
+    'https://storage.googleapis.com/sobok/%EA%B8%B0%ED%98%84%EC%9A%B0.webp'
+  );
