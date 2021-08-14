@@ -23,5 +23,6 @@
   "sqltools.format": {
     "reservedWordCase": "upper",
     "linesBetweenQueries": 2
-  }
+  },
+  "liveServer.settings.port": 5501
 }

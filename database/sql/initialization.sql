@@ -809,3 +809,35 @@ SELECT create_menu(
     1,
     array ['씁쓸']
   )
+SELECT create_menu(
+    '폼폼라떼',
+    3000,
+    array ['https://storage.googleapis.com/sobok/%ED%8F%BC%ED%8F%BC%EB%9D%BC%EB%96%BC_%EB%94%94%EC%A0%80%ED%8A%B8%EC%A0%95.webp'],
+    3,
+    1,
+    array ['폼가득']
+  )
+SELECT create_menu(
+    '카페라떼',
+    5000,
+    array ['https://storage.googleapis.com/sobok/%EC%B9%B4%ED%8E%98%EB%9D%BC%EB%96%BC_%EB%94%94%EC%A0%80%ED%8A%B8%EC%A0%95.webp'],
+    3,
+    1,
+    array ['우유맛집']
+  )
+SELECT create_menu(
+    '복숭아 아이스티',
+    3400,
+    array ['https://storage.googleapis.com/sobok/%EB%B3%B5%EC%88%AD%EC%95%84%20%EC%95%84%EC%9D%B4%EC%8A%A4%ED%8B%B0_%EB%94%94%EC%A0%80%ED%8A%B8%EC%A0%95.webp'],
+    3,
+    1,
+    array ['새콤']
+  )
+SELECT create_menu(
+    '죠리퐁프라페',
+    5000,
+    array ['https://storage.googleapis.com/sobok/%EB%B3%B5%EC%88%AD%EC%95%84%20%EC%95%84%EC%9D%B4%EC%8A%A4%ED%8B%B0_%EB%94%94%EC%A0%80%ED%8A%B8%EC%A0%95.webhttps://storage.googleapis.com/sobok/%EC%A3%A0%EB%A6%AC%ED%90%81%20%EB%9D%BC%EB%96%BC_%EB%94%94%EC%A0%80%ED%8A%B8%EC%A0%95.webp'],
+    3,
+    1,
+    array ['새콤']
+  )
