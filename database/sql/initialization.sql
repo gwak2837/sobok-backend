@@ -630,3 +630,11 @@ SELECT create_store(
     NULL,
     array ['분위기가 좋은','디저트 맛집','통유리']
   )
+SELECT create_menu(
+    '아메리카노',
+    4100,
+    array ['https://storage.googleapis.com/sobok/%EC%95%84%EC%95%84.webp'],
+    3,
+    1,
+    array ['씁쓸']
+  )
