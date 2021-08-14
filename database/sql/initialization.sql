@@ -1167,4 +1167,44 @@ SELECT create_comment(
     1,
     NULL,
     NULL,
-  )
+  );
+
+SELECT create_comment(
+    array ['저 매주 가서 먹어요 ㅠ'],
+    2,
+    2,
+    NULL,
+    NULL,
+  );
+
+SELECT create_comment(
+    array ['오이가 얼마나 맛있는데 ! ! ㅋㅋ'],
+    3,
+    3,
+    NULL,
+    NULL,
+  );
+
+SELECT create_comment(
+    array ['미숫가루 맛이 강한게 매력이던데용 ㅎ'],
+    4,
+    4,
+    NULL,
+    NULL,
+  );
+
+SELECT create_comment(
+    array ['그치만 조금만 더 저렴했으면 좋겠어요ㅠ'],
+    5,
+    5,
+    NULL,
+    NULL,
+  );
+
+SELECT create_comment(
+    array ['여기 고구마 라떼가 정말 달더라구요'],
+    6,
+    6,
+    NULL,
+    NULL,
+  );
