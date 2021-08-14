@@ -310,7 +310,7 @@ CREATE FUNCTION create_store (
   holiday text DEFAULT NULL,
   image_urls text [] DEFAULT NULL,
   user_id bigint DEFAULT NULL,
-  out user_id bigint
+  out store_id bigint
 ) LANGUAGE SQL AS $$
 INSERT INTO store (
     name,
@@ -339,6 +339,32 @@ VALUES (
     holiday,
     image_urls,
     user_id
+  )
+RETURNING id;
+
+$$;
+
+CREATE FUNCTION create_menu (
+  name varchar(50),
+  price int,
+  image_urls text [],
+  category int,
+  store_id bigint,
+  out menu_id bigint
+) LANGUAGE SQL AS $$
+INSERT INTO menu (
+    name,
+    price,
+    image_urls,
+    category,
+    store_id
+  )
+VALUES (
+    name,
+    price,
+    image_urls,
+    category,
+    store_id
   )
 RETURNING id;
 
