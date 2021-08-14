@@ -522,6 +522,16 @@ inserted__feed_x_hashtag AS (
     hashtag_id.id
   FROM inserted_feed,
     hashtag_id
+),
+menu_id (id) AS (
+  SELECT unnest(menu_ids)
+),
+inserted__feed_x_rated_menu AS (
+  INSERT INTO feed_x_rated_menu (feed_id, menu_id)
+  SELECT inserted_feed.id,
+    menu_id.id
+  FROM inserted_feed,
+    menu_id
 )
 SELECT id
 FROM inserted_feed;
