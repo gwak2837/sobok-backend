@@ -1246,13 +1246,68 @@ SELECT create_news (
 
 SELECT create_feed(
     3,
-    array ['커피 맛 굳굳!! 사장님이 너무 친절하셔요 :) 흑석동 최고의 카페! '],
+    array ['커피 맛 굳굳!! 사장님이 너무 친절하셔요 :) 흑석동 최고의 카페!'],
     array ['https://storage.googleapis.com/sobok/%EB%A6%AC%EB%B7%B0%EC%98%90%EB%A1%9C%EC%9A%B0%EC%BB%A4%ED%94%BC.webp'],
     32,
     1,
     10,
     array [34],
-    array ['해시태그']
+    array ['커피맛집','친절','흑석동','카공']
+  );
+
+SELECT create_feed(
+    3,
+    array ['통밀 견과류 스콘 한번도 못먹어본 사람은 있어도 한번만 먹어본 사람은 없다.'],
+    array ['https://storage.googleapis.com/sobok/%EB%A6%AC%EB%B7%B0%ED%86%B5%EB%B0%80%EA%B2%AC%EA%B3%BC%EB%A5%98%EC%8A%A4%EC%BD%98.webp'],
+    63,
+    2,
+    3,
+    array [13],
+    array ['통밀','스콘','견과류','청결','데이트']
+  );
+
+SELECT create_feed(
+    1,
+    array ['오이 향이 너무 안났어요. 오이를 좋아하는데...'],
+    array ['https://storage.googleapis.com/sobok/%EB%A6%AC%EB%B7%B0%EC%98%A4%EC%9D%B4%EB%98%90.webp'],
+    48,
+    3,
+    9,
+    array [32],
+    array ['오이','실망','양많음','분위기좋음']
+  );
+
+SELECT create_feed(
+    2,
+    array ['그냥 미숫가루 맛이었어요'],
+    array ['https://storage.googleapis.com/sobok/%EB%A6%AC%EB%B7%B0%EB%AF%B8%EC%88%AB%EA%B0%80%EB%A3%A8%EB%9D%BC%EB%96%BC.webp'],
+    65,
+    4,
+    7,
+    array [27],
+    array ['미숫가루','고칼로리','아침식사','쏘쏘']
+  );
+
+SELECT create_feed(
+    3,
+    array ['달달하고 상큼하고 넘 맛있어용 가격이 쪼금 있지만 눈감고 먹어줄만한 맛!'],
+    array ['https://storage.googleapis.com/sobok/%EB%A6%AC%EB%B7%B0%EA%BF%80%EC%9E%90%EB%AA%BD%EC%A5%AC%EC%8A%A4.webp'],
+    56,
+    5,
+    1,
+    array [7],
+    array ['비쌈','달달','상큼','자몽','꿀']
+  );
+
+SELECT create_feed(
+    3,
+    array ['고구마 진짜 좋아하는데 여기 진짜 꿀맛ㅠㅠㅠ 강추!'],
+    array ['https://storage.googleapis.com/sobok/%EB%A6%AC%EB%B7%B0%EA%B3%A0%EA%B5%AC%EB%A7%88%EB%9D%BC%EB%96%BC.webp'],
+    65,
+    1,
+    7,
+    array [25],
+    array ['고구마라떼','다이어트','친구랑','아늑']
   );
 
 SELECT create_comment(
@@ -1266,7 +1321,7 @@ SELECT create_comment(
 SELECT create_comment(
     array ['저 매주 가서 먹어요ㅠ'],
     2,
-    1,
+    2,
     NULL,
     NULL
   );
