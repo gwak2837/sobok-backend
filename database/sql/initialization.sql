@@ -54,8 +54,8 @@ CREATE TABLE store (
   tel varchar(20) UNIQUE,
   registration_number char(10) UNIQUE,
   description text,
-  business_hours text,
-  holiday text,
+  business_hours text [],
+  holidays char(1) [],
   image_urls text [],
   user_id bigint REFERENCES "user" ON DELETE CASCADE -- 매장 소유자
 );
@@ -97,7 +97,7 @@ CREATE TABLE feed (
   store_id bigint NOT NULL REFERENCES store ON DELETE CASCADE
 );
 
-CREATE TABLE COMMENT (
+CREATE TABLE "comment" (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   modification_time timestamptz NOT NULL DEFAULT NOW(),
@@ -106,7 +106,7 @@ CREATE TABLE COMMENT (
   feed_id bigint NOT NULL REFERENCES feed ON DELETE CASCADE,
   --
   image_url text,
-  comment_id bigint REFERENCES COMMENT ON DELETE CASCADE
+  comment_id bigint REFERENCES "comment" ON DELETE CASCADE
 );
 
 CREATE TABLE hashtag (
@@ -204,8 +204,8 @@ CREATE TABLE deleted.store (
   takeout boolean NOT NULL DEFAULT FALSE,
   --
   description text,
-  business_hours text,
-  holiday text,
+  business_hours text [],
+  holidays char(1) [],
   image_urls text [],
   user_id bigint REFERENCES deleted."user" ON DELETE CASCADE -- 매장 소유자
 );
@@ -306,41 +306,66 @@ CREATE FUNCTION create_store (
   tel varchar(20) DEFAULT NULL,
   registration_number char(10) DEFAULT NULL,
   description text DEFAULT NULL,
-  business_hours text DEFAULT NULL,
-  holiday text DEFAULT NULL,
+  business_hours text [] DEFAULT NULL,
+  holidays char(1) [] DEFAULT NULL,
   image_urls text [] DEFAULT NULL,
   user_id bigint DEFAULT NULL,
+  hashtags text [] DEFAULT NULL,
   out store_id bigint
-) LANGUAGE SQL AS $$
-INSERT INTO store (
-    name,
-    town,
-    address,
-    categories,
-    takeout,
-    tel,
-    registration_number,
-    description,
-    business_hours,
-    holiday,
-    image_urls,
-    user_id
-  )
-VALUES (
-    name,
-    town,
-    address,
-    categories,
-    takeout,
-    tel,
-    registration_number,
-    description,
-    business_hours,
-    holiday,
-    image_urls,
-    user_id
-  )
-RETURNING id;
+) LANGUAGE SQL AS $$ WITH inserted_store AS(
+  INSERT INTO store (
+      name,
+      town,
+      address,
+      categories,
+      takeout,
+      tel,
+      registration_number,
+      description,
+      business_hours,
+      holidays,
+      image_urls,
+      user_id
+    )
+  VALUES (
+      name,
+      town,
+      address,
+      categories,
+      takeout,
+      tel,
+      registration_number,
+      description,
+      business_hours,
+      holidays,
+      image_urls,
+      user_id
+    )
+  RETURNING id;
+
+),
+hashtag_name (name) AS (
+  SELECT unnest(hashtags)
+),
+inserted_hashtag AS (
+  INSERT INTO hashtag (name)
+  SELECT *
+  FROM hashtag_name ON CONFLICT (name) DO NOTHING
+),
+store_all_hashtag (id) AS (
+  SELECT hashtag.id
+  FROM hashtag_name
+    JOIN hashtag USING (name)
+),
+inserted__store_x_hashtags AS (
+  INSERT INTO store_x_hashtag (store_id, hashtag_id)
+  SELECT inserted_store.id,
+    store_all_hashtag.id
+  FROM inserted_store,
+    store_all_hashtag
+)
+SELECT id
+FROM inserted_store;
 
 $$;
 
@@ -350,6 +375,7 @@ CREATE FUNCTION create_menu (
   image_urls text [],
   category int,
   store_id bigint,
+  hashtags text [] DEFAULT NULL,
   out menu_id bigint
 ) LANGUAGE SQL AS $$
 INSERT INTO menu (
@@ -365,6 +391,79 @@ VALUES (
     image_urls,
     category,
     store_id
+  )
+RETURNING id;
+
+$$;
+
+CREATE FUNCTION create_news (
+  title varchar(100),
+  contents text [],
+  category int,
+  store_id bigint,
+  menu_ids bigint [] DEFAULT NULL,
+  image_urls text [] DEFAULT NULL,
+  hashtags text [] DEFAULT NULL,
+  out news_id bigint
+) LANGUAGE SQL AS $$
+INSERT INTO news (title, contents, category, store_id)
+VALUES (title, contents, category, store_id)
+RETURNING id;
+
+$$;
+
+CREATE FUNCTION create_feed (
+  rating int,
+  contents text [],
+  image_urls text [],
+  like_count int,
+  user_id bigint,
+  store_id bigint,
+  menu_ids bigint [] DEFAULT NULL,
+  hashtags text [] DEFAULT NULL,
+  out feed_id bigint
+) LANGUAGE SQL AS $$
+INSERT INTO news (
+    rating,
+    contents,
+    image_urls,
+    like_count,
+    user_id,
+    store_id
+  )
+VALUES (
+    rating,
+    contents,
+    image_urls,
+    like_count,
+    user_id,
+    store_id
+  )
+RETURNING id;
+
+$$;
+
+CREATE FUNCTION create_comment (
+  contents text [],
+  user_id bigint,
+  feed_id bigint,
+  image_url text,
+  comment_id bigint,
+  out comment_id bigint
+) LANGUAGE SQL AS $$
+INSERT INTO news (
+    contents,
+    user_id,
+    feed_id,
+    image_url,
+    comment_id
+  )
+VALUES (
+    contents,
+    user_id,
+    feed_id,
+    image_url,
+    comment_id
   )
 RETURNING id;
 
