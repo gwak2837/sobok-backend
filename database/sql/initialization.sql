@@ -548,14 +548,7 @@ FROM inserted_feed;
 
 $$;
 
-CREATE FUNCTION create_comment (
-  contents text [],
-  user_id bigint,
-  feed_id bigint,
-  image_url text,
-  comment_id bigint,
-  out comment_id bigint
-) LANGUAGE SQL AS $$
+CREATE FUNCTION create_comment () LANGUAGE SQL AS $$
 INSERT INTO news (
     contents,
     user_id,
@@ -1167,3 +1160,11 @@ SELECT create_menu(
     10,
     array ['크로플', '브라운치즈']
   );
+
+SELECT create_comment(
+    array ['신기해용 노란색은 뭔가요 ? 망고 ? ? !'],
+    1,
+    1,
+    NULL,
+    NULL,
+  )
