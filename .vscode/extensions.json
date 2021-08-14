@@ -5,6 +5,8 @@
     "christian-kohler.path-intellisense",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "ms-azuretools.vscode-docker"
+    "ms-azuretools.vscode-docker",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg"
   ]
 }

@@ -171,6 +171,38 @@ CREATE TABLE feed_x_rated_menu (
   PRIMARY KEY (feed_id, menu_id)
 );
 
+CREATE TABLE store_x_hashtag(
+  store_id bigint REFERENCES store ON DELETE CASCADE,
+  hashtag_id bigint REFERENCES hashtag ON DELETE CASCADE,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  --
+  PRIMARY KEY (store_id, hashtag_id)
+);
+
+CREATE TABLE menu_x_hashtag(
+  menu_id bigint REFERENCES menu ON DELETE CASCADE,
+  hashtag_id bigint REFERENCES hashtag ON DELETE CASCADE,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  --
+  PRIMARY KEY (menu_id, hashtag_id)
+);
+
+CREATE TABLE news_x_hashtag(
+  store_id bigint REFERENCES store ON DELETE CASCADE,
+  hashtag_id bigint REFERENCES hashtag ON DELETE CASCADE,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  --
+  PRIMARY KEY (store_id, hashtag_id)
+);
+
+CREATE TABLE feed_x_hashtag(
+  store_id bigint REFERENCES store ON DELETE CASCADE,
+  hashtag_id bigint REFERENCES hashtag ON DELETE CASCADE,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  --
+  PRIMARY KEY (store_id, hashtag_id)
+);
+
 CREATE TABLE deleted."user" (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
@@ -430,8 +462,8 @@ CREATE FUNCTION create_news (
   hashtags text [] DEFAULT NULL,
   out news_id bigint
 ) LANGUAGE SQL AS $$ WITH inserted_news AS(
-  INSERT INTO news (title, contents, category, store_id)
-  VALUES (title, contents, category, store_id)
+  INSERT INTO news (title, contents, category, store_id, image_urls)
+  VALUES (title, contents, category, store_id, image_urls)
   RETURNING id;
 
 ),
@@ -454,7 +486,8 @@ inserted__news_x_hashtag AS (
     hashtag_id.id
   FROM inserted_news,
     hashtag_id
-)
+),
+inserted__ AS ()
 SELECT id
 FROM inserted_news;
 
