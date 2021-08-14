@@ -188,11 +188,11 @@ CREATE TABLE menu_x_hashtag(
 );
 
 CREATE TABLE feed_x_hashtag(
-  store_id bigint REFERENCES store ON DELETE CASCADE,
+  feed_id bigint REFERENCES feed ON DELETE CASCADE,
   hashtag_id bigint REFERENCES hashtag ON DELETE CASCADE,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   --
-  PRIMARY KEY (store_id, hashtag_id)
+  PRIMARY KEY (feed_id, hashtag_id)
 );
 
 CREATE TABLE deleted."user" (
@@ -331,7 +331,7 @@ CREATE FUNCTION create_store (
   registration_number char(10) DEFAULT NULL,
   description text DEFAULT NULL,
   business_hours text [] DEFAULT NULL,
-  holidays char(1) [] DEFAULT NULL,
+  holidays date [] DEFAULT NULL,
   image_urls text [] DEFAULT NULL,
   user_id bigint DEFAULT NULL,
   hashtags text [] DEFAULT NULL,
@@ -365,8 +365,7 @@ CREATE FUNCTION create_store (
       image_urls,
       user_id
     )
-  RETURNING id;
-
+  RETURNING id
 ),
 hashtag_name (name) AS (
   SELECT unnest(hashtags)
@@ -416,8 +415,7 @@ CREATE FUNCTION create_menu (
       category,
       store_id
     )
-  RETURNING id;
-
+  RETURNING id
 ),
 hashtag_name (name) AS (
   SELECT unnest(hashtags)
@@ -455,8 +453,7 @@ CREATE FUNCTION create_news (
 ) LANGUAGE SQL AS $$ WITH inserted_news AS(
   INSERT INTO news (title, contents, category, store_id, image_urls)
   VALUES (title, contents, category, store_id, image_urls)
-  RETURNING id;
-
+  RETURNING id
 ),
 menu_id (id) AS (
   SELECT unnest(menu_ids)
@@ -500,8 +497,7 @@ CREATE FUNCTION create_feed (
       user_id,
       store_id
     )
-  RETURNING id;
-
+  RETURNING id
 ),
 hashtag_name (name) AS (
   SELECT unnest(hashtags)
@@ -546,7 +542,7 @@ CREATE FUNCTION create_comment (
   comment_id bigint DEFAULT NULL,
   out comment_id bigint
 ) LANGUAGE SQL AS $$
-INSERT INTO news (
+INSERT INTO "comment" (
     contents,
     user_id,
     feed_id,
@@ -687,7 +683,7 @@ SELECT create_store(
     NULL,
     array ['https://postfiles.pstatic.net/MjAyMDEwMjdfNzIg/MDAxNjAzNzgxNTQ5MDQ3.R1QJOe01vP9iYh8iXMq7iMNgp65eYJm1qqTgvn6D5F4g.PObKW3w8lQOxz5_TSJG8griA_j5szovbMuBuRXELmmIg.JPEG.jjypink81/SE-03706234-a54c-4685-85ee-0f677b29bf61.jpg?type=w773','https://postfiles.pstatic.net/MjAyMDEwMjdfMjky/MDAxNjAzNzgxNTQxMzQ2.mb2L2V5jgVjq2kBrIqHdYUv-WqxmgliYRelH5po4Wy8g.n7bH95FFsQYKPWMG3HxBhvIDMZTlTgTD_yPjqdkWVpcg.JPEG.jjypink81/SE-9ab9b0bb-949e-48b5-978a-b2c79301978d.jpg?type=w773', 'https://postfiles.pstatic.net/MjAyMDEwMjdfMjky/MDAxNjAzNzgxNTQxMzQ2.mb2L2V5jgVjq2kBrIqHdYUv-WqxmgliYRelH5po4Wy8g.n7bH95FFsQYKPWMG3HxBhvIDMZTlTgTD_yPjqdkWVpcg.JPEG.jjypink81/SE-9ab9b0bb-949e-48b5-978a-b2c79301978d.jpg?type=w773, https://postfiles.pstatic.net/MjAyMDEwMjdfNzIg/MDAxNjAzNzgxNTQ5MDQ3.R1QJOe01vP9iYh8iXMq7iMNgp65eYJm1qqTgvn6D5F4g.PObKW3w8lQOxz5_TSJG8griA_j5szovbMuBuRXELmmIg.JPEG.jjypink81/SE-03706234-a54c-4685-85ee-0f677b29bf61.jpg?type=w773'],
     NULL,
-    array ['수제', '케이크' '아기자기' '테이블적음']
+    array ['수제', '케이크', '아기자기', '테이블적음']
   );
 
 SELECT create_store(
@@ -697,7 +693,7 @@ SELECT create_store(
     ARRAY [0, 7],
     false,
     '0507-1426-9027',
-    '0000000000',
+    '0000000001',
     '브런치도 판매하는 빵 맛집',
     array ['7:00 ~ 10:00'],
     NULL,
@@ -713,7 +709,7 @@ SELECT create_store(
     ARRAY [1,2,3],
     false,
     '02-825-5265',
-    '0000000000',
+    '0000000002',
     '유기농 밀가루 100%를 사용하며, 방부제를 사용하지 않는 빵집. 냉동 빵이 아니며, 생반죽으로 빵을 구워낸다. 자연 친화적인 발효종을 배양시켜 장시간 발효시키기 때문에, 빵 고유의 맛을 더욱 풍부하게 느낄 수 있다. 빵 안에 단팥과 호두가 가득 들어서, 고소한 레드빈스틱이 인기가 많다.',
     array ['09:30 - 21:30'],
     NULL,
@@ -729,13 +725,13 @@ SELECT create_store(
     ARRAY [1,3],
     false,
     '070-8866-4344',
-    '0000000000',
+    '0000000003',
     '친절하고 공부하기 좋은 힙한 느낌의 카페',
     array ['10:00 ~ 01:00'],
     NULL,
     array ['https://postfiles.pstatic.net/MjAxODEwMjlfMTQw/MDAxNTQwNzkyNjQwMTUz.Izj58h5ZYdp-Ickpm6lUVB4ZWnxudAjbf7-lTsN-wYQg.HZQL8l0de78g0wpVJWE5Lwo_0Gb9yhGWJnXIXUSA_AAg.JPEG.cuyss/IMG_3846.jpg?type=w580, https://postfiles.pstatic.net/MjAxODEwMjlfOTEg/MDAxNTQwNzkyNjM5NTcz.55popOEnNuYOPQsVb1ScVAzKV9zdyeBglF_fmOPURHkg.KGaDAeolGyLlrJxq7gQJA4PK2RswIe7jm1MrJvDjgNkg.JPEG.cuyss/IMG_3844.jpg?type=w580', 'https://postfiles.pstatic.net/MjAxODEwMjlfMzcg/MDAxNTQwNzkyNjQwNzM2.P60hkdEXQ3be0U86DD5OK_Cnz9VsgY7dcK3PCdj22bsg.e84zLRubKj1mYXvRrtRTN-La73X9W9tSZrN2Pf9ajAwg.JPEG.cuyss/IMG_3850.jpg?type=w580'],
     NULL,
-    array ['레모네이드','디저트','더치커피','소금커피']
+    array ['레모네이드', '디저트', '더치커피', '소금커피']
   );
 
 SELECT create_store(
@@ -745,10 +741,10 @@ SELECT create_store(
     ARRAY [3,4,5,6,7],
     false,
     '0507-1330-7209',
-    '0000000000',
+    '0000000004',
     '친절하고 공부하기 좋은 힙한 느낌의 카페',
     array ['10:00 ~ 22:00'],
-    array ['일'],
+    array ['2022-01-14'::date, '2022-04-12', '2022-05-05', '2022-06-10', '2022-09-12'],
     array ['https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=https%3A%2F%2Fmyplace-phinf.pstatic.net%2F20201212_253%2F1607755828928OXgIn_JPEG%2Fupload_73a904bb014476a9cf50fcbd68ca2930.jpg', 'https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=http%3A%2F%2Fblogfiles.naver.net%2FMjAxOTA3MjVfMTI5%2FMDAxNTYzOTgyNTc3MDUz.ZZeM1uDNAyzQ9UPNhkXhiU-Eo3TQtQHcYP3u93dm4u4g.HHNXtVx5L6jQHIimVDO8xxBrPIGqY8WOeZvQFCdu0LEg.JPEG.herb8777%2F8.JPG', 'https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=https%3A%2F%2Fmyplace-phinf.pstatic.net%2F20200922_131%2F1600745850236DV8Tl_JPEG%2Fupload_c1164979a2bc20a5c18718f574492aba.jpg'],
     NULL,
     array ['레모네이드', '디저트','더치커피','소금커피']
@@ -761,7 +757,7 @@ SELECT create_store(
     ARRAY [1,7],
     false,
     '02-6398-6787',
-    '0000000000',
+    '0000000005',
     '공부하거나 모임 하기 좋은 장소',
     array ['08:00 - 23:00'],
     NULL,
@@ -777,7 +773,7 @@ SELECT create_store(
     ARRAY [2,4],
     false,
     '02-826-9194',
-    '0000000000',
+    '0000000006',
     '제주 감성을 담아낸 이로운 커피',
     array ['08:00 - 22:00'],
     NULL,
@@ -793,7 +789,7 @@ SELECT create_store(
     ARRAY [3],
     false,
     '02-813-4434',
-    '0000000000',
+    '0000000007',
     '7080 감성 카페, 옛날 다방 감성',
     array ['11:00 - 24:00'],
     NULL,
@@ -809,10 +805,10 @@ SELECT create_store(
     ARRAY [3],
     false,
     '0507-1405-8858',
-    '0000000000',
+    '0000000008',
     '토크가 맛있는 카페',
     array ['12:00 - 22:00'],
-    array ['일'],
+    array ['2023-01-14'::date, '2023-04-12', '2023-05-05', '2023-06-10', '2023-09-12'],
     array ['https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMDEyMjNfMjA1%2FMDAxNjA4NzE5MjMxNjM1.mrnNHA6pxPRKDT1R1PtCq71xPj8C_LxlggtwOEeNb2Mg.CUi6AbZOVk9u0URMOydFIIXXZ84Pe4G0UTq3JwzEENgg.JPEG.nare3030%2FIMG_3859.jpg, https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMDExMDNfMjU4%2FMDAxNjA0MzM3MzI4NTc5.IpkHgj_3wQPn98Oukxt0jlv-sxVHhvgyUi-gGUc3OUQg.dzqqFsA8qw4zMexVDtt1AVOgC4ss-6VVc39Yu3sBdBcg.JPEG.aacad85%2FIMG_2955.JPG', 'https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMDA5MTRfODUg%2FMDAxNjAwMDkzNDM5MDk0.5VRa8NVX2yf6MbCxz7Nt02gjMi8yi_ylb7klJ-IBQXgg.cSVniEigsoTgx42mA4QZL5hIu9kn4ESE31PMcI9q29gg.JPEG.kohyoeunhong%2FIMG_4001.jpg'],
     NULL,
     array ['힙한','치즈','와인','케이크']
@@ -825,10 +821,10 @@ SELECT create_store(
     ARRAY [1,2,4],
     false,
     '0507-1317-9267',
-    '0000000000',
+    '0000000009',
     '조용하고 색다른 메뉴가 있는 카페',
     array ['10:00 - 22:00'],
-    array ['일'],
+    array ['2024-01-14'::date, '2024-04-12', '2024-05-05', '2024-06-10', '2024-09-12'],
     array ['https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=https%3A%2F%2Fmyplace-phinf.pstatic.net%2F20200812_81%2F1597223302326skrLs_JPEG%2Fupload_888e4e8977d7c4b98da4365f06c75852.jpeg', 'https://map.naver.com/v5/search/%ED%9D%91%EC%84%9D%EC%BB%A4%ED%94%BC/place/1944466175?c=14132535.8417378,4510098.5160541,15,0,0,0,dh&placePath=%3Fentry%253Dpll','https://map.naver.com/v5/search/%ED%9D%91%EC%84%9D%EC%BB%A4%ED%94%BC/place/1944466175?c=14132535.8417378,4510098.5160541,15,0,0,0,dh&placePath=%3Fentry%253Dpll'],
     NULL,
     array ['분위기가 좋은','디저트 맛집','통유리']
@@ -1164,8 +1160,7 @@ SELECT create_news (
     1,
     1,
     NULL,
-    array ['https://storage.googleapis.com/sobok/%EB%94%94%EC%A0%80%ED%8A%B8%EC%A0%95.webp'],
-    array ['']
+    array ['https://storage.googleapis.com/sobok/%EB%94%94%EC%A0%80%ED%8A%B8%EC%A0%95.webp']
   );
 
 SELECT create_news (
@@ -1174,8 +1169,7 @@ SELECT create_news (
     2,
     2,
     NULL,
-    array ['https://storage.googleapis.com/sobok/%EB%9A%9C%EC%8A%A4%EB%9A%9C%EC%8A%A4.webp'],
-    array ['']
+    array ['https://storage.googleapis.com/sobok/%EB%9A%9C%EC%8A%A4%EB%9A%9C%EC%8A%A4.webp']
   );
 
 SELECT create_news (
@@ -1184,8 +1178,7 @@ SELECT create_news (
     4,
     3,
     NULL,
-    array ['https://storage.googleapis.com/sobok/%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88.webp'],
-    array ['']
+    array ['https://storage.googleapis.com/sobok/%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88.webp']
   );
 
 SELECT create_news (
@@ -1194,8 +1187,7 @@ SELECT create_news (
     1,
     4,
     NULL,
-    array ['https://storage.googleapis.com/sobok/%EB%A6%BF%EC%9E%87%EC%BB%A4%ED%94%BC.webp'],
-    array ['']
+    array ['https://storage.googleapis.com/sobok/%EB%A6%BF%EC%9E%87%EC%BB%A4%ED%94%BC.webp']
   );
 
 SELECT create_news (
@@ -1204,8 +1196,7 @@ SELECT create_news (
     1,
     5,
     NULL,
-    array ['https://storage.googleapis.com/sobok/%EA%B7%B8%EB%9E%A9%EC%BB%A4%ED%94%BC%26%EB%B8%8C%EB%9F%B0%EC%B9%98.webp'],
-    array ['']
+    array ['https://storage.googleapis.com/sobok/%EA%B7%B8%EB%9E%A9%EC%BB%A4%ED%94%BC%26%EB%B8%8C%EB%9F%B0%EC%B9%98.webp']
   );
 
 SELECT create_news (
@@ -1214,8 +1205,7 @@ SELECT create_news (
     4,
     6,
     NULL,
-    array ['https://storage.googleapis.com/sobok/%EB%9D%BC%EC%9E%84%ED%94%8C%EB%A0%88%EC%89%AC%EC%B9%B4%ED%8E%98.webp'],
-    array ['']
+    array ['https://storage.googleapis.com/sobok/%EB%9D%BC%EC%9E%84%ED%94%8C%EB%A0%88%EC%89%AC%EC%B9%B4%ED%8E%98.webp']
   );
 
 SELECT create_news (
@@ -1224,8 +1214,7 @@ SELECT create_news (
     1,
     7,
     NULL,
-    array ['https://storage.googleapis.com/sobok/%EC%9D%B4%EA%B3%B5%EC%BB%A4%ED%94%BC.webp'],
-    array ['']
+    array ['https://storage.googleapis.com/sobok/%EC%9D%B4%EA%B3%B5%EC%BB%A4%ED%94%BC.webp']
   );
 
 SELECT create_news (
@@ -1234,8 +1223,7 @@ SELECT create_news (
     3,
     8,
     NULL,
-    array ['https://storage.googleapis.com/sobok/%ED%84%B0%EB%B0%A9%EB%82%B4.webp'],
-    array ['']
+    array ['https://storage.googleapis.com/sobok/%ED%84%B0%EB%B0%A9%EB%82%B4.webp']
   );
 
 SELECT create_news (
@@ -1244,8 +1232,7 @@ SELECT create_news (
     2,
     9,
     NULL,
-    array ['https://storage.googleapis.com/sobok/9.webp'],
-    array ['']
+    array ['https://storage.googleapis.com/sobok/9.webp']
   );
 
 SELECT create_news (
@@ -1254,8 +1241,7 @@ SELECT create_news (
     3,
     10,
     NULL,
-    array ['https://storage.googleapis.com/sobok/%ED%9D%91%EC%84%9D%EC%BB%A4%ED%94%BC.webp'],
-    array ['']
+    array ['https://storage.googleapis.com/sobok/%ED%9D%91%EC%84%9D%EC%BB%A4%ED%94%BC.webp']
   );
 
 SELECT create_feed(
@@ -1266,53 +1252,53 @@ SELECT create_feed(
     1,
     10,
     array [34],
-    array ['해시태그'],
+    array ['해시태그']
   );
 
 SELECT create_comment(
-    array ['신기해용 노란색은 뭔가요 ? 망고 ? ? !'],
+    array ['신기해용 노란색은 뭔가요? 망고??!'],
     1,
     1,
     NULL,
-    NULL,
+    NULL
   );
 
 SELECT create_comment(
-    array ['저 매주 가서 먹어요 ㅠ'],
+    array ['저 매주 가서 먹어요ㅠ'],
     2,
-    2,
+    1,
     NULL,
-    NULL,
+    NULL
   );
 
 SELECT create_comment(
-    array ['오이가 얼마나 맛있는데 ! ! ㅋㅋ'],
+    array ['오이가 얼마나 맛있는데!! ㅋㅋ'],
     3,
-    3,
+    1,
     NULL,
-    NULL,
+    NULL
   );
 
 SELECT create_comment(
     array ['미숫가루 맛이 강한게 매력이던데용 ㅎ'],
     4,
-    4,
+    1,
     NULL,
-    NULL,
+    NULL
   );
 
 SELECT create_comment(
     array ['그치만 조금만 더 저렴했으면 좋겠어요ㅠ'],
     5,
-    5,
+    1,
     NULL,
-    NULL,
+    NULL
   );
 
 SELECT create_comment(
     array ['여기 고구마 라떼가 정말 달더라구요'],
     6,
-    6,
+    1,
     NULL,
-    NULL,
+    NULL
   );
