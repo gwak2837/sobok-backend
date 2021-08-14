@@ -55,7 +55,7 @@ CREATE TABLE store (
   registration_number char(10) UNIQUE,
   description text,
   business_hours text [],
-  holidays char(1) [],
+  holidays date [],
   image_urls text [],
   user_id bigint REFERENCES "user" ON DELETE CASCADE -- 매장 소유자
 );
@@ -185,14 +185,6 @@ CREATE TABLE menu_x_hashtag(
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   --
   PRIMARY KEY (menu_id, hashtag_id)
-);
-
-CREATE TABLE news_x_hashtag(
-  store_id bigint REFERENCES store ON DELETE CASCADE,
-  hashtag_id bigint REFERENCES hashtag ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  --
-  PRIMARY KEY (store_id, hashtag_id)
 );
 
 CREATE TABLE feed_x_hashtag(
@@ -459,7 +451,6 @@ CREATE FUNCTION create_news (
   store_id bigint,
   menu_ids bigint [] DEFAULT NULL,
   image_urls text [] DEFAULT NULL,
-  hashtags text [] DEFAULT NULL,
   out news_id bigint
 ) LANGUAGE SQL AS $$ WITH inserted_news AS(
   INSERT INTO news (title, contents, category, store_id, image_urls)
@@ -467,27 +458,16 @@ CREATE FUNCTION create_news (
   RETURNING id;
 
 ),
-hashtag_name (name) AS (
-  SELECT unnest(hashtags)
+menu_id (id) AS (
+  SELECT unnest(menu_ids)
 ),
-inserted_hashtag AS (
-  INSERT INTO hashtag (name)
-  SELECT *
-  FROM hashtag_name ON CONFLICT (name) DO NOTHING
-),
-hashtag_id (id) AS (
-  SELECT hashtag.id
-  FROM hashtag_name
-    JOIN hashtag USING (name)
-),
-inserted__news_x_hashtag AS (
-  INSERT INTO news_x_hashtag (news_id, hashtag_id)
+inserted__news_x_tagged_menu AS (
+  INSERT INTO news_x_tagged_menu (news_id, menu_id)
   SELECT inserted_news.id,
-    hashtag_id.id
+    menu_id.id
   FROM inserted_news,
-    hashtag_id
-),
-inserted__ AS ()
+    menu_id
+)
 SELECT id
 FROM inserted_news;
 
@@ -552,8 +532,8 @@ CREATE FUNCTION create_comment (
   contents text [],
   user_id bigint,
   feed_id bigint,
-  image_url text,
-  comment_id bigint,
+  image_url text DEFAULT NULL,
+  comment_id bigint DEFAULT NULL,
   out comment_id bigint
 ) LANGUAGE SQL AS $$
 INSERT INTO news (
