@@ -825,7 +825,7 @@ SELECT create_store(
     '조용하고 색다른 메뉴가 있는 카페',
     array ['10:00 - 22:00'],
     array ['2024-01-14'::date, '2024-04-12', '2024-05-05', '2024-06-10', '2024-09-12'],
-    array ['https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=https%3A%2F%2Fmyplace-phinf.pstatic.net%2F20200812_81%2F1597223302326skrLs_JPEG%2Fupload_888e4e8977d7c4b98da4365f06c75852.jpeg', 'https://map.naver.com/v5/search/%ED%9D%91%EC%84%9D%EC%BB%A4%ED%94%BC/place/1944466175?c=14132535.8417378,4510098.5160541,15,0,0,0,dh&placePath=%3Fentry%253Dpll','https://map.naver.com/v5/search/%ED%9D%91%EC%84%9D%EC%BB%A4%ED%94%BC/place/1944466175?c=14132535.8417378,4510098.5160541,15,0,0,0,dh&placePath=%3Fentry%253Dpll'],
+    array ['https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=https%3A%2F%2Fmyplace-phinf.pstatic.net%2F20200812_81%2F1597223302326skrLs_JPEG%2Fupload_888e4e8977d7c4b98da4365f06c75852.jpeg', 'https://search.pstatic.net/common/?autoRotate=true&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20200901_111%2F1598947940824eIdD3_JPEG%2F77tjOTxyABizz9LznvZS3a5T.jpg','https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20200901_114%2F1598947896591784R0_JPEG%2FAvlUhB3gdz55x-nQuVguaRgK.jpg'],
     NULL,
     array ['분위기가 좋은','디저트 맛집','통유리']
   );
