@@ -20,7 +20,7 @@
     "type": "tsc --pretty --noEmit",
     "pre-push": "yarn format && yarn lint && yarn type",
     "generate": "graphql-codegen --config codegen.yml",
-    "postinstall": "husky install"
+    "postinstall": "[ -d '.husky' ] && husky install || true"
   },
   "dependencies": {
     "@graphql-tools/load-files": "^6.3.2",
