@@ -6,7 +6,7 @@
   "repository": "https://github.com/teamsindy20/sobok-backend.git",
   "author": "sindy",
   "license": "GPL-3.0-only",
-  "private": false,
+  "private": true,
   "engines": {
     "node": ">=14.17.0"
   },

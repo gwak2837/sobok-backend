@@ -6,5 +6,6 @@ services:
     container_name: graphql-server
     env_file:
       - .env
+    restart: always
     ports:
       - $PORT:$PORT
