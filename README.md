@@ -36,7 +36,7 @@ $ docker-compose --version
 
 ## 프로젝트 구조
 
-![images/architecture.jpg](images/architecture.jpg)
+![images/architecture.webp](images/architecture.webp)
 
 ## 설치 방법
 
