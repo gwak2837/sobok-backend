@@ -23,6 +23,7 @@ CREATE TABLE "user" (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   modification_time timestamptz NOT NULL DEFAULT NOW(),
+  user_id varchar(50) NOT NULL UNIQUE,
   email varchar(50) NOT NULL UNIQUE,
   name varchar(50) NOT NULL,
   phone varchar(20),
@@ -287,6 +288,7 @@ CREATE TABLE deleted.hashtag (
 );
 
 CREATE FUNCTION create_user (
+  user_id varchar(50),
   email varchar(50),
   password_hash text,
   name varchar(50),
@@ -298,6 +300,7 @@ CREATE FUNCTION create_user (
   out user_id bigint
 ) LANGUAGE SQL AS $$
 INSERT INTO "user" (
+    user_id,
     email,
     name,
     phone,
@@ -308,6 +311,7 @@ INSERT INTO "user" (
     password_hash
   )
 VALUES (
+    user_id,
     email,
     name,
     phone,
@@ -561,6 +565,7 @@ RETURNING id;
 $$;
 
 SELECT create_user(
+    'bok1',
     'bok1@sindy.com',
     '12345',
     '김효진',
@@ -572,6 +577,7 @@ SELECT create_user(
   );
 
 SELECT create_user(
+    'bok2',
     'bok2@sindy.com',
     '12345',
     '곽태욱',
@@ -583,6 +589,7 @@ SELECT create_user(
   );
 
 SELECT create_user(
+    'bok3',
     'bok3@sindy.com',
     '12345',
     '박수현',
@@ -594,6 +601,7 @@ SELECT create_user(
   );
 
 SELECT create_user(
+    'bok4',
     'bok4@sindy.com',
     '12345',
     '김민호',
@@ -605,6 +613,7 @@ SELECT create_user(
   );
 
 SELECT create_user(
+    'bok5',
     'bok5@sindy.com',
     '12345',
     '기현우',
@@ -616,6 +625,7 @@ SELECT create_user(
   );
 
 SELECT create_user(
+    'bok6',
     'bok6@sindy.com',
     '12345',
     '김진효',
@@ -627,6 +637,7 @@ SELECT create_user(
   );
 
 SELECT create_user(
+    'bok7',
     'bok7@sindy.com',
     '12345',
     '곽욱태',
@@ -638,6 +649,7 @@ SELECT create_user(
   );
 
 SELECT create_user(
+    'bok8',
     'bok8@sindy.com',
     '12345',
     '박현수',
@@ -649,6 +661,7 @@ SELECT create_user(
   );
 
 SELECT create_user(
+    'bok9',
     'bok9@sindy.com',
     '12345',
     '김호민',
@@ -660,6 +673,7 @@ SELECT create_user(
   );
 
 SELECT create_user(
+    'bok10',
     'bok10@sindy.com',
     '12345',
     '기우현',
