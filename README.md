@@ -78,7 +78,7 @@ $ docker run \
 $ psql --host={호스트주소} --user={DB계정이름} --dbname={DB이름}
 ```
 
-PostgreSQL 서버에 접속해서 [`database/sql/initialization.sql`](database/sql/initialization.sql)에 있는 SQL DDL을 실행합니다.
+그리고 PostgreSQL 서버에 접속해서 [`database/sql/initialization.sql`](database/sql/initialization.sql)에 있는 SQL DDL을 실행합니다.
 
 ### Redis 서버 실행
 
@@ -91,7 +91,9 @@ $ docker run \
   redis:alpine
 ```
 
-Redis 서버를 도커 컨테이너 위에서 실행합니다. 로컬 컴퓨터 환경에서 개발하는 경우에만 Redis 서버를 실행해주고, 아래의 [`docker-compose up` 명령어](#배포-모드-docker)를 사용하는 경우엔 실행하지 않아도 됩니다.
+GraphQL API 서버를 로컬 Node.js 환경에서 실행하는 경우에만 Redis 서버를 컨테이너 환경에서 따로 실행해줍니다. 
+
+반면 GraphQL API 서버를 [컨테이너 환경](#배포-모드-컨테이너)에서 실행하는 경우에는 Redis 서버를 따로 실행하지 않아도 됩니다.
 
 ### 환경 변수 설정
 
@@ -134,7 +136,7 @@ $ yarn start
 
 TypeScript 파일을 JavaScript로 트랜스파일한 후 Node.js로 서비스를 실행합니다.
 
-### 배포 모드 (Docker)
+### 배포 모드 (컨테이너)
 
 ```bash
 $ docker-compose up --detach --build --force-recreate
