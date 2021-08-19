@@ -42,6 +42,7 @@ CREATE TABLE "user" (
   logout_time timestamptz NOT NULL DEFAULT NOW()
 );
 
+-- user_id: 매장 소유자
 CREATE TABLE store (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
@@ -58,7 +59,9 @@ CREATE TABLE store (
   business_hours text [],
   holidays date [],
   image_urls text [],
-  user_id bigint REFERENCES "user" ON DELETE CASCADE -- 매장 소유자
+  user_id bigint REFERENCES "user" ON DELETE CASCADE,
+  --
+  UNIQUE(name, address)
 );
 
 CREATE TABLE menu (
@@ -130,6 +133,30 @@ CREATE TABLE user_x_liked_menu (
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   --
   PRIMARY KEY (user_id, menu_id)
+);
+
+CREATE TABLE user_x_liked_feed (
+  user_id bigint REFERENCES "user" ON DELETE CASCADE,
+  feed_id bigint REFERENCES feed ON DELETE CASCADE,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  --
+  PRIMARY KEY (user_id, feed_id)
+);
+
+CREATE TABLE user_x_liked_news (
+  user_id bigint REFERENCES "user" ON DELETE CASCADE,
+  news_id bigint REFERENCES news ON DELETE CASCADE,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  --
+  PRIMARY KEY (user_id, news_id)
+);
+
+CREATE TABLE user_x_liked_comment (
+  user_id bigint REFERENCES "user" ON DELETE CASCADE,
+  comment_id bigint REFERENCES "comment" ON DELETE CASCADE,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  --
+  PRIMARY KEY (user_id, comment_id)
 );
 
 CREATE TABLE user_x_store_bucket_list (
@@ -561,6 +588,166 @@ VALUES (
     comment_id
   )
 RETURNING id;
+
+$$;
+
+CREATE PROCEDURE toggle_liked_store(
+  _user_id bigint,
+  _store_id bigint,
+  inout result boolean DEFAULT false
+) language plpgsql AS $$ BEGIN PERFORM
+FROM user_x_liked_store
+WHERE user_id = _user_id
+  AND store_id = _store_id;
+
+IF FOUND THEN
+DELETE FROM user_x_liked_store
+WHERE user_id = _user_id
+  AND store_id = _store_id;
+
+COMMIT;
+
+result = FALSE;
+
+ELSE
+INSERT INTO user_x_liked_store (user_id, store_id)
+VALUES (_user_id, _store_id);
+
+COMMIT;
+
+result = TRUE;
+
+END IF;
+
+END;
+
+$$;
+
+CREATE PROCEDURE toggle_liked_menu(
+  _user_id bigint,
+  _menu_id bigint,
+  inout result boolean DEFAULT false
+) language plpgsql AS $$ BEGIN PERFORM
+FROM user_x_liked_menu
+WHERE user_id = _user_id
+  AND menu_id = _menu_id;
+
+IF FOUND THEN
+DELETE FROM user_x_liked_menu
+WHERE user_id = _user_id
+  AND menu_id = _menu_id;
+
+COMMIT;
+
+result = FALSE;
+
+ELSE
+INSERT INTO user_x_liked_menu (user_id, menu_id)
+VALUES (_user_id, _menu_id);
+
+COMMIT;
+
+result = TRUE;
+
+END IF;
+
+END;
+
+$$;
+
+CREATE PROCEDURE toggle_liked_feed(
+  _user_id bigint,
+  _feed_id bigint,
+  inout result boolean DEFAULT false
+) language plpgsql AS $$ BEGIN PERFORM
+FROM user_x_liked_feed
+WHERE user_id = _user_id
+  AND feed_id = _feed_id;
+
+IF FOUND THEN
+DELETE FROM user_x_liked_feed
+WHERE user_id = _user_id
+  AND feed_id = _feed_id;
+
+COMMIT;
+
+result = FALSE;
+
+ELSE
+INSERT INTO user_x_liked_feed (user_id, feed_id)
+VALUES (_user_id, _feed_id);
+
+COMMIT;
+
+result = TRUE;
+
+END IF;
+
+END;
+
+$$;
+
+CREATE PROCEDURE toggle_liked_news(
+  _user_id bigint,
+  _news_id bigint,
+  inout result boolean DEFAULT false
+) language plpgsql AS $$ BEGIN PERFORM
+FROM user_x_liked_news
+WHERE user_id = _user_id
+  AND news_id = _news_id;
+
+IF FOUND THEN
+DELETE FROM user_x_liked_news
+WHERE user_id = _user_id
+  AND news_id = _news_id;
+
+COMMIT;
+
+result = FALSE;
+
+ELSE
+INSERT INTO user_x_liked_news (user_id, news_id)
+VALUES (_user_id, _news_id);
+
+COMMIT;
+
+result = TRUE;
+
+END IF;
+
+END;
+
+$$;
+
+CREATE PROCEDURE toggle_liked_comment(
+  _user_id bigint,
+  _comment_id bigint,
+  inout result boolean DEFAULT false
+) language plpgsql AS $$ BEGIN PERFORM
+FROM user_x_liked_comment
+WHERE user_id = _user_id
+  AND comment_id = _comment_id;
+
+IF FOUND THEN
+DELETE FROM user_x_liked_comment
+WHERE user_id = _user_id
+  AND comment_id = _comment_id;
+
+COMMIT;
+
+result = FALSE;
+
+ELSE
+INSERT INTO user_x_liked_comment (user_id, comment_id)
+VALUES (_user_id, _comment_id);
+
+COMMIT;
+
+result = TRUE;
+
+END IF;
+
+END;
 
 $$;
 
