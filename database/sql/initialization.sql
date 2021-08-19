@@ -97,8 +97,17 @@ CREATE TABLE feed (
   contents text [] NOT NULL,
   image_urls text [] NOT NULL,
   like_count int NOT NULL DEFAULT 0,
+  comment_count int NOT NULL DEFAULT 0,
   user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE,
   store_id bigint NOT NULL REFERENCES store ON DELETE CASCADE
+);
+
+CREATE TABLE trend (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  contents text [] NOT NULL,
+  user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE
 );
 
 CREATE TABLE "comment" (
@@ -111,6 +120,14 @@ CREATE TABLE "comment" (
   --
   image_url text,
   comment_id bigint REFERENCES "comment" ON DELETE CASCADE
+);
+
+CREATE TABLE bucket (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  name varchar(50) NOT NULL,
+  user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE
 );
 
 CREATE TABLE hashtag (
@@ -159,20 +176,20 @@ CREATE TABLE user_x_liked_comment (
   PRIMARY KEY (user_id, comment_id)
 );
 
-CREATE TABLE user_x_store_bucket_list (
-  user_id bigint REFERENCES "user" ON DELETE CASCADE,
+CREATE TABLE bucket_x_store (
+  bucket_id bigint REFERENCES bucket ON DELETE CASCADE,
   store_id bigint REFERENCES store ON DELETE CASCADE,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   --
-  PRIMARY KEY (user_id, store_id)
+  PRIMARY KEY (bucket_id, store_id)
 );
 
-CREATE TABLE user_x_menu_bucket_list (
-  user_id bigint REFERENCES "user" ON DELETE CASCADE,
+CREATE TABLE bucket_x_menu (
+  bucket_id bigint REFERENCES bucket ON DELETE CASCADE,
   menu_id bigint REFERENCES menu ON DELETE CASCADE,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   --
-  PRIMARY KEY (user_id, menu_id)
+  PRIMARY KEY (bucket_id, menu_id)
 );
 
 CREATE TABLE leader_user_x_follower_user (
@@ -306,6 +323,14 @@ CREATE TABLE deleted.comment (
   contents text [] NOT NULL,
   user_id bigint NOT NULL REFERENCES deleted."user" ON DELETE CASCADE,
   feed_id bigint NOT NULL REFERENCES deleted.feed ON DELETE CASCADE
+);
+
+CREATE TABLE deleted.bucket (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  name varchar(50) NOT NULL,
+  user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE
 );
 
 CREATE TABLE deleted.hashtag (
@@ -751,6 +776,28 @@ END;
 
 $$;
 
+-- CREATE PROCEDURE toggle_menu_bucket_list(
+--   _user_id bigint,
+--   _menu_id bigint,
+--   inout result boolean DEFAULT false
+-- ) language plpgsql AS $$ BEGIN PERFORM
+-- FROM user_x_menu_bucket_list
+-- WHERE user_id = _user_id
+--   AND menu_id = _menu_id;
+-- IF FOUND THEN
+-- DELETE FROM user_x_menu_bucket_list
+-- WHERE user_id = _user_id
+--   AND menu_id = _menu_id;
+-- COMMIT;
+-- result = FALSE;
+-- ELSE
+-- INSERT INTO user_x_menu_bucket_list (user_id, menu_id)
+-- VALUES (_user_id, _menu_id);
+-- COMMIT;
+-- result = TRUE;
+-- END IF;
+-- END;
+-- $$;
 SELECT create_user(
     'bok1',
     'bok1@sindy.com',
