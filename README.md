@@ -91,7 +91,7 @@ $ docker run \
   redis:alpine
 ```
 
-GraphQL API 서버를 로컬 Node.js 환경에서 실행하는 경우에만 Redis 서버를 컨테이너 환경에서 따로 실행해줍니다. 
+GraphQL API 서버를 로컬 Node.js 환경에서 실행하는 경우에만 Redis 서버를 컨테이너 환경에서 따로 실행해줍니다.
 
 반면 GraphQL API 서버를 [컨테이너 환경](#배포-모드-컨테이너)에서 실행하는 경우에는 Redis 서버를 따로 실행하지 않아도 됩니다.
 
