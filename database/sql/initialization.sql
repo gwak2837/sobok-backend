@@ -508,6 +508,8 @@ CREATE FUNCTION create_news (
   category int,
   store_id bigint,
   menu_ids bigint [] DEFAULT NULL,
+  xs int [] DEFAULT NULL,
+  ys int [] DEFAULT NULL,
   image_urls text [] DEFAULT NULL,
   out news_id bigint
 ) LANGUAGE SQL AS $$ WITH inserted_news AS(
@@ -518,12 +520,22 @@ CREATE FUNCTION create_news (
 menu_id (id) AS (
   SELECT unnest(menu_ids)
 ),
+x (x) AS (
+  SELECT unnest(xs)
+),
+y (y) AS (
+  SELECT unnest(ys)
+),
 inserted__news_x_tagged_menu AS (
-  INSERT INTO news_x_tagged_menu (news_id, menu_id)
+  INSERT INTO news_x_tagged_menu (news_id, menu_id, x, y)
   SELECT inserted_news.id,
-    menu_id.id
+    menu_id.id,
+    x.x,
+    y.y
   FROM inserted_news,
-    menu_id
+    menu_id,
+    x,
+    y
 )
 SELECT id
 FROM inserted_news;
@@ -1424,6 +1436,8 @@ SELECT create_news (
     1,
     1,
     NULL,
+    NULL,
+    NULL,
     array ['https://storage.googleapis.com/sobok/%EB%94%94%EC%A0%80%ED%8A%B8%EC%A0%95.webp']
   );
 
@@ -1432,6 +1446,8 @@ SELECT create_news (
     array ['20,000원 이상 구매시 아메리카노 증정드립니다.'],
     2,
     2,
+    NULL,
+    NULL,
     NULL,
     array ['https://storage.googleapis.com/sobok/%EB%9A%9C%EC%8A%A4%EB%9A%9C%EC%8A%A4.webp']
   );
@@ -1442,6 +1458,8 @@ SELECT create_news (
     4,
     3,
     NULL,
+    NULL,
+    NULL,
     array ['https://storage.googleapis.com/sobok/%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88.webp']
   );
 
@@ -1450,6 +1468,8 @@ SELECT create_news (
     array ['코로나로 시간이 많아져서 새로운 쿠키들 4종류 판매합니다.'],
     1,
     4,
+    NULL,
+    NULL,
     NULL,
     array ['https://storage.googleapis.com/sobok/%EB%A6%BF%EC%9E%87%EC%BB%A4%ED%94%BC.webp']
   );
@@ -1460,6 +1480,8 @@ SELECT create_news (
     1,
     5,
     NULL,
+    NULL,
+    NULL,
     array ['https://storage.googleapis.com/sobok/%EA%B7%B8%EB%9E%A9%EC%BB%A4%ED%94%BC%26%EB%B8%8C%EB%9F%B0%EC%B9%98.webp']
   );
 
@@ -1468,6 +1490,8 @@ SELECT create_news (
     array ['우유 소진으로 라떼류 메뉴 주문은 제한됩니다. 죄송해요~'],
     4,
     6,
+    NULL,
+    NULL,
     NULL,
     array ['https://storage.googleapis.com/sobok/%EB%9D%BC%EC%9E%84%ED%94%8C%EB%A0%88%EC%89%AC%EC%B9%B4%ED%8E%98.webp']
   );
@@ -1478,6 +1502,8 @@ SELECT create_news (
     1,
     7,
     NULL,
+    NULL,
+    NULL,
     array ['https://storage.googleapis.com/sobok/%EC%9D%B4%EA%B3%B5%EC%BB%A4%ED%94%BC.webp']
   );
 
@@ -1486,6 +1512,8 @@ SELECT create_news (
     array ['금일 사장님 개인사정으로 한시간 단축 영업합니다! 09:00 ~ 20:00'],
     3,
     8,
+    NULL,
+    NULL,
     NULL,
     array ['https://storage.googleapis.com/sobok/%ED%84%B0%EB%B0%A9%EB%82%B4.webp']
   );
@@ -1496,6 +1524,8 @@ SELECT create_news (
     2,
     9,
     NULL,
+    NULL,
+    NULL,
     array ['https://storage.googleapis.com/sobok/9.webp']
   );
 
@@ -1504,6 +1534,8 @@ SELECT create_news (
     array ['흑석커피는 코로나 예방을 위해 매일 매일 매장과 식기를 소독을 하고 있습니다.'],
     3,
     10,
+    NULL,
+    NULL,
     NULL,
     array ['https://storage.googleapis.com/sobok/%ED%9D%91%EC%84%9D%EC%BB%A4%ED%94%BC.webp']
   );
