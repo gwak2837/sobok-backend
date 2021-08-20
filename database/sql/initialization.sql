@@ -204,6 +204,8 @@ CREATE TABLE news_x_tagged_menu (
   news_id bigint REFERENCES news ON DELETE CASCADE,
   menu_id bigint REFERENCES menu ON DELETE CASCADE,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
+  x int NOT NULL,
+  y int NOT NULL,
   --
   PRIMARY KEY (news_id, menu_id)
 );
@@ -212,6 +214,8 @@ CREATE TABLE feed_x_rated_menu (
   feed_id bigint REFERENCES feed ON DELETE CASCADE,
   menu_id bigint REFERENCES menu ON DELETE CASCADE,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
+  x int NOT NULL,
+  y int NOT NULL,
   --
   PRIMARY KEY (feed_id, menu_id)
 );
@@ -534,6 +538,8 @@ CREATE FUNCTION create_feed (
   user_id bigint,
   store_id bigint,
   menu_ids bigint [] DEFAULT NULL,
+  xs int [] DEFAULT NULL,
+  ys int [] DEFAULT NULL,
   hashtags text [] DEFAULT NULL,
   out feed_id bigint
 ) LANGUAGE SQL AS $$ WITH inserted_feed AS(
@@ -578,12 +584,22 @@ inserted__feed_x_hashtag AS (
 menu_id (id) AS (
   SELECT unnest(menu_ids)
 ),
+x (x) AS (
+  SELECT unnest(xs)
+),
+y (y) AS (
+  SELECT unnest(ys)
+),
 inserted__feed_x_rated_menu AS (
-  INSERT INTO feed_x_rated_menu (feed_id, menu_id)
+  INSERT INTO feed_x_rated_menu (feed_id, menu_id, x, y)
   SELECT inserted_feed.id,
-    menu_id.id
+    menu_id.id,
+    x.x,
+    y.y
   FROM inserted_feed,
-    menu_id
+    menu_id,
+    x,
+    y
 )
 SELECT id
 FROM inserted_feed;
@@ -1500,6 +1516,8 @@ SELECT create_feed(
     1,
     10,
     array [34],
+    array [1],
+    array [2],
     array ['커피맛집','친절','흑석동','카공']
   );
 
@@ -1511,6 +1529,8 @@ SELECT create_feed(
     2,
     3,
     array [13],
+    array [1],
+    array [2],
     array ['통밀','스콘','견과류','청결','데이트']
   );
 
@@ -1522,6 +1542,8 @@ SELECT create_feed(
     3,
     9,
     array [32],
+    array [50],
+    array [50],
     array ['오이','실망','양많음','분위기좋음']
   );
 
@@ -1533,6 +1555,8 @@ SELECT create_feed(
     4,
     7,
     array [27],
+    array [50],
+    array [50],
     array ['미숫가루','고칼로리','아침식사','쏘쏘']
   );
 
@@ -1544,6 +1568,8 @@ SELECT create_feed(
     5,
     1,
     array [7],
+    array [50],
+    array [50],
     array ['비쌈','달달','상큼','자몽','꿀']
   );
 
@@ -1555,6 +1581,8 @@ SELECT create_feed(
     1,
     7,
     array [25],
+    array [50],
+    array [50],
     array ['고구마라떼','다이어트','친구랑','아늑']
   );
 
