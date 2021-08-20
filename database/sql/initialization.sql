@@ -635,13 +635,31 @@ RETURNING id;
 
 $$;
 
-CREATE FUNCTION create_bucket (
-  name varchar(50),
+CREATE PROCEDURE create_bucket (
+  _name varchar(50),
   user_id bigint,
-  out bucket_id bigint
-) LANGUAGE SQL AS $$
+  INOUT bucket_id bigint DEFAULT NULL
+) LANGUAGE plpgsql AS $$ BEGIN PERFORM
+FROM bucket
+WHERE name = _name;
+
+IF found THEN RETURN;
+
+END IF;
+
 INSERT INTO bucket (name, user_id)
-VALUES (name, user_id)
+VALUES (_name, user_id)
+RETURNING id INTO bucket_id;
+
+END $$;
+
+CREATE PROCEDURE create_trend (
+  contents text [],
+  user_id bigint,
+  INOUT trend_id bigint DEFAULT NULL
+) LANGUAGE SQL AS $$
+INSERT INTO trend (contents, user_id)
+VALUES (contents, user_id)
 RETURNING id;
 
 $$;
@@ -856,7 +874,7 @@ CREATE PROCEDURE toggle_store_bucket_list (
   _user_id bigint,
   _store_id bigint,
   _bucket_id bigint DEFAULT NULL,
-  INOUT result text DEFAULT FALSE
+  INOUT result text DEFAULT NULL
 ) LANGUAGE plpgsql AS $$
 DECLARE selected_bucket_id bucket.id % TYPE;
 
@@ -889,6 +907,36 @@ result = 'F';
 ELSE
 INSERT INTO bucket_x_store (bucket_id, store_id)
 VALUES (_bucket_id, _store_id);
+
+COMMIT;
+
+result = 'T';
+
+END IF;
+
+END $$;
+
+CREATE PROCEDURE toggle_following_user (
+  _leader_user_id bigint,
+  _follower_user_id bigint,
+  INOUT result text DEFAULT NULL
+) LANGUAGE plpgsql AS $$ BEGIN PERFORM
+FROM leader_user_x_follower_user
+WHERE leader_user_id = _leader_user_id
+  AND follower_user_id = _follower_user_id;
+
+IF FOUND THEN
+DELETE FROM leader_user_x_follower_user
+WHERE leader_user_id = _leader_user_id
+  AND follower_user_id = _follower_user_id;
+
+COMMIT;
+
+result = 'F';
+
+ELSE
+INSERT INTO leader_user_x_follower_user (leader_user_id, follower_user_id)
+VALUES (_leader_user_id, _follower_user_id);
 
 COMMIT;
 
@@ -933,26 +981,6 @@ WHERE user_id = _user_id;
 
 $$;
 
--- CREATE FUNCTION liked_menu_ids(_user_id bigint) RETURNS bigint [] language SQL STABLE AS $$
--- SELECT menu_id
--- FROM user_x_liked_menu
--- WHERE user_id = _user_id;
--- $$;
--- CREATE FUNCTION liked_feed_ids(_user_id bigint) RETURNS bigint [] language SQL STABLE AS $$
--- SELECT feed_id
--- FROM user_x_liked_feed
--- WHERE user_id = _user_id;
--- $$;
--- CREATE FUNCTION liked_news_ids(_user_id bigint) RETURNS bigint [] language SQL STABLE AS $$
--- SELECT news_id
--- FROM user_x_liked_news
--- WHERE user_id = _user_id;
--- $$;
--- CREATE FUNCTION liked_comment_ids(_user_id bigint) RETURNS bigint [] language SQL STABLE AS $$
--- SELECT comment_id
--- FROM user_x_liked_comment
--- WHERE user_id = _user_id;
--- $$;
 SELECT create_user (
     'bok1',
     'bok1@sindy.com',
