@@ -64,6 +64,7 @@ CREATE TABLE store (
   UNIQUE (name, address)
 );
 
+-- store_id: 메뉴가 속한 매장
 CREATE TABLE menu (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
@@ -72,7 +73,7 @@ CREATE TABLE menu (
   price int NOT NULL,
   image_urls text [] NOT NULL,
   category int NOT NULL,
-  store_id bigint NOT NULL REFERENCES store ON DELETE CASCADE -- 매장에 있는 메뉴
+  store_id bigint NOT NULL REFERENCES store ON DELETE CASCADE
 );
 
 CREATE TABLE news (
@@ -280,7 +281,7 @@ CREATE TABLE deleted.store (
   business_hours text [],
   holidays char(1) [],
   image_urls text [],
-  user_id bigint REFERENCES deleted."user" ON DELETE CASCADE -- 매장 소유자
+  user_id bigint REFERENCES deleted."user" ON DELETE CASCADE
 );
 
 CREATE TABLE deleted.menu (
@@ -290,7 +291,7 @@ CREATE TABLE deleted.menu (
   name varchar(50) NOT NULL,
   price int NOT NULL,
   image_urls text [] NOT NULL,
-  store_id bigint NOT NULL REFERENCES deleted.store ON DELETE CASCADE -- 메뉴가 있는 매장
+  store_id bigint NOT NULL REFERENCES deleted.store ON DELETE CASCADE
 );
 
 CREATE TABLE deleted.news (
@@ -316,8 +317,7 @@ CREATE TABLE deleted.feed (
   image_urls text [] NOT NULL,
   like_count int NOT NULL DEFAULT 0,
   user_id bigint NOT NULL REFERENCES deleted."user" ON DELETE CASCADE,
-  store_id bigint NOT NULL REFERENCES deleted.store ON DELETE CASCADE,
-  menu_id bigint NOT NULL REFERENCES deleted.menu ON DELETE CASCADE -- 피드에 태그된 메뉴
+  store_id bigint NOT NULL REFERENCES deleted.store ON DELETE CASCADE
 );
 
 CREATE TABLE deleted.comment (
@@ -828,7 +828,7 @@ CREATE PROCEDURE toggle_menu_bucket_list (
   _user_id bigint,
   _menu_id bigint,
   _bucket_id bigint DEFAULT NULL,
-  INOUT result text DEFAULT FALSE
+  INOUT result text DEFAULT NULL
 ) LANGUAGE plpgsql AS $$
 DECLARE selected_bucket_id bucket.id % TYPE;
 
