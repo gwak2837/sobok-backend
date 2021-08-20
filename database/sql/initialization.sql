@@ -23,7 +23,7 @@ CREATE TABLE "user" (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   modification_time timestamptz NOT NULL DEFAULT NOW(),
-  user_id varchar(50) NOT NULL UNIQUE,
+  unique_name varchar(50) NOT NULL UNIQUE,
   email varchar(50) NOT NULL UNIQUE,
   name varchar(50) NOT NULL,
   phone varchar(20),
@@ -344,7 +344,7 @@ CREATE TABLE deleted.hashtag (
 );
 
 CREATE FUNCTION create_user (
-  user_id varchar(50),
+  unique_name varchar(50),
   email varchar(50),
   password_hash text,
   name varchar(50),
@@ -354,9 +354,9 @@ CREATE FUNCTION create_user (
   birth date DEFAULT NULL,
   image_url text DEFAULT NULL,
   out user_id bigint
-) LANGUAGE SQL AS $$
+) LANGUAGE plpgsql AS $$ BEGIN
 INSERT INTO "user" (
-    user_id,
+    unique_name,
     email,
     name,
     phone,
@@ -367,7 +367,7 @@ INSERT INTO "user" (
     password_hash
   )
 VALUES (
-    user_id,
+    unique_name,
     email,
     name,
     phone,
@@ -377,9 +377,12 @@ VALUES (
     image_url,
     password_hash
   )
-RETURNING id;
+RETURNING id INTO user_id;
 
-$$;
+INSERT INTO bucket (name, user_id)
+VALUES ('기본', user_id);
+
+END $$;
 
 CREATE FUNCTION create_store (
   name varchar(50),
@@ -644,6 +647,17 @@ RETURNING id;
 
 $$;
 
+CREATE PROCEDURE create_bucket (
+  name varchar(50),
+  user_id bigint,
+  out bucket_id bigint
+) LANGUAGE SQL AS $$
+INSERT INTO bucket (name, user_id)
+VALUES (name, user_id)
+RETURNING id;
+
+$$;
+
 CREATE PROCEDURE toggle_liked_store(
   _user_id bigint,
   _store_id bigint,
@@ -804,28 +818,96 @@ END;
 
 $$;
 
--- CREATE PROCEDURE toggle_menu_bucket_list(
---   _user_id bigint,
---   _menu_id bigint,
---   inout result boolean DEFAULT false
--- ) language plpgsql AS $$ BEGIN PERFORM
--- FROM user_x_menu_bucket_list
--- WHERE user_id = _user_id
---   AND menu_id = _menu_id;
--- IF FOUND THEN
--- DELETE FROM user_x_menu_bucket_list
--- WHERE user_id = _user_id
---   AND menu_id = _menu_id;
--- COMMIT;
--- result = FALSE;
--- ELSE
--- INSERT INTO user_x_menu_bucket_list (user_id, menu_id)
--- VALUES (_user_id, _menu_id);
--- COMMIT;
--- result = TRUE;
--- END IF;
--- END;
--- $$;
+CREATE PROCEDURE toggle_menu_bucket_list(
+  _user_id bigint,
+  _menu_id bigint,
+  _bucket_id bigint DEFAULT NULL,
+  inout result text DEFAULT false
+) language plpgsql AS $$DECLARE selected_bucket_id bucket.id %TYPE;
+
+BEGIN
+SELECT id INTO selected_bucket_id
+FROM bucket
+WHERE user_id = _user_id;
+
+IF NOT found
+OR selected_bucket_id != _bucket_id THEN result = '사용자가 해당 버켓을 소유하고 있지 않습니다.';
+
+RETURN;
+
+END IF;
+
+PERFORM
+FROM bucket_x_menu
+WHERE bucket_id = _bucket_id
+  AND menu_id = _menu_id;
+
+IF FOUND THEN
+DELETE FROM bucket_x_menu
+WHERE bucket_id = _bucket_id
+  AND menu_id = _menu_id;
+
+COMMIT;
+
+result = 'F';
+
+ELSE
+INSERT INTO bucket_x_menu (bucket_id, menu_id)
+VALUES (_bucket_id, _menu_id);
+
+COMMIT;
+
+result = 'T';
+
+END IF;
+
+END $$;
+
+CREATE PROCEDURE toggle_store_bucket_list(
+  _user_id bigint,
+  _store_id bigint,
+  _bucket_id bigint DEFAULT NULL,
+  inout result text DEFAULT false
+) language plpgsql AS $$DECLARE selected_bucket_id bucket.id %TYPE;
+
+BEGIN
+SELECT id INTO selected_bucket_id
+FROM bucket
+WHERE user_id = _user_id;
+
+IF NOT found
+OR selected_bucket_id != _bucket_id THEN result = '사용자가 해당 버켓을 소유하고 있지 않습니다.';
+
+RETURN;
+
+END IF;
+
+PERFORM
+FROM bucket_x_store
+WHERE bucket_id = _bucket_id
+  AND store_id = _store_id;
+
+IF FOUND THEN
+DELETE FROM bucket_x_store
+WHERE bucket_id = _bucket_id
+  AND store_id = _store_id;
+
+COMMIT;
+
+result = 'F';
+
+ELSE
+INSERT INTO bucket_x_store (bucket_id, store_id)
+VALUES (_bucket_id, _store_id);
+
+COMMIT;
+
+result = 'T';
+
+END IF;
+
+END $$;
+
 SELECT create_user(
     'bok1',
     'bok1@sindy.com',
