@@ -6,7 +6,7 @@ import { poolQuery } from '../../database/postgres'
 import { importSQL } from '../../utils/commons'
 import { userFieldColumnMapping, userORM } from './ORM'
 
-const userSQL = importSQL(__dirname, 'sql/user.sql')
+const me = importSQL(__dirname, 'sql/me.sql')
 const verifyUniqueEmail = importSQL(__dirname, 'sql/verifyUniqueEmail.sql')
 
 export const Query: QueryResolvers = {
@@ -17,7 +17,7 @@ export const Query: QueryResolvers = {
 
     const columns = selectColumnFromField(info, userFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await userSQL, columns), [user.id])
+    const { rows } = await poolQuery(format(await me, columns), [user.id])
 
     return userORM(rows[0])
   },

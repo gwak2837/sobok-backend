@@ -1,15 +1,7 @@
 type Query {
-  """
-  인증 토큰과 같이 요청하면 사용자 정보를 반환한다.
-  """
+  # 인증 토큰과 같이 요청하면 사용자 정보를 반환
   me: User!
 
-  """
-  이메일 중복 여부를 검사한다.
-
-  `True`: 중복되지 않은 이메일
-
-  `False`: 중복된 이메일
-  """
+  # 이메일 중복 여부 검사
   verifyUniqueEmail(email: EmailAddress!): Boolean!
 }
