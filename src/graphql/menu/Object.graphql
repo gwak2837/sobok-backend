@@ -2,31 +2,24 @@ type Menu {
   id: ID!
   creationTime: DateTime!
   modificationTime: DateTime!
-  name: String!
+  name: NonEmptyString!
   price: Int!
-  
+  imageUrls: [URL!]!
+  category: NonEmptyString!
 
-  # from other table
   """
-  해당 메뉴의 카테고리를 반환한다.
+  from other table
   """
-  category: String!
-  favorite: Boolean!
+  # 로그인한 사용자가 이 메뉴를 버킷에 담은 여부
+  isInBucket: Boolean!
+  # 로그인한 사용자가 이 메뉴를 좋아하는 여부
+  isLiked: Boolean!
+  # 이 메뉴를 판매하는 매장
   store: Store!
-  hashtags: [NonEmptyString!]
-  theme: String
-  """
-  로그인 상태일 때 요청하면 사용자가 해당 메뉴를 찜한 여부를 반환한다.
-  """
-  """
-  해당 메뉴가 속한 매장 정보를 반환한다.
-  """
 
-  # from other table - nullable
   """
-  해당 메뉴가 가진 해시태그 목록을 반환한다.
+  from other table - nullable
   """
-  """
-  해당 메뉴가 속한 테마를 반환한다.
-  """
+  # 메뉴에 달린 해시태그
+  hashtags: [NonEmptyString!]
 }

@@ -2,4 +2,24 @@ type Comment {
   id: ID!
   creationTime: DateTime!
   modificationTime: DateTime!
+  contents: [NonEmptyString!]!
+
+  """
+  nullable
+  """
+  imageUrl: URL
+
+  """
+  from other table
+  """
+  # 이 댓글이 달린 피드
+  feed: Feed!
+  # 댓글을 작성한 사용자
+  user: User!
+
+  """
+  from other table - nullable
+  """
+  # 이 댓글의 상위 댓글
+  comment: Comment
 }

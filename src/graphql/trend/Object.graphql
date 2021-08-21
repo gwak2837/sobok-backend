@@ -2,4 +2,10 @@ type Trend {
   id: ID!
   creationTime: DateTime!
   modificationTime: DateTime!
+  contents: [NonEmptyString!]!
+
+  """
+  from other table
+  """
+  user: User!
 }

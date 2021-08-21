@@ -2,4 +2,11 @@ type Bucket {
   id: ID!
   creationTime: DateTime!
   modificationTime: DateTime!
+  name: NonEmptyString!
+
+  """
+  from other table
+  """
+  # 버킷 소유자
+  user: User!
 }

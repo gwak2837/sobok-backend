@@ -2,4 +2,27 @@ type Feed {
   id: ID!
   creationTime: DateTime!
   modificationTime: DateTime!
+  rating: NonEmptyString!
+  contents: [NonEmptyString!]!
+  imageUrls: [URL!]!
+  likeCount: Int!
+  commentCount: Int!
+
+  """
+  from other table
+  """
+  # 피드 작성자
+  user: User!
+
+  """
+  from other table - nullable
+  """
+  # 피드에 달린 댓글
+  comments: [Comment!]
+  # 피드에 달린 해시태그
+  hashtags: [NonEmptyString!]
+  # 피드에 태그된 메뉴 목록
+  menus: [Menu!]
+  # 피드에 태그된 매장
+  store: Store
 }
