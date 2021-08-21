@@ -10,14 +10,14 @@ export async function startApolloExpressServer() {
     res.status(200).send('Hello world')
   })
 
+  setPassportStrategies(app)
+
   await apolloServer.start()
 
   apolloServer.applyMiddleware({
     app,
-    cors: true,
+    cors: true, // 지워도 되나?
   })
-
-  setPassportStrategies(app)
 
   await new Promise((resolve) => {
     app.listen(process.env.PORT || 4000, resolve as () => void)

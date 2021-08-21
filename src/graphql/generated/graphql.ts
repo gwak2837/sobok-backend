@@ -139,15 +139,7 @@ export enum Provider {
 
 export type Query = {
   __typename?: 'Query'
-  /** 인증 토큰과 같이 요청하면 사용자 정보를 반환한다. */
   me: User
-  /**
-   * 이메일 중복 여부를 검사한다.
-   *
-   * `True`: 중복되지 않은 이메일
-   *
-   * `False`: 중복된 이메일
-   */
   verifyUniqueEmail: Scalars['Boolean']
 }
 
@@ -223,7 +215,7 @@ export type User = {
   imageUrl?: Maybe<Scalars['URL']>
   /** from other table */
   comments?: Maybe<Array<Comment>>
-  feeds?: Maybe<Array<Feed>>
+  feed?: Maybe<Array<Feed>>
   menuBuckets?: Maybe<Array<Bucket>>
   storeBuckets?: Maybe<Array<Bucket>>
   /** from other table - nullable */
@@ -576,7 +568,7 @@ export type UserResolvers<
   birth?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>
   comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
-  feeds?: Resolver<Maybe<Array<ResolversTypes['Feed']>>, ParentType, ContextType>
+  feed?: Resolver<Maybe<Array<ResolversTypes['Feed']>>, ParentType, ContextType>
   menuBuckets?: Resolver<Maybe<Array<ResolversTypes['Bucket']>>, ParentType, ContextType>
   storeBuckets?: Resolver<Maybe<Array<ResolversTypes['Bucket']>>, ParentType, ContextType>
   followings?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>
