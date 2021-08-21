@@ -1,0 +1,5 @@
+type News {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+}

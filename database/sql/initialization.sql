@@ -177,6 +177,14 @@ CREATE TABLE user_x_liked_comment (
   PRIMARY KEY (user_id, comment_id)
 );
 
+CREATE TABLE user_x_liked_trend (
+  user_id bigint REFERENCES "user" ON DELETE CASCADE,
+  trend_id bigint REFERENCES trend ON DELETE CASCADE,
+  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  --
+  PRIMARY KEY (user_id, trend_id)
+);
+
 CREATE TABLE bucket_x_store (
   bucket_id bigint REFERENCES bucket ON DELETE CASCADE,
   store_id bigint REFERENCES store ON DELETE CASCADE,
@@ -824,6 +832,38 @@ END;
 
 $$;
 
+CREATE PROCEDURE toggle_liked_trend (
+  _user_id bigint,
+  _trend_id bigint,
+  INOUT result boolean DEFAULT NULL
+) LANGUAGE plpgsql AS $$ BEGIN PERFORM
+FROM user_x_liked_trend
+WHERE user_id = _user_id
+  AND trend_id = _trend_id;
+
+IF FOUND THEN
+DELETE FROM user_x_liked_trend
+WHERE user_id = _user_id
+  AND trend_id = _trend_id;
+
+COMMIT;
+
+result = FALSE;
+
+ELSE
+INSERT INTO user_x_liked_trend (user_id, trend_id)
+VALUES (_user_id, _trend_id);
+
+COMMIT;
+
+result = TRUE;
+
+END IF;
+
+END;
+
+$$;
+
 CREATE PROCEDURE toggle_menu_bucket_list (
   _user_id bigint,
   _menu_id bigint,
@@ -945,41 +985,6 @@ result = 'T';
 END IF;
 
 END $$;
-
-CREATE FUNCTION liked_store_ids(_user_id bigint) RETURNS bigint [] language SQL STABLE AS $$
-SELECT array_agg(store_id)
-FROM user_x_liked_store
-WHERE user_id = _user_id;
-
-$$;
-
-CREATE FUNCTION liked_menu_ids(_user_id bigint) RETURNS bigint [] language SQL STABLE AS $$
-SELECT array_agg(menu_id)
-FROM user_x_liked_menu
-WHERE user_id = _user_id;
-
-$$;
-
-CREATE FUNCTION liked_feed_ids(_user_id bigint) RETURNS bigint [] language SQL STABLE AS $$
-SELECT array_agg(feed_id)
-FROM user_x_liked_feed
-WHERE user_id = _user_id;
-
-$$;
-
-CREATE FUNCTION liked_news_ids(_user_id bigint) RETURNS bigint [] language SQL STABLE AS $$
-SELECT array_agg(news_id)
-FROM user_x_liked_news
-WHERE user_id = _user_id;
-
-$$;
-
-CREATE FUNCTION liked_comment_ids(_user_id bigint) RETURNS bigint [] language SQL STABLE AS $$
-SELECT array_agg(comment_id)
-FROM user_x_liked_comment
-WHERE user_id = _user_id;
-
-$$;
 
 SELECT create_user (
     'bok1',

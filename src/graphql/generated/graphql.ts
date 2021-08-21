@@ -13,11 +13,39 @@ export type Scalars = {
   Boolean: boolean
   Int: number
   Float: number
+  Date: any
   DateTime: any
   EmailAddress: any
   JWT: any
   NonEmptyString: any
   URL: any
+}
+
+export type Bucket = {
+  __typename?: 'Bucket'
+  id: Scalars['ID']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
+}
+
+export type Comment = {
+  __typename?: 'Comment'
+  id: Scalars['ID']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
+}
+
+export type Feed = {
+  __typename?: 'Feed'
+  id: Scalars['ID']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
+}
+
+export enum Gender {
+  Other = 'OTHER',
+  Male = 'MALE',
+  Female = 'FEMALE',
 }
 
 export type Menu = {
@@ -96,9 +124,15 @@ export type MutationUpdatePreferencesArgs = {
   preferences: Array<Scalars['NonEmptyString']>
 }
 
-/** OAuth 공급자 */
+export type News = {
+  __typename?: 'News'
+  id: Scalars['ID']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
+}
+
 export enum Provider {
-  DessertFit = 'DESSERT_FIT',
+  Sobok = 'SOBOK',
   Google = 'GOOGLE',
   Naver = 'NAVER',
   Kakao = 'KAKAO',
@@ -187,45 +221,54 @@ export type Store = {
   hashtags?: Maybe<Array<Scalars['NonEmptyString']>>
 }
 
+export type Trend = {
+  __typename?: 'Trend'
+  id: Scalars['ID']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
+}
+
 export type User = {
   __typename?: 'User'
   id: Scalars['ID']
   creationTime: Scalars['DateTime']
   modificationTime: Scalars['DateTime']
+  uniqueName: Scalars['NonEmptyString']
   email: Scalars['EmailAddress']
-  providers: Array<Provider>
-  point: Scalars['Int']
+  name: Scalars['NonEmptyString']
+  phone: Scalars['NonEmptyString']
+  gender: Gender
   isEmailVerified: Scalars['Boolean']
-  name?: Maybe<Scalars['String']>
-  phoneNumber?: Maybe<Scalars['String']>
-  gender?: Maybe<Scalars['String']>
-  birthDate?: Maybe<Scalars['DateTime']>
-  imageUrls?: Maybe<Array<Scalars['URL']>>
-  deliveryAddresses?: Maybe<Scalars['String']>
-  representativeDeliveryAddress?: Maybe<Scalars['String']>
-  favoriteMenus?: Maybe<Array<Menu>>
-  favoriteStores?: Maybe<Array<Store>>
-  preferences?: Maybe<Array<Scalars['NonEmptyString']>>
-  regularStores?: Maybe<Array<Store>>
+  isStarUser: Scalars['Boolean']
+  providers: Array<Provider>
+  /** nullable */
+  bio?: Maybe<Scalars['String']>
+  birth?: Maybe<Scalars['Date']>
+  imageUrl?: Maybe<Scalars['URL']>
+  /** from other table */
+  comments?: Maybe<Array<Comment>>
+  feeds?: Maybe<Array<Feed>>
+  menuBuckets?: Maybe<Array<Bucket>>
+  storeBuckets?: Maybe<Array<Bucket>>
+  /** from other table - nullable */
+  followings?: Maybe<Array<User>>
+  followers?: Maybe<Array<User>>
+  likedComments?: Maybe<Array<Comment>>
+  likedFeed?: Maybe<Array<Feed>>
+  likedMenus?: Maybe<Array<Menu>>
+  likedNews?: Maybe<Array<News>>
+  likedStores?: Maybe<Array<Store>>
+  likedTrends?: Maybe<Array<Trend>>
 }
 
 export type ResolverTypeWrapper<T> = Promise<T> | T
 
-export type LegacyStitchingResolver<TResult, TParent, TContext, TArgs> = {
-  fragment: string
+export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
   resolve: ResolverFn<TResult, TParent, TContext, TArgs>
 }
-
-export type NewStitchingResolver<TResult, TParent, TContext, TArgs> = {
-  selectionSet: string
-  resolve: ResolverFn<TResult, TParent, TContext, TArgs>
-}
-export type StitchingResolver<TResult, TParent, TContext, TArgs> =
-  | LegacyStitchingResolver<TResult, TParent, TContext, TArgs>
-  | NewStitchingResolver<TResult, TParent, TContext, TArgs>
 export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> =
   | ResolverFn<TResult, TParent, TContext, TArgs>
-  | StitchingResolver<TResult, TParent, TContext, TArgs>
+  | ResolverWithResolve<TResult, TParent, TContext, TArgs>
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -302,41 +345,78 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Bucket: ResolverTypeWrapper<Bucket>
+  ID: ResolverTypeWrapper<Scalars['ID']>
+  Comment: ResolverTypeWrapper<Comment>
+  Date: ResolverTypeWrapper<Scalars['Date']>
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>
+  Feed: ResolverTypeWrapper<Feed>
+  Gender: Gender
   JWT: ResolverTypeWrapper<Scalars['JWT']>
   Menu: ResolverTypeWrapper<Menu>
-  ID: ResolverTypeWrapper<Scalars['ID']>
   String: ResolverTypeWrapper<Scalars['String']>
   Int: ResolverTypeWrapper<Scalars['Int']>
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>
   Mutation: ResolverTypeWrapper<{}>
+  News: ResolverTypeWrapper<News>
   NonEmptyString: ResolverTypeWrapper<Scalars['NonEmptyString']>
   Provider: Provider
   Query: ResolverTypeWrapper<{}>
   RegisterInput: RegisterInput
   Store: ResolverTypeWrapper<Store>
+  Trend: ResolverTypeWrapper<Trend>
   URL: ResolverTypeWrapper<Scalars['URL']>
   User: ResolverTypeWrapper<User>
 }
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  Bucket: Bucket
+  ID: Scalars['ID']
+  Comment: Comment
+  Date: Scalars['Date']
   DateTime: Scalars['DateTime']
   EmailAddress: Scalars['EmailAddress']
+  Feed: Feed
   JWT: Scalars['JWT']
   Menu: Menu
-  ID: Scalars['ID']
   String: Scalars['String']
   Int: Scalars['Int']
   Boolean: Scalars['Boolean']
   Mutation: {}
+  News: News
   NonEmptyString: Scalars['NonEmptyString']
   Query: {}
   RegisterInput: RegisterInput
   Store: Store
+  Trend: Trend
   URL: Scalars['URL']
   User: User
+}
+
+export type BucketResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Bucket'] = ResolversParentTypes['Bucket']
+> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export type CommentResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']
+> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
+  name: 'Date'
 }
 
 export interface DateTimeScalarConfig
@@ -347,6 +427,16 @@ export interface DateTimeScalarConfig
 export interface EmailAddressScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes['EmailAddress'], any> {
   name: 'EmailAddress'
+}
+
+export type FeedResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Feed'] = ResolversParentTypes['Feed']
+> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
 export interface JwtScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JWT'], any> {
@@ -426,6 +516,16 @@ export type MutationResolvers<
   >
 }
 
+export type NewsResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['News'] = ResolversParentTypes['News']
+> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
 export interface NonEmptyStringScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes['NonEmptyString'], any> {
   name: 'NonEmptyString'
@@ -496,6 +596,16 @@ export type StoreResolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
+export type TrendResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Trend'] = ResolversParentTypes['Trend']
+> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
 export interface UrlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['URL'], any> {
   name: 'URL'
 }
@@ -507,39 +617,47 @@ export type UserResolvers<
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
   modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  uniqueName?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>
-  providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>
-  point?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  name?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  phone?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  gender?: Resolver<ResolversTypes['Gender'], ParentType, ContextType>
   isEmailVerified?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  phoneNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  gender?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  birthDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>
-  imageUrls?: Resolver<Maybe<Array<ResolversTypes['URL']>>, ParentType, ContextType>
-  deliveryAddresses?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  representativeDeliveryAddress?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  favoriteMenus?: Resolver<Maybe<Array<ResolversTypes['Menu']>>, ParentType, ContextType>
-  favoriteStores?: Resolver<Maybe<Array<ResolversTypes['Store']>>, ParentType, ContextType>
-  preferences?: Resolver<Maybe<Array<ResolversTypes['NonEmptyString']>>, ParentType, ContextType>
-  regularStores?: Resolver<Maybe<Array<ResolversTypes['Store']>>, ParentType, ContextType>
+  isStarUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>
+  bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  birth?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>
+  imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>
+  comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
+  feeds?: Resolver<Maybe<Array<ResolversTypes['Feed']>>, ParentType, ContextType>
+  menuBuckets?: Resolver<Maybe<Array<ResolversTypes['Bucket']>>, ParentType, ContextType>
+  storeBuckets?: Resolver<Maybe<Array<ResolversTypes['Bucket']>>, ParentType, ContextType>
+  followings?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>
+  followers?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>
+  likedComments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
+  likedFeed?: Resolver<Maybe<Array<ResolversTypes['Feed']>>, ParentType, ContextType>
+  likedMenus?: Resolver<Maybe<Array<ResolversTypes['Menu']>>, ParentType, ContextType>
+  likedNews?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
+  likedStores?: Resolver<Maybe<Array<ResolversTypes['Store']>>, ParentType, ContextType>
+  likedTrends?: Resolver<Maybe<Array<ResolversTypes['Trend']>>, ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
 export type Resolvers<ContextType = any> = {
+  Bucket?: BucketResolvers<ContextType>
+  Comment?: CommentResolvers<ContextType>
+  Date?: GraphQLScalarType
   DateTime?: GraphQLScalarType
   EmailAddress?: GraphQLScalarType
+  Feed?: FeedResolvers<ContextType>
   JWT?: GraphQLScalarType
   Menu?: MenuResolvers<ContextType>
   Mutation?: MutationResolvers<ContextType>
+  News?: NewsResolvers<ContextType>
   NonEmptyString?: GraphQLScalarType
   Query?: QueryResolvers<ContextType>
   Store?: StoreResolvers<ContextType>
+  Trend?: TrendResolvers<ContextType>
   URL?: GraphQLScalarType
   User?: UserResolvers<ContextType>
 }
-
-/**
- * @deprecated
- * Use "Resolvers" root object instead. If you wish to get "IResolvers", add "typesPrefix: I" to your config.
- */
-export type IResolvers<ContextType = any> = Resolvers<ContextType>

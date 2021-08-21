@@ -1,0 +1,5 @@
+type Bucket {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+}

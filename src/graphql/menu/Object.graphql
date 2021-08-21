@@ -4,60 +4,29 @@ type Menu {
   modificationTime: DateTime!
   name: String!
   price: Int!
-  deliciousReviewCount: Int!
-  deliciousReviewRatio: Int!
-  fineReviewCount: Int!
-  fineReviewRatio: Int!
-  positiveReviewCount: Int!
-  positiveReviewRatio: Int!
-  badReviewCount: Int!
-  badReviewRatio: Int!
-  totalReviewCount: Int!
-  newOrderCount: Int!
-  newOrderRatio: Int!
-  reorderCount: Int!
-  reorderRatio: Int!
-  totalOrderCount: Int!
-  newCustomerCount: Int!
-  newCustomerRatio: Int!
-  regularCustomerCount: Int!
-  regularCustomerRatio: Int!
-  totalCustomerCount: Int!
-  favoriteCount: Int!
-  clickCount: Int!
-  storePostCount: Int!
-  isDiscounted: Boolean!
-  canBePicked: Boolean!
-  canBeReserved: Boolean!
-  categoryId: ID!
-  storeId: ID!
-
-  # nullable
-  content: String
-  imageUrls: [URL!]
-  themeId: ID
+  
 
   # from other table
   """
   해당 메뉴의 카테고리를 반환한다.
   """
   category: String!
+  favorite: Boolean!
+  store: Store!
+  hashtags: [NonEmptyString!]
+  theme: String
   """
   로그인 상태일 때 요청하면 사용자가 해당 메뉴를 찜한 여부를 반환한다.
   """
-  favorite: Boolean!
   """
   해당 메뉴가 속한 매장 정보를 반환한다.
   """
-  store: Store!
 
   # from other table - nullable
   """
   해당 메뉴가 가진 해시태그 목록을 반환한다.
   """
-  hashtags: [NonEmptyString!]
   """
   해당 메뉴가 속한 테마를 반환한다.
   """
-  theme: String
 }

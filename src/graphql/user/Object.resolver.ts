@@ -8,7 +8,7 @@ import { selectColumnFromField } from '../../utils/ORM'
 const userFavoriteStores = importSQL(__dirname, 'sql/userFavoriteStores.sql')
 
 export const User: UserResolvers = {
-  favoriteStores: async ({ id }, _, __, info) => {
+  likedStores: async ({ id }, _, __, info) => {
     // 좋아하는 매장을 수정하지 않았다면 레디스 캐시에서 가져오기
 
     const columns = selectColumnFromField(info, storeFieldColumnMapping).map((column) =>

@@ -1,4 +1,5 @@
 import {
+  DateResolver,
   DateTimeResolver,
   EmailAddressResolver,
   JWTResolver,
@@ -6,6 +7,7 @@ import {
   URLResolver,
 } from 'graphql-scalars'
 
+export const Date = DateResolver
 export const DateTime = DateTimeResolver
 export const EmailAddress = EmailAddressResolver
 export const JWT = JWTResolver

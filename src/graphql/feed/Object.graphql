@@ -1,0 +1,5 @@
+type Feed {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+}

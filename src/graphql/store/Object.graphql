@@ -2,63 +2,14 @@ type Store {
   id: ID!
   creationTime: DateTime!
   modificationTime: DateTime!
-  name: String!
-  address: String!
-  businessRegistrationName: String!
-  businessRegistrationNumber: String!
-  businessRegistrationAddress: String!
-  businessRepresentativeName: String!
-  isFranchise: Boolean!
-  deliveryCharge: Int!
-  minimumDeliveryAmount: Int!
-  deliciousReviewCount: Int!
-  deliciousReviewRatio: Int!
-  fineReviewCount: Int!
-  fineReviewRatio: Int!
-  positiveReviewCount: Int!
-  positiveReviewRatio: Int!
-  badReviewCount: Int!
-  badReviewRatio: Int!
-  totalReviewCount: Int!
-  newOrderCount: Int!
-  newOrderRatio: Int!
-  reorderCount: Int!
-  reorderRatio: Int!
-  totalOrderCount: Int!
-  newCustomerCount: Int!
-  newCustomerRatio: Int!
-  regularCustomerCount: Int!
-  regularCustomerRatio: Int!
-  totalCustomerCount: Int!
-  favoriteCount: Int!
-  clickCount: Int!
-  postCount: Int!
-  userId: ID!
-
-  # nullable
-  reviewEventContent: String
-  regularCustomerEventContent: String
-  minimumDeliveryTime: Int
-  maximumDeliveryTime: Int
-  imageUrls: [URL!]
 
   # from other table
   """
   로그인 상태일 때 요청하면 사용자가 해당 매장을 찜한 여부를 반환한다.
   """
-  favorite: Boolean!
-  """
-  해당 매장에서 판매 중인 메뉴 목록을 반환한다.
-  """
   menus: [Menu!]!
-  """
-  로그인 상태일 때 요청하면 사용자가 해당 매장의 단골인지를 반환한다.
-  """
-  regular: Boolean!
-  """
-  해당 매장을 소유한 사용자 정보를 반환한다.
-  """
   user: User!
+  favorite: Boolean!
 
   # from other table - nullable
   hashtags: [NonEmptyString!]

@@ -1,0 +1,5 @@
+type Trend {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+}
