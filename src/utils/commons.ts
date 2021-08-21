@@ -13,6 +13,12 @@ export function camelToSnake(str: string) {
   return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
 }
 
+export function snakeToCamel(str: string) {
+  return str
+    .toLowerCase()
+    .replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''))
+}
+
 export function returnZeroWhenZeroDivision(numerator: number, denominator: number) {
   return denominator !== 0 ? numerator / denominator : 0
 }
@@ -40,4 +46,10 @@ export function isUniqueArray(arr: string[]) {
   }
 
   return true
+}
+
+export function snakeKeyToCamelKey(snakeObject: Record<string, unknown>) {
+  return Object.fromEntries(
+    Object.entries(snakeObject).map(([snakeKey, value]) => [snakeToCamel(snakeKey), value])
+  )
 }
