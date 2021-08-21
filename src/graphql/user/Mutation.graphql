@@ -1,6 +1,6 @@
 input RegisterInput {
   email: EmailAddress!
-  passwordHash: String!
+  passwordHash: NonEmptyString!
 
   # nullable
   name: String
@@ -26,7 +26,7 @@ type Mutation {
   """
   이메일과 1번 해싱한 비밀번호를 전송하면 인증 토큰을 반환한다.
   """
-  login(email: EmailAddress!, passwordHash: String!): JWT!
+  login(email: EmailAddress!, passwordHash: NonEmptyString!): JWT!
 
   """
   인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환한다.

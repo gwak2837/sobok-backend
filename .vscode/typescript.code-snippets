@@ -14,7 +14,7 @@
       "}",
       "",
       "// All database columns -> GraphQL fields",
-      "export function ${TM_DIRECTORY/.*\\/(.*)$/$1/g}ORM(${TM_DIRECTORY/.*\\/(.*)$/$1/g}: Record<string, any>) {",
+      "export function ${TM_DIRECTORY/.*\\/(.*)$/$1/g}ORM(${TM_DIRECTORY/.*\\/(.*)$/$1/g}: Record<string, any>): any {",
       "  return {",
       "    ...snakeKeyToCamelKey(${TM_DIRECTORY/.*\\/(.*)$/$1/g}),",
       "  }",

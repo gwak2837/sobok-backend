@@ -1,19 +1,5 @@
-import { Gender, Provider, User } from '../generated/graphql'
-import { camelToSnake } from '../../utils/commons'
-
-export const user: User = {
-  id: '',
-  creationTime: '',
-  modificationTime: '',
-  uniqueName: '',
-  email: '',
-  name: '',
-  phone: '',
-  gender: Gender.Other,
-  isEmailVerified: false,
-  isStarUser: false,
-  providers: [Provider.Sobok],
-}
+import { Provider, User } from '../generated/graphql'
+import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 
 export function userFieldColumnMapping(userField: keyof User) {
   switch (userField) {
@@ -24,22 +10,10 @@ export function userFieldColumnMapping(userField: keyof User) {
   }
 }
 
-export function userORM(user: Record<string, any>): User {
+export function userORM(user: Record<string, any>): any {
   return {
-    id: user.id,
-    creationTime: user.creation_time,
-    modificationTime: user.modification_time,
-    uniqueName: user.unique_name,
-    email: user.email,
-    name: user.name,
-    phone: user.phone,
-    gender: user.gender,
-    isEmailVerified: user.is_email_verified,
-    isStarUser: user.is_star_user,
+    ...snakeKeyToCamelKey(user),
     providers: getProviders(user),
-    bio: user.bio,
-    birth: user.birth,
-    imageUrl: user.image_url,
   }
 }
 
