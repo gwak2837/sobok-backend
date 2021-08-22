@@ -1,4 +1,6 @@
-# OAuth 공급자
+"""
+OAuth 공급자
+"""
 enum Provider {
   SOBOK
   GOOGLE
@@ -6,6 +8,9 @@ enum Provider {
   KAKAO
 }
 
+"""
+성별
+"""
 enum Gender {
   OTHER
   MALE
@@ -25,42 +30,70 @@ type User {
   isStarUser: Boolean!
   providers: [Provider!]!
 
-  """
-  nullable
-  """
+  # nullable
   bio: String
   birth: Date
   imageUrl: URL
 
+  # from other table
   """
-  from other table
+  내가 쓴 댓글
   """
-  # 내가 쓴 댓글
   comments: [Comment!]
-  # 내가 쓴 피드
-  feed: [Feed!]
-  # 내 메뉴 버킷 리스트
-  menuBuckets: [Bucket!]
-  # 내 매장 버킷 리스트
-  storeBuckets: [Bucket!]
 
   """
-  from other table - nullable
+  내가 쓴 피드
   """
-  # 사용자가 따르고 있는 다른 사용자
+  feed: [Feed!]
+
+  """
+  내 메뉴 버킷 리스트
+  """
+  menuBuckets: [Bucket!]
+
+  """
+  내 매장 버킷 리스트
+  """
+  storeBuckets: [Bucket!]
+
+  # from other table - nullable
+  """
+  사용자가 따르고 있는 다른 사용자
+  """
   followings: [User!]
-  # 사용자를 따르는 다른 사용자
+
+  """
+  사용자를 따르는 다른 사용자
+  """
   followers: [User!]
-  # 좋아요 누른 댓글
+
+  """
+  좋아요 누른 댓글
+  """
   likedComments: [Comment!]
-  # 좋아요 누른 피드
+
+  """
+  좋아요 누른 피드
+  """
   likedFeed: [Feed!]
-  # 좋아요 누른 메뉴
+
+  """
+  좋아요 누른 메뉴
+  """
   likedMenus: [Menu!]
-  # 좋아요 누른 소식
+
+  """
+  좋아요 누른 소식
+  """
   likedNews: [News!]
-  # 좋아요 누른 매장
+
+  """
+  좋아요 누른 매장
+  """
   likedStores: [Store!]
-  # 좋아요 누른 트렌드
+
+  """
+  좋아요 누른 트렌드
+  """
   likedTrends: [Trend!]
 }

@@ -1,15 +1,15 @@
 input RegisterInput {
+  uniqueName: NonEmptyString!
   email: EmailAddress!
   passwordHash: NonEmptyString!
+  name: NonEmptyString!
+  phone: NonEmptyString!
+  gender: Gender!
 
   # nullable
-  name: String
-  phoneNumber: String
-  gender: String
-  birthDate: DateTime
+  bio: String
+  birth: Date
   imageUrl: URL
-  deliveryAddress: String
-  preference: [NonEmptyString!]
 }
 
 type Mutation {
@@ -32,9 +32,4 @@ type Mutation {
   인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환한다.
   """
   logout: Boolean!
-
-  """
-  사용자 선호 해시태그를 입력값 그대로 설정한다.
-  """
-  updatePreferences(preferences: [NonEmptyString!]!): [NonEmptyString!]!
 }

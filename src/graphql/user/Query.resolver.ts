@@ -7,7 +7,7 @@ import { importSQL } from '../../utils/commons'
 import { userFieldColumnMapping, userORM } from './ORM'
 
 const me = importSQL(__dirname, 'sql/me.sql')
-const verifyUniqueEmail = importSQL(__dirname, 'sql/verifyUniqueEmail.sql')
+const isEmailUnique = importSQL(__dirname, 'sql/isEmailUnique.sql')
 
 export const Query: QueryResolvers = {
   me: async (_, __, { user }, info) => {
@@ -22,8 +22,8 @@ export const Query: QueryResolvers = {
     return userORM(rows[0])
   },
 
-  verifyUniqueEmail: async (_, { email }) => {
-    const { rowCount } = await poolQuery(await verifyUniqueEmail, [email])
+  isEmailUnique: async (_, { email }) => {
+    const { rowCount } = await poolQuery(await isEmailUnique, [email])
 
     return rowCount === 0
   },
