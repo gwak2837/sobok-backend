@@ -1,45 +1,31 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: Bug Report
+about: Describe this issue template's purpose here.
 title: ''
 labels: 'bug'
 assignees: ''
 ---
 
-### Describe the bug
+## Issue description
 
-A clear and concise description of what the bug is.
+<!-- 어떤 이슈 인지 자세히 써주세요. 스크린 샷을 첨부해주시면 이슈를 이해하는데 큰 도움이 될 것 같아요. -->
 
-### To Reproduce
+## Steps to reproduce the issue
 
-Steps to reproduce the behavior:
+<!-- 이슈를 재현하기 위해 어떻게 해야하는지 설명해주세요 -->
 
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1.
+2.
+3.
 
-### Expected behavior
+## What's the expected result?
 
-A clear and concise description of what you expected to happen.
+## <!-- 기대하신 동작은 어떤 것이었나요? -->
 
-### Screenshots
+## What's the actual result?
 
-If applicable, add screenshots to help explain your problem.
+## <!-- 실제로 어떻게 동작하나요? -->
 
-### Desktop (please complete the following information):
+## Additional details
 
-- OS: [e.g. iOS]
-- Browser [e.g. chrome, safari]
-- Version [e.g. 22]
-
-### Smartphone (please complete the following information):
-
-- Device: [e.g. iPhone6]
-- OS: [e.g. iOS8.1]
-- Browser [e.g. stock browser, safari]
-- Version [e.g. 22]
-
-### Additional context
-
-Add any other context about the problem here.
+<!-- Optional 이슈를 파악하는데 있어서 필요한 다른 정보가 있다면 써주세요   -->
