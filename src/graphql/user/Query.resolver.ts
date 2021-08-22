@@ -6,8 +6,8 @@ import { poolQuery } from '../../database/postgres'
 import { importSQL } from '../../utils/commons'
 import { userFieldColumnMapping, userORM } from './ORM'
 
-const userSQL = importSQL(__dirname, 'sql/user.sql')
-const verifyUniqueEmail = importSQL(__dirname, 'sql/verifyUniqueEmail.sql')
+const me = importSQL(__dirname, 'sql/me.sql')
+const isEmailUnique = importSQL(__dirname, 'sql/isEmailUnique.sql')
 
 export const Query: QueryResolvers = {
   me: async (_, __, { user }, info) => {
@@ -17,13 +17,13 @@ export const Query: QueryResolvers = {
 
     const columns = selectColumnFromField(info, userFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await userSQL, columns), [user.id])
+    const { rows } = await poolQuery(format(await me, columns), [user.id])
 
     return userORM(rows[0])
   },
 
-  verifyUniqueEmail: async (_, { email }) => {
-    const { rowCount } = await poolQuery(await verifyUniqueEmail, [email])
+  isEmailUnique: async (_, { email }) => {
+    const { rowCount } = await poolQuery(await isEmailUnique, [email])
 
     return rowCount === 0
   },

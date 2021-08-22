@@ -1,4 +1,3 @@
-import { Express } from 'express-serve-static-core'
 import passport from 'passport'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
@@ -6,8 +5,9 @@ import querystring from 'querystring'
 import { poolQuery } from '../database/postgres'
 import { importSQL } from '../utils/commons'
 import { generateJWT } from '../utils/jwt'
+import { Express } from 'express'
 
-const registerOrLogin = importSQL(__dirname, 'sql/socialLogin.sql')
+const socialLogin = importSQL(__dirname, 'sql/socialLogin.sql')
 
 export function setPassportStrategies(app: Express) {
   app.use(passport.initialize())
@@ -21,7 +21,7 @@ export function setPassportStrategies(app: Express) {
       },
       async (accessToken, refreshToken, profile, done) => {
         if (profile.emails && (profile.emails[0] as any).verified) {
-          const { rows } = await poolQuery(await registerOrLogin, [
+          const { rows } = await poolQuery(await socialLogin, [
             profile.emails[0].value,
             profile.displayName,
             null,

@@ -1,62 +1,56 @@
-import { Provider, User } from '../generated/graphql'
-import { camelToSnake } from '../../utils/commons'
-
-export const user: User = {
-  id: '',
-  creationTime: '',
-  modificationTime: '',
-  email: '',
-  providers: [Provider.DessertFit],
-  point: 0,
-  isEmailVerified: false,
-}
+import { Gender, Provider, User } from '../generated/graphql'
+import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 
 export function userFieldColumnMapping(userField: keyof User) {
   switch (userField) {
     case 'providers':
       return ['google_oauth', 'naver_oauth', 'kakao_oauth']
-    case 'representativeDeliveryAddress':
-      return ['representative_delivery_address', 'delivery_addresses']
-    case 'favoriteMenus':
-      return ''
-    case 'favoriteStores':
-      return ''
-    case 'preferences':
-      return ''
-    case 'regularStores':
-      return ''
     default:
       return camelToSnake(userField)
   }
 }
 
-export function userORM(user: Record<string, any>): User {
+export function userORM(user: Record<string, any>): any {
   return {
-    id: user.id,
-    creationTime: user.creation_date,
-    modificationTime: user.modification_date,
-    email: user.email,
-    providers: getProviders(user),
-    point: user.point,
-    isEmailVerified: user.is_email_verified,
-    name: user.name,
-    phoneNumber: user.phone_number,
-    gender: user.gender,
-    birthDate: user.birth_date,
-    imageUrls: user.image_urls,
-    deliveryAddresses: user.delivery_addresses,
-    representativeDeliveryAddress:
-      user.representative_delivery_address &&
-      user.delivery_addresses[user.representative_delivery_address],
+    ...snakeKeyToCamelKey(user),
+    providers: decodeProviders(user),
+    gender: decodeGender(user),
   }
 }
 
-function getProviders(user: Record<string, any>) {
+function decodeProviders(user: Record<string, any>) {
   const providers = []
 
   if (user.google_oauth) providers.push(Provider.Google)
   if (user.naver_oauth) providers.push(Provider.Naver)
   if (user.kakao_oauth) providers.push(Provider.Kakao)
+  if (providers.length === 0) providers.push(Provider.Sobok)
 
   return providers
+}
+
+export function encodeGender(gender: Gender) {
+  switch (gender) {
+    case Gender.Other:
+      return 0
+    case Gender.Male:
+      return 1
+    case Gender.Female:
+      return 2
+    default:
+      return null
+  }
+}
+
+function decodeGender(user: Record<string, any>) {
+  switch (user.gender) {
+    case 0:
+      return Gender.Other
+    case 1:
+      return Gender.Male
+    case 2:
+      return Gender.Female
+    default:
+      return null
+  }
 }

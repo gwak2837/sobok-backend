@@ -3,11 +3,11 @@ FROM node:lts-alpine AS node-builder
 
 WORKDIR /server
 
-COPY package.json tsconfig.json yarn.lock ./
+COPY .yarn .yarn
 COPY src src
+COPY .yarnrc.yml package.json tsconfig.json yarn.lock ./
 
-RUN yarn install --production=false &&\
-    yarn build
+RUN yarn && yarn build
 
 # Install only dependency packages
 FROM node:lts-alpine
@@ -17,13 +17,12 @@ ENV NODE_ENV=production
 WORKDIR /server
 
 COPY --from=node-builder /server/dist dist
-COPY package.json yarn.lock ./
+COPY .yarn/plugins .yarn/plugins
+COPY .yarn/releases .yarn/releases
+COPY .yarnrc.yml package.json yarn.lock ./
 
-RUN yarn install --production=true &&\
-    yarn add concurrently --global &&\
-    yarn cache clean &&\
-    rm yarn.lock &&\
-    apk add redis
+RUN yarn workspaces focus --production
+RUN apk add redis
 
 EXPOSE $PORT
 

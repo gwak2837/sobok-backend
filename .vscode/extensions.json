@@ -7,6 +7,6 @@
     "esbenp.prettier-vscode",
     "ms-azuretools.vscode-docker",
     "mtxr.sqltools",
-    "mtxr.sqltools-driver-pg"
+    "arcanis.vscode-zipfs"
   ]
 }

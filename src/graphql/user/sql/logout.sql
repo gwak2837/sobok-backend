@@ -1,8 +1,4 @@
-UPDATE
-  "user"
-SET
-  modification_date = NOW(),
-  valid_authentication_date = NOW()
-WHERE
-  id = $1;
-
+UPDATE "user"
+SET modification_time = NOW(),
+  logout_time = NOW()
+WHERE id = $1;

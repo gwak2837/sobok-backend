@@ -1,0 +1,21 @@
+type News {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+  title: NonEmptyString!
+  contents: [NonEmptyString!]!
+  category: NonEmptyString!
+
+  """
+  nullable
+  """
+  imageUrls: [URL!]
+
+  """
+  from other table
+  """
+  # 로그인한 사용자가 이 메뉴를 좋아하는 여부
+  isLiked: Boolean!
+  # 이 소식을 올린 매장
+  store: Store!
+}

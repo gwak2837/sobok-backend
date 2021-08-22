@@ -2,64 +2,38 @@ type Store {
   id: ID!
   creationTime: DateTime!
   modificationTime: DateTime!
-  name: String!
-  address: String!
-  businessRegistrationName: String!
-  businessRegistrationNumber: String!
-  businessRegistrationAddress: String!
-  businessRepresentativeName: String!
-  isFranchise: Boolean!
-  deliveryCharge: Int!
-  minimumDeliveryAmount: Int!
-  deliciousReviewCount: Int!
-  deliciousReviewRatio: Int!
-  fineReviewCount: Int!
-  fineReviewRatio: Int!
-  positiveReviewCount: Int!
-  positiveReviewRatio: Int!
-  badReviewCount: Int!
-  badReviewRatio: Int!
-  totalReviewCount: Int!
-  newOrderCount: Int!
-  newOrderRatio: Int!
-  reorderCount: Int!
-  reorderRatio: Int!
-  totalOrderCount: Int!
-  newCustomerCount: Int!
-  newCustomerRatio: Int!
-  regularCustomerCount: Int!
-  regularCustomerRatio: Int!
-  totalCustomerCount: Int!
-  favoriteCount: Int!
-  clickCount: Int!
-  postCount: Int!
+  name: NonEmptyString!
+  town: NonEmptyString!
+  address: NonEmptyString!
+  categories: [NonEmptyString!]!
+  takeout: Boolean!
+
+  """
+  nullable
+  """
+  tel: String
+  registrationNumber: String
+  description: String
+  businessHours: [NonEmptyString!]
+  holidays: [Date!]
+  imageUrls: [URL!]
   userId: ID!
 
-  # nullable
-  reviewEventContent: String
-  regularCustomerEventContent: String
-  minimumDeliveryTime: Int
-  maximumDeliveryTime: Int
-  imageUrls: [URL!]
-
-  # from other table
   """
-  로그인 상태일 때 요청하면 사용자가 해당 매장을 찜한 여부를 반환한다.
+  from other table
   """
-  favorite: Boolean!
-  """
-  해당 매장에서 판매 중인 메뉴 목록을 반환한다.
-  """
+  # 로그인한 사용자가 이 매장을 버킷에 담은 여부
+  isInBucket: Boolean!
+  # 로그인한 사용자가 이 매장을 좋아하는 여부
+  isLiked: Boolean!
+  # 매장에서 판매하는 메뉴 목록
   menus: [Menu!]!
-  """
-  로그인 상태일 때 요청하면 사용자가 해당 매장의 단골인지를 반환한다.
-  """
-  regular: Boolean!
-  """
-  해당 매장을 소유한 사용자 정보를 반환한다.
-  """
-  user: User!
 
-  # from other table - nullable
+  """
+  from other table - nullable
+  """
+  # 매장에 달린 해시태그
   hashtags: [NonEmptyString!]
+  # 매장을 소유한 사용자 정보
+  user: User
 }

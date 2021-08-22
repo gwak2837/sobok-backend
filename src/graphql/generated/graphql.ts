@@ -13,6 +13,7 @@ export type Scalars = {
   Boolean: boolean
   Int: number
   Float: number
+  Date: any
   DateTime: any
   EmailAddress: any
   JWT: any
@@ -20,53 +21,72 @@ export type Scalars = {
   URL: any
 }
 
+export type Bucket = {
+  __typename?: 'Bucket'
+  id: Scalars['ID']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
+  name: Scalars['NonEmptyString']
+  /** from other table */
+  user: User
+}
+
+export type Comment = {
+  __typename?: 'Comment'
+  id: Scalars['ID']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
+  contents: Array<Scalars['NonEmptyString']>
+  /** nullable */
+  imageUrl?: Maybe<Scalars['URL']>
+  /** from other table */
+  feed: Feed
+  user: User
+  /** from other table - nullable */
+  comment?: Maybe<Comment>
+}
+
+export type Feed = {
+  __typename?: 'Feed'
+  id: Scalars['ID']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
+  rating: Scalars['NonEmptyString']
+  contents: Array<Scalars['NonEmptyString']>
+  imageUrls: Array<Scalars['URL']>
+  likeCount: Scalars['Int']
+  commentCount: Scalars['Int']
+  /** from other table */
+  user: User
+  /** from other table - nullable */
+  comments?: Maybe<Array<Comment>>
+  hashtags?: Maybe<Array<Scalars['NonEmptyString']>>
+  menus?: Maybe<Array<Menu>>
+  store?: Maybe<Store>
+}
+
+/** 성별 */
+export enum Gender {
+  Other = 'OTHER',
+  Male = 'MALE',
+  Female = 'FEMALE',
+}
+
 export type Menu = {
   __typename?: 'Menu'
   id: Scalars['ID']
   creationTime: Scalars['DateTime']
   modificationTime: Scalars['DateTime']
-  name: Scalars['String']
+  name: Scalars['NonEmptyString']
   price: Scalars['Int']
-  deliciousReviewCount: Scalars['Int']
-  deliciousReviewRatio: Scalars['Int']
-  fineReviewCount: Scalars['Int']
-  fineReviewRatio: Scalars['Int']
-  positiveReviewCount: Scalars['Int']
-  positiveReviewRatio: Scalars['Int']
-  badReviewCount: Scalars['Int']
-  badReviewRatio: Scalars['Int']
-  totalReviewCount: Scalars['Int']
-  newOrderCount: Scalars['Int']
-  newOrderRatio: Scalars['Int']
-  reorderCount: Scalars['Int']
-  reorderRatio: Scalars['Int']
-  totalOrderCount: Scalars['Int']
-  newCustomerCount: Scalars['Int']
-  newCustomerRatio: Scalars['Int']
-  regularCustomerCount: Scalars['Int']
-  regularCustomerRatio: Scalars['Int']
-  totalCustomerCount: Scalars['Int']
-  favoriteCount: Scalars['Int']
-  clickCount: Scalars['Int']
-  storePostCount: Scalars['Int']
-  isDiscounted: Scalars['Boolean']
-  canBePicked: Scalars['Boolean']
-  canBeReserved: Scalars['Boolean']
-  categoryId: Scalars['ID']
-  storeId: Scalars['ID']
-  content?: Maybe<Scalars['String']>
-  imageUrls?: Maybe<Array<Scalars['URL']>>
-  themeId?: Maybe<Scalars['ID']>
-  /** 해당 메뉴의 카테고리를 반환한다. */
-  category: Scalars['String']
-  /** 로그인 상태일 때 요청하면 사용자가 해당 메뉴를 찜한 여부를 반환한다. */
-  favorite: Scalars['Boolean']
-  /** 해당 메뉴가 속한 매장 정보를 반환한다. */
+  imageUrls: Array<Scalars['URL']>
+  category: Scalars['NonEmptyString']
+  /** from other table */
+  isInBucket: Scalars['Boolean']
+  isLiked: Scalars['Boolean']
   store: Store
-  /** 해당 메뉴가 가진 해시태그 목록을 반환한다. */
+  /** from other table - nullable */
   hashtags?: Maybe<Array<Scalars['NonEmptyString']>>
-  /** 해당 메뉴가 속한 테마를 반환한다. */
-  theme?: Maybe<Scalars['String']>
 }
 
 export type Mutation = {
@@ -79,8 +99,6 @@ export type Mutation = {
   login: Scalars['JWT']
   /** 인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환한다. */
   logout: Scalars['Boolean']
-  /** 사용자 선호 해시태그를 입력값 그대로 설정한다. */
-  updatePreferences: Array<Scalars['NonEmptyString']>
 }
 
 export type MutationRegisterArgs = {
@@ -89,16 +107,27 @@ export type MutationRegisterArgs = {
 
 export type MutationLoginArgs = {
   email: Scalars['EmailAddress']
-  passwordHash: Scalars['String']
+  passwordHash: Scalars['NonEmptyString']
 }
 
-export type MutationUpdatePreferencesArgs = {
-  preferences: Array<Scalars['NonEmptyString']>
+export type News = {
+  __typename?: 'News'
+  id: Scalars['ID']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
+  title: Scalars['NonEmptyString']
+  contents: Array<Scalars['NonEmptyString']>
+  category: Scalars['NonEmptyString']
+  /** nullable */
+  imageUrls?: Maybe<Array<Scalars['URL']>>
+  /** from other table */
+  isLiked: Scalars['Boolean']
+  store: Store
 }
 
 /** OAuth 공급자 */
 export enum Provider {
-  DessertFit = 'DESSERT_FIT',
+  Sobok = 'SOBOK',
   Google = 'GOOGLE',
   Naver = 'NAVER',
   Kakao = 'KAKAO',
@@ -106,32 +135,31 @@ export enum Provider {
 
 export type Query = {
   __typename?: 'Query'
-  /** 인증 토큰과 같이 요청하면 사용자 정보를 반환한다. */
+  /** 이메일 중복 여부 검사 */
+  isEmailUnique: Scalars['Boolean']
+  /** 인증 토큰과 같이 요청하면 사용자 정보를 반환 */
   me: User
-  /**
-   * 이메일 중복 여부를 검사한다.
-   *
-   * `True`: 중복되지 않은 이메일
-   *
-   * `False`: 중복된 이메일
-   */
-  verifyUniqueEmail: Scalars['Boolean']
+  storesByTown: Array<Store>
 }
 
-export type QueryVerifyUniqueEmailArgs = {
+export type QueryIsEmailUniqueArgs = {
   email: Scalars['EmailAddress']
+}
+
+export type QueryStoresByTownArgs = {
+  town: Scalars['NonEmptyString']
 }
 
 export type RegisterInput = {
+  uniqueName: Scalars['NonEmptyString']
   email: Scalars['EmailAddress']
-  passwordHash: Scalars['String']
-  name?: Maybe<Scalars['String']>
-  phoneNumber?: Maybe<Scalars['String']>
-  gender?: Maybe<Scalars['String']>
-  birthDate?: Maybe<Scalars['DateTime']>
+  passwordHash: Scalars['NonEmptyString']
+  name: Scalars['NonEmptyString']
+  phone: Scalars['NonEmptyString']
+  gender: Gender
+  bio?: Maybe<Scalars['String']>
+  birth?: Maybe<Scalars['Date']>
   imageUrl?: Maybe<Scalars['URL']>
-  deliveryAddress?: Maybe<Scalars['String']>
-  preference?: Maybe<Array<Scalars['NonEmptyString']>>
 }
 
 export type Store = {
@@ -139,52 +167,36 @@ export type Store = {
   id: Scalars['ID']
   creationTime: Scalars['DateTime']
   modificationTime: Scalars['DateTime']
-  name: Scalars['String']
-  address: Scalars['String']
-  businessRegistrationName: Scalars['String']
-  businessRegistrationNumber: Scalars['String']
-  businessRegistrationAddress: Scalars['String']
-  businessRepresentativeName: Scalars['String']
-  isFranchise: Scalars['Boolean']
-  deliveryCharge: Scalars['Int']
-  minimumDeliveryAmount: Scalars['Int']
-  deliciousReviewCount: Scalars['Int']
-  deliciousReviewRatio: Scalars['Int']
-  fineReviewCount: Scalars['Int']
-  fineReviewRatio: Scalars['Int']
-  positiveReviewCount: Scalars['Int']
-  positiveReviewRatio: Scalars['Int']
-  badReviewCount: Scalars['Int']
-  badReviewRatio: Scalars['Int']
-  totalReviewCount: Scalars['Int']
-  newOrderCount: Scalars['Int']
-  newOrderRatio: Scalars['Int']
-  reorderCount: Scalars['Int']
-  reorderRatio: Scalars['Int']
-  totalOrderCount: Scalars['Int']
-  newCustomerCount: Scalars['Int']
-  newCustomerRatio: Scalars['Int']
-  regularCustomerCount: Scalars['Int']
-  regularCustomerRatio: Scalars['Int']
-  totalCustomerCount: Scalars['Int']
-  favoriteCount: Scalars['Int']
-  clickCount: Scalars['Int']
-  postCount: Scalars['Int']
-  userId: Scalars['ID']
-  reviewEventContent?: Maybe<Scalars['String']>
-  regularCustomerEventContent?: Maybe<Scalars['String']>
-  minimumDeliveryTime?: Maybe<Scalars['Int']>
-  maximumDeliveryTime?: Maybe<Scalars['Int']>
+  name: Scalars['NonEmptyString']
+  town: Scalars['NonEmptyString']
+  address: Scalars['NonEmptyString']
+  categories: Array<Scalars['NonEmptyString']>
+  takeout: Scalars['Boolean']
+  /** nullable */
+  tel?: Maybe<Scalars['String']>
+  registrationNumber?: Maybe<Scalars['String']>
+  description?: Maybe<Scalars['String']>
+  businessHours?: Maybe<Array<Scalars['NonEmptyString']>>
+  holidays?: Maybe<Array<Scalars['Date']>>
   imageUrls?: Maybe<Array<Scalars['URL']>>
-  /** 로그인 상태일 때 요청하면 사용자가 해당 매장을 찜한 여부를 반환한다. */
-  favorite: Scalars['Boolean']
-  /** 해당 매장에서 판매 중인 메뉴 목록을 반환한다. */
+  userId: Scalars['ID']
+  /** from other table */
+  isInBucket: Scalars['Boolean']
+  isLiked: Scalars['Boolean']
   menus: Array<Menu>
-  /** 로그인 상태일 때 요청하면 사용자가 해당 매장의 단골인지를 반환한다. */
-  regular: Scalars['Boolean']
-  /** 해당 매장을 소유한 사용자 정보를 반환한다. */
-  user: User
+  /** from other table - nullable */
   hashtags?: Maybe<Array<Scalars['NonEmptyString']>>
+  user?: Maybe<User>
+}
+
+export type Trend = {
+  __typename?: 'Trend'
+  id: Scalars['ID']
+  creationTime: Scalars['DateTime']
+  modificationTime: Scalars['DateTime']
+  contents: Array<Scalars['NonEmptyString']>
+  /** from other table */
+  user: User
 }
 
 export type User = {
@@ -192,40 +204,51 @@ export type User = {
   id: Scalars['ID']
   creationTime: Scalars['DateTime']
   modificationTime: Scalars['DateTime']
+  uniqueName: Scalars['NonEmptyString']
   email: Scalars['EmailAddress']
-  providers: Array<Provider>
-  point: Scalars['Int']
+  name: Scalars['NonEmptyString']
+  phone: Scalars['NonEmptyString']
+  gender: Gender
   isEmailVerified: Scalars['Boolean']
-  name?: Maybe<Scalars['String']>
-  phoneNumber?: Maybe<Scalars['String']>
-  gender?: Maybe<Scalars['String']>
-  birthDate?: Maybe<Scalars['DateTime']>
-  imageUrls?: Maybe<Array<Scalars['URL']>>
-  deliveryAddresses?: Maybe<Scalars['String']>
-  representativeDeliveryAddress?: Maybe<Scalars['String']>
-  favoriteMenus?: Maybe<Array<Menu>>
-  favoriteStores?: Maybe<Array<Store>>
-  preferences?: Maybe<Array<Scalars['NonEmptyString']>>
-  regularStores?: Maybe<Array<Store>>
+  isStarUser: Scalars['Boolean']
+  providers: Array<Provider>
+  bio?: Maybe<Scalars['String']>
+  birth?: Maybe<Scalars['Date']>
+  imageUrl?: Maybe<Scalars['URL']>
+  /** 내가 쓴 댓글 */
+  comments?: Maybe<Array<Comment>>
+  /** 내가 쓴 피드 */
+  feed?: Maybe<Array<Feed>>
+  /** 내 메뉴 버킷 리스트 */
+  menuBuckets?: Maybe<Array<Bucket>>
+  /** 내 매장 버킷 리스트 */
+  storeBuckets?: Maybe<Array<Bucket>>
+  /** 사용자가 따르고 있는 다른 사용자 */
+  followings?: Maybe<Array<User>>
+  /** 사용자를 따르는 다른 사용자 */
+  followers?: Maybe<Array<User>>
+  /** 좋아요 누른 댓글 */
+  likedComments?: Maybe<Array<Comment>>
+  /** 좋아요 누른 피드 */
+  likedFeed?: Maybe<Array<Feed>>
+  /** 좋아요 누른 메뉴 */
+  likedMenus?: Maybe<Array<Menu>>
+  /** 좋아요 누른 소식 */
+  likedNews?: Maybe<Array<News>>
+  /** 좋아요 누른 매장 */
+  likedStores?: Maybe<Array<Store>>
+  /** 좋아요 누른 트렌드 */
+  likedTrends?: Maybe<Array<Trend>>
 }
 
 export type ResolverTypeWrapper<T> = Promise<T> | T
 
-export type LegacyStitchingResolver<TResult, TParent, TContext, TArgs> = {
-  fragment: string
+export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
   resolve: ResolverFn<TResult, TParent, TContext, TArgs>
 }
-
-export type NewStitchingResolver<TResult, TParent, TContext, TArgs> = {
-  selectionSet: string
-  resolve: ResolverFn<TResult, TParent, TContext, TArgs>
-}
-export type StitchingResolver<TResult, TParent, TContext, TArgs> =
-  | LegacyStitchingResolver<TResult, TParent, TContext, TArgs>
-  | NewStitchingResolver<TResult, TParent, TContext, TArgs>
 export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> =
   | ResolverFn<TResult, TParent, TContext, TArgs>
-  | StitchingResolver<TResult, TParent, TContext, TArgs>
+  | ResolverWithResolve<TResult, TParent, TContext, TArgs>
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -302,41 +325,85 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Bucket: ResolverTypeWrapper<Bucket>
+  ID: ResolverTypeWrapper<Scalars['ID']>
+  Comment: ResolverTypeWrapper<Comment>
+  Date: ResolverTypeWrapper<Scalars['Date']>
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>
+  Feed: ResolverTypeWrapper<Feed>
+  Int: ResolverTypeWrapper<Scalars['Int']>
+  Gender: Gender
   JWT: ResolverTypeWrapper<Scalars['JWT']>
   Menu: ResolverTypeWrapper<Menu>
-  ID: ResolverTypeWrapper<Scalars['ID']>
-  String: ResolverTypeWrapper<Scalars['String']>
-  Int: ResolverTypeWrapper<Scalars['Int']>
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>
   Mutation: ResolverTypeWrapper<{}>
+  News: ResolverTypeWrapper<News>
   NonEmptyString: ResolverTypeWrapper<Scalars['NonEmptyString']>
   Provider: Provider
   Query: ResolverTypeWrapper<{}>
   RegisterInput: RegisterInput
+  String: ResolverTypeWrapper<Scalars['String']>
   Store: ResolverTypeWrapper<Store>
+  Trend: ResolverTypeWrapper<Trend>
   URL: ResolverTypeWrapper<Scalars['URL']>
   User: ResolverTypeWrapper<User>
 }
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  Bucket: Bucket
+  ID: Scalars['ID']
+  Comment: Comment
+  Date: Scalars['Date']
   DateTime: Scalars['DateTime']
   EmailAddress: Scalars['EmailAddress']
+  Feed: Feed
+  Int: Scalars['Int']
   JWT: Scalars['JWT']
   Menu: Menu
-  ID: Scalars['ID']
-  String: Scalars['String']
-  Int: Scalars['Int']
   Boolean: Scalars['Boolean']
   Mutation: {}
+  News: News
   NonEmptyString: Scalars['NonEmptyString']
   Query: {}
   RegisterInput: RegisterInput
+  String: Scalars['String']
   Store: Store
+  Trend: Trend
   URL: Scalars['URL']
   User: User
+}
+
+export type BucketResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Bucket'] = ResolversParentTypes['Bucket']
+> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  name?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export type CommentResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']
+> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  contents?: Resolver<Array<ResolversTypes['NonEmptyString']>, ParentType, ContextType>
+  imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>
+  feed?: Resolver<ResolversTypes['Feed'], ParentType, ContextType>
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
+  comment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
+  name: 'Date'
 }
 
 export interface DateTimeScalarConfig
@@ -347,6 +414,26 @@ export interface DateTimeScalarConfig
 export interface EmailAddressScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes['EmailAddress'], any> {
   name: 'EmailAddress'
+}
+
+export type FeedResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Feed'] = ResolversParentTypes['Feed']
+> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  rating?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  contents?: Resolver<Array<ResolversTypes['NonEmptyString']>, ParentType, ContextType>
+  imageUrls?: Resolver<Array<ResolversTypes['URL']>, ParentType, ContextType>
+  likeCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  commentCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
+  comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
+  hashtags?: Resolver<Maybe<Array<ResolversTypes['NonEmptyString']>>, ParentType, ContextType>
+  menus?: Resolver<Maybe<Array<ResolversTypes['Menu']>>, ParentType, ContextType>
+  store?: Resolver<Maybe<ResolversTypes['Store']>, ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
 export interface JwtScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JWT'], any> {
@@ -360,43 +447,14 @@ export type MenuResolvers<
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
   modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  name?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   price?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  deliciousReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  deliciousReviewRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  fineReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  fineReviewRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  positiveReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  positiveReviewRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  badReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  badReviewRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  totalReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  newOrderCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  newOrderRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  reorderCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  reorderRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  totalOrderCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  newCustomerCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  newCustomerRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  regularCustomerCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  regularCustomerRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  totalCustomerCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  favoriteCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  clickCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  storePostCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  isDiscounted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
-  canBePicked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
-  canBeReserved?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
-  categoryId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  storeId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  imageUrls?: Resolver<Maybe<Array<ResolversTypes['URL']>>, ParentType, ContextType>
-  themeId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>
-  category?: Resolver<ResolversTypes['String'], ParentType, ContextType>
-  favorite?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  imageUrls?: Resolver<Array<ResolversTypes['URL']>, ParentType, ContextType>
+  category?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  isInBucket?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  isLiked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType>
   hashtags?: Resolver<Maybe<Array<ResolversTypes['NonEmptyString']>>, ParentType, ContextType>
-  theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
@@ -418,12 +476,22 @@ export type MutationResolvers<
     RequireFields<MutationLoginArgs, 'email' | 'passwordHash'>
   >
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
-  updatePreferences?: Resolver<
-    Array<ResolversTypes['NonEmptyString']>,
-    ParentType,
-    ContextType,
-    RequireFields<MutationUpdatePreferencesArgs, 'preferences'>
-  >
+}
+
+export type NewsResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['News'] = ResolversParentTypes['News']
+> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  title?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  contents?: Resolver<Array<ResolversTypes['NonEmptyString']>, ParentType, ContextType>
+  category?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  imageUrls?: Resolver<Maybe<Array<ResolversTypes['URL']>>, ParentType, ContextType>
+  isLiked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  store?: Resolver<ResolversTypes['Store'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
 export interface NonEmptyStringScalarConfig
@@ -435,12 +503,18 @@ export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']
 > = {
-  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>
-  verifyUniqueEmail?: Resolver<
+  isEmailUnique?: Resolver<
     ResolversTypes['Boolean'],
     ParentType,
     ContextType,
-    RequireFields<QueryVerifyUniqueEmailArgs, 'email'>
+    RequireFields<QueryIsEmailUniqueArgs, 'email'>
+  >
+  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>
+  storesByTown?: Resolver<
+    Array<ResolversTypes['Store']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryStoresByTownArgs, 'town'>
   >
 }
 
@@ -451,48 +525,35 @@ export type StoreResolvers<
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
   modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
-  address?: Resolver<ResolversTypes['String'], ParentType, ContextType>
-  businessRegistrationName?: Resolver<ResolversTypes['String'], ParentType, ContextType>
-  businessRegistrationNumber?: Resolver<ResolversTypes['String'], ParentType, ContextType>
-  businessRegistrationAddress?: Resolver<ResolversTypes['String'], ParentType, ContextType>
-  businessRepresentativeName?: Resolver<ResolversTypes['String'], ParentType, ContextType>
-  isFranchise?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
-  deliveryCharge?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  minimumDeliveryAmount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  deliciousReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  deliciousReviewRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  fineReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  fineReviewRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  positiveReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  positiveReviewRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  badReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  badReviewRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  totalReviewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  newOrderCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  newOrderRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  reorderCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  reorderRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  totalOrderCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  newCustomerCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  newCustomerRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  regularCustomerCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  regularCustomerRatio?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  totalCustomerCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  favoriteCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  clickCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  postCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
-  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
-  reviewEventContent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  regularCustomerEventContent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  minimumDeliveryTime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>
-  maximumDeliveryTime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>
+  name?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  town?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  address?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  categories?: Resolver<Array<ResolversTypes['NonEmptyString']>, ParentType, ContextType>
+  takeout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  tel?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  registrationNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  businessHours?: Resolver<Maybe<Array<ResolversTypes['NonEmptyString']>>, ParentType, ContextType>
+  holidays?: Resolver<Maybe<Array<ResolversTypes['Date']>>, ParentType, ContextType>
   imageUrls?: Resolver<Maybe<Array<ResolversTypes['URL']>>, ParentType, ContextType>
-  favorite?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  isInBucket?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  isLiked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   menus?: Resolver<Array<ResolversTypes['Menu']>, ParentType, ContextType>
-  regular?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
   hashtags?: Resolver<Maybe<Array<ResolversTypes['NonEmptyString']>>, ParentType, ContextType>
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export type TrendResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Trend'] = ResolversParentTypes['Trend']
+> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  contents?: Resolver<Array<ResolversTypes['NonEmptyString']>, ParentType, ContextType>
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
@@ -507,39 +568,47 @@ export type UserResolvers<
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   creationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
   modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  uniqueName?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>
-  providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>
-  point?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  name?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  phone?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  gender?: Resolver<ResolversTypes['Gender'], ParentType, ContextType>
   isEmailVerified?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  phoneNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  gender?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  birthDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>
-  imageUrls?: Resolver<Maybe<Array<ResolversTypes['URL']>>, ParentType, ContextType>
-  deliveryAddresses?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  representativeDeliveryAddress?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
-  favoriteMenus?: Resolver<Maybe<Array<ResolversTypes['Menu']>>, ParentType, ContextType>
-  favoriteStores?: Resolver<Maybe<Array<ResolversTypes['Store']>>, ParentType, ContextType>
-  preferences?: Resolver<Maybe<Array<ResolversTypes['NonEmptyString']>>, ParentType, ContextType>
-  regularStores?: Resolver<Maybe<Array<ResolversTypes['Store']>>, ParentType, ContextType>
+  isStarUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>
+  bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  birth?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>
+  imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>
+  comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
+  feed?: Resolver<Maybe<Array<ResolversTypes['Feed']>>, ParentType, ContextType>
+  menuBuckets?: Resolver<Maybe<Array<ResolversTypes['Bucket']>>, ParentType, ContextType>
+  storeBuckets?: Resolver<Maybe<Array<ResolversTypes['Bucket']>>, ParentType, ContextType>
+  followings?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>
+  followers?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>
+  likedComments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
+  likedFeed?: Resolver<Maybe<Array<ResolversTypes['Feed']>>, ParentType, ContextType>
+  likedMenus?: Resolver<Maybe<Array<ResolversTypes['Menu']>>, ParentType, ContextType>
+  likedNews?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
+  likedStores?: Resolver<Maybe<Array<ResolversTypes['Store']>>, ParentType, ContextType>
+  likedTrends?: Resolver<Maybe<Array<ResolversTypes['Trend']>>, ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
 export type Resolvers<ContextType = any> = {
+  Bucket?: BucketResolvers<ContextType>
+  Comment?: CommentResolvers<ContextType>
+  Date?: GraphQLScalarType
   DateTime?: GraphQLScalarType
   EmailAddress?: GraphQLScalarType
+  Feed?: FeedResolvers<ContextType>
   JWT?: GraphQLScalarType
   Menu?: MenuResolvers<ContextType>
   Mutation?: MutationResolvers<ContextType>
+  News?: NewsResolvers<ContextType>
   NonEmptyString?: GraphQLScalarType
   Query?: QueryResolvers<ContextType>
   Store?: StoreResolvers<ContextType>
+  Trend?: TrendResolvers<ContextType>
   URL?: GraphQLScalarType
   User?: UserResolvers<ContextType>
 }
-
-/**
- * @deprecated
- * Use "Resolvers" root object instead. If you wish to get "IResolvers", add "typesPrefix: I" to your config.
- */
-export type IResolvers<ContextType = any> = Resolvers<ContextType>
