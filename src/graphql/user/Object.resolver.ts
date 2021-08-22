@@ -7,6 +7,7 @@ import { poolQuery } from '../../database/postgres'
 import { importSQL, removeDoubleQuotesAround } from '../../utils/commons'
 import { selectColumnFromField } from '../../utils/ORM'
 import { bucketFieldColumnMapping, bucketORM } from '../bucket/ORM'
+import { AuthenticationError } from 'apollo-server-express'
 
 const comments = importSQL(__dirname, 'sql/comments.sql')
 const feed = importSQL(__dirname, 'sql/feed.sql')
@@ -15,7 +16,9 @@ const storeBuckets = importSQL(__dirname, 'sql/storeBuckets.sql')
 const likedStores = importSQL(__dirname, 'sql/likedStores.sql')
 
 export const User: UserResolvers = {
-  comments: async ({ id }, _, __, info) => {
+  comments: async ({ id }, _, { user }, info) => {
+    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+
     const columns = selectColumnFromField(info, commentFieldColumnMapping)
 
     const { rows } = await poolQuery(format(await comments, columns), [id])
@@ -23,7 +26,9 @@ export const User: UserResolvers = {
     return rows.map((row) => commentORM(row))
   },
 
-  feed: async ({ id }, _, __, info) => {
+  feed: async ({ id }, _, { user }, info) => {
+    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+
     const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
     const { rows } = await poolQuery(format(await feed, columns), [id])
@@ -31,7 +36,9 @@ export const User: UserResolvers = {
     return rows.map((row) => commentORM(row))
   },
 
-  menuBuckets: async ({ id }, _, __, info) => {
+  menuBuckets: async ({ id }, _, { user }, info) => {
+    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+
     const columns = selectColumnFromField(info, bucketFieldColumnMapping)
 
     const { rows } = await poolQuery(format(await menuBuckets, columns), [id])
@@ -39,7 +46,9 @@ export const User: UserResolvers = {
     return rows.map((row) => bucketORM(row))
   },
 
-  storeBuckets: async ({ id }, _, __, info) => {
+  storeBuckets: async ({ id }, _, { user }, info) => {
+    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+
     const columns = selectColumnFromField(info, bucketFieldColumnMapping)
 
     const { rows } = await poolQuery(format(await storeBuckets, columns), [id])
@@ -47,7 +56,9 @@ export const User: UserResolvers = {
     return rows.map((row) => bucketORM(row))
   },
 
-  likedStores: async ({ id }, _, __, info) => {
+  likedStores: async ({ id }, _, { user }, info) => {
+    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+
     // 좋아하는 매장을 수정하지 않았다면 레디스 캐시에서 가져오기
 
     const columns = selectColumnFromField(info, storeFieldColumnMapping).map((column) =>

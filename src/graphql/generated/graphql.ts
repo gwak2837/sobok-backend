@@ -65,6 +65,7 @@ export type Feed = {
   store?: Maybe<Store>
 }
 
+/** 성별 */
 export enum Gender {
   Other = 'OTHER',
   Male = 'MALE',
@@ -98,8 +99,6 @@ export type Mutation = {
   login: Scalars['JWT']
   /** 인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환한다. */
   logout: Scalars['Boolean']
-  /** 사용자 선호 해시태그를 입력값 그대로 설정한다. */
-  updatePreferences: Array<Scalars['NonEmptyString']>
 }
 
 export type MutationRegisterArgs = {
@@ -109,10 +108,6 @@ export type MutationRegisterArgs = {
 export type MutationLoginArgs = {
   email: Scalars['EmailAddress']
   passwordHash: Scalars['NonEmptyString']
-}
-
-export type MutationUpdatePreferencesArgs = {
-  preferences: Array<Scalars['NonEmptyString']>
 }
 
 export type News = {
@@ -130,6 +125,7 @@ export type News = {
   store: Store
 }
 
+/** OAuth 공급자 */
 export enum Provider {
   Sobok = 'SOBOK',
   Google = 'GOOGLE',
@@ -139,24 +135,31 @@ export enum Provider {
 
 export type Query = {
   __typename?: 'Query'
+  /** 이메일 중복 여부 검사 */
+  isEmailUnique: Scalars['Boolean']
+  /** 인증 토큰과 같이 요청하면 사용자 정보를 반환 */
   me: User
-  verifyUniqueEmail: Scalars['Boolean']
+  storesByTown: Array<Store>
 }
 
-export type QueryVerifyUniqueEmailArgs = {
+export type QueryIsEmailUniqueArgs = {
   email: Scalars['EmailAddress']
+}
+
+export type QueryStoresByTownArgs = {
+  town: Scalars['NonEmptyString']
 }
 
 export type RegisterInput = {
+  uniqueName: Scalars['NonEmptyString']
   email: Scalars['EmailAddress']
   passwordHash: Scalars['NonEmptyString']
-  name?: Maybe<Scalars['String']>
-  phoneNumber?: Maybe<Scalars['String']>
-  gender?: Maybe<Scalars['String']>
-  birthDate?: Maybe<Scalars['DateTime']>
+  name: Scalars['NonEmptyString']
+  phone: Scalars['NonEmptyString']
+  gender: Gender
+  bio?: Maybe<Scalars['String']>
+  birth?: Maybe<Scalars['Date']>
   imageUrl?: Maybe<Scalars['URL']>
-  deliveryAddress?: Maybe<Scalars['String']>
-  preference?: Maybe<Array<Scalars['NonEmptyString']>>
 }
 
 export type Store = {
@@ -209,23 +212,32 @@ export type User = {
   isEmailVerified: Scalars['Boolean']
   isStarUser: Scalars['Boolean']
   providers: Array<Provider>
-  /** nullable */
   bio?: Maybe<Scalars['String']>
   birth?: Maybe<Scalars['Date']>
   imageUrl?: Maybe<Scalars['URL']>
-  /** from other table */
+  /** 내가 쓴 댓글 */
   comments?: Maybe<Array<Comment>>
+  /** 내가 쓴 피드 */
   feed?: Maybe<Array<Feed>>
+  /** 내 메뉴 버킷 리스트 */
   menuBuckets?: Maybe<Array<Bucket>>
+  /** 내 매장 버킷 리스트 */
   storeBuckets?: Maybe<Array<Bucket>>
-  /** from other table - nullable */
+  /** 사용자가 따르고 있는 다른 사용자 */
   followings?: Maybe<Array<User>>
+  /** 사용자를 따르는 다른 사용자 */
   followers?: Maybe<Array<User>>
+  /** 좋아요 누른 댓글 */
   likedComments?: Maybe<Array<Comment>>
+  /** 좋아요 누른 피드 */
   likedFeed?: Maybe<Array<Feed>>
+  /** 좋아요 누른 메뉴 */
   likedMenus?: Maybe<Array<Menu>>
+  /** 좋아요 누른 소식 */
   likedNews?: Maybe<Array<News>>
+  /** 좋아요 누른 매장 */
   likedStores?: Maybe<Array<Store>>
+  /** 좋아요 누른 트렌드 */
   likedTrends?: Maybe<Array<Trend>>
 }
 
@@ -464,12 +476,6 @@ export type MutationResolvers<
     RequireFields<MutationLoginArgs, 'email' | 'passwordHash'>
   >
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
-  updatePreferences?: Resolver<
-    Array<ResolversTypes['NonEmptyString']>,
-    ParentType,
-    ContextType,
-    RequireFields<MutationUpdatePreferencesArgs, 'preferences'>
-  >
 }
 
 export type NewsResolvers<
@@ -497,12 +503,18 @@ export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']
 > = {
-  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>
-  verifyUniqueEmail?: Resolver<
+  isEmailUnique?: Resolver<
     ResolversTypes['Boolean'],
     ParentType,
     ContextType,
-    RequireFields<QueryVerifyUniqueEmailArgs, 'email'>
+    RequireFields<QueryIsEmailUniqueArgs, 'email'>
+  >
+  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>
+  storesByTown?: Resolver<
+    Array<ResolversTypes['Store']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryStoresByTownArgs, 'town'>
   >
 }
 

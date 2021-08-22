@@ -1,0 +1,3 @@
+type Query {
+  storesByTown(town: NonEmptyString!): [Store!]!
+}

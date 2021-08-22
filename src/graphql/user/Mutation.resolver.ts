@@ -4,6 +4,7 @@ import { MutationResolvers } from 'src/graphql/generated/graphql'
 import { generateJWT } from '../../utils/jwt'
 import { poolQuery } from '../../database/postgres'
 import { importSQL } from '../../utils/commons'
+import { encodeGender } from './ORM'
 
 const register = importSQL(__dirname, 'sql/register.sql')
 const unregister = importSQL(__dirname, 'sql/unregister.sql')
@@ -17,18 +18,15 @@ export const Mutation: MutationResolvers = {
     const passwordHashHash = await hash(input.passwordHash, await genSalt())
 
     const registerValues = [
+      input.uniqueName,
       input.email,
       passwordHashHash,
       input.name,
-      input.phoneNumber,
-      input.gender,
-      input.birthDate,
+      input.phone,
+      encodeGender(input.gender),
+      input.bio,
+      input.birth,
       input.imageUrl,
-      input.deliveryAddress,
-      1,
-      null,
-      null,
-      null,
     ]
 
     const { rows } = await poolQuery(await register, registerValues)
@@ -52,7 +50,7 @@ export const Mutation: MutationResolvers = {
     if (rowCount === 0)
       throw new AuthenticationError('로그인에 실패했어요. 이메일 또는 비밀번호를 확인해주세요.')
 
-    const authenticationSuceed = await compare(passwordHash, rows[0].password_hash_hash)
+    const authenticationSuceed = await compare(passwordHash, rows[0].password_hash)
 
     if (!authenticationSuceed)
       throw new AuthenticationError('로그인에 실패했어요. 이메일 또는 비밀번호를 확인해주세요.')
