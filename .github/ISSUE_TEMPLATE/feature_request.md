@@ -1,3 +1,11 @@
+---
+name: Feature Request
+about: Describe this issue template's purpose here.
+title: ''
+labels: ''
+assignees: ''
+---
+
 ## What to make
 
 <!-- 만들어야 하는 기능에 대해 설명해주세요. 필요에 따라 스크린샷도 첨부해주세요! -->
