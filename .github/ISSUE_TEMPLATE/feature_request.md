@@ -1,23 +1,11 @@
----
-name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: 'enhancement'
-assignees: ''
----
+## What to make
 
-### Is your feature request related to a problem? Please describe.
+<!-- 만들어야 하는 기능에 대해 설명해주세요. 필요에 따라 스크린샷도 첨부해주세요! -->
 
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+## Why is it necessary
 
-### Describe the solution you'd like
+<!-- 왜 이 기능이 필요한지 써주세요. -->
 
-A clear and concise description of what you want to happen.
+## Additional Considerations
 
-### Describe alternatives you've considered
-
-A clear and concise description of any alternative solutions or features you've considered.
-
-### Additional context
-
-Add any other context or screenshots about the feature request here.
+<!-- Optional 해당 기능을 만드는데 추가적으로 고려할 사항에 대해 써주세요 -->
