@@ -1,3 +1,4 @@
 type Query {
   storesByTown(town: NonEmptyString!): [Store!]!
+  storesByCategory(town: NonEmptyString!): [Store!]!
 }
