@@ -1,5 +1,6 @@
+import type { menu } from 'src/database/sobok'
+import type { Menu } from 'src/graphql/generated/graphql'
 import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
-import { Menu } from '../generated/graphql'
 
 export function menuFieldColumnMapping(menuField: keyof Menu) {
   switch (menuField) {
@@ -16,14 +17,14 @@ export function menuFieldColumnMapping(menuField: keyof Menu) {
   }
 }
 
-export function menuORM(menu: Record<string, any>): any {
+export function menuORM(menu: menu): any {
   return {
     ...snakeKeyToCamelKey(menu),
-    category: getCategory(menu.category),
+    category: decodeCategory(menu.category),
   }
 }
 
-function getCategory(id: number) {
+function decodeCategory(id: number) {
   switch (id) {
     case 0:
       return '음료'

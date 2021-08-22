@@ -1,5 +1,6 @@
+import type { store } from 'src/database/sobok'
+import type { Store } from 'src/graphql/generated/graphql'
 import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
-import { Store } from '../generated/graphql'
 
 export function storeFieldColumnMapping(storeField: keyof Store) {
   switch (storeField) {
@@ -18,14 +19,14 @@ export function storeFieldColumnMapping(storeField: keyof Store) {
   }
 }
 
-export function storeORM(store: Record<string, any>): any {
+export function storeORM(store: store): any {
   return {
     ...snakeKeyToCamelKey(store),
-    categories: getCategories(store.categories),
+    categories: decodeCategories(store.categories),
   }
 }
 
-function getCategories(ids: number[]) {
+function decodeCategories(ids: number[]) {
   return ids.map((id) => {
     switch (id) {
       case 0:

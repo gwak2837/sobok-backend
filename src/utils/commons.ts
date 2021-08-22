@@ -48,7 +48,7 @@ export function isUniqueArray(arr: string[]) {
   return true
 }
 
-export function snakeKeyToCamelKey(snakeObject: Record<string, unknown>) {
+export function snakeKeyToCamelKey(snakeObject: Record<string, any>) {
   return Object.fromEntries(
     Object.entries(snakeObject).map(([snakeKey, value]) => [snakeToCamel(snakeKey), value])
   )

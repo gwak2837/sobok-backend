@@ -1,4 +1,6 @@
-import { Gender, Provider, User } from '../generated/graphql'
+import type { user } from 'src/database/sobok'
+import type { User } from 'src/graphql/generated/graphql'
+import { Gender, Provider } from '../generated/graphql'
 import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 
 export function userFieldColumnMapping(userField: keyof User) {
@@ -10,7 +12,7 @@ export function userFieldColumnMapping(userField: keyof User) {
   }
 }
 
-export function userORM(user: Record<string, any>): any {
+export function userORM(user: user): any {
   return {
     ...snakeKeyToCamelKey(user),
     providers: decodeProviders(user),
@@ -18,7 +20,7 @@ export function userORM(user: Record<string, any>): any {
   }
 }
 
-function decodeProviders(user: Record<string, any>) {
+function decodeProviders(user: user) {
   const providers = []
 
   if (user.google_oauth) providers.push(Provider.Google)
@@ -42,7 +44,7 @@ export function encodeGender(gender: Gender) {
   }
 }
 
-function decodeGender(user: Record<string, any>) {
+function decodeGender(user: user) {
   switch (user.gender) {
     case 0:
       return Gender.Other

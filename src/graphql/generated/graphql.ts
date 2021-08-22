@@ -137,13 +137,24 @@ export type Query = {
   __typename?: 'Query'
   /** 이메일 중복 여부 검사 */
   isEmailUnique: Scalars['Boolean']
+  /** 사용자 고유 이름 중복 여부 검사 */
+  isUniqueNameUnique: Scalars['Boolean']
   /** 인증 토큰과 같이 요청하면 사용자 정보를 반환 */
   me: User
+  storesByCategory: Array<Store>
   storesByTown: Array<Store>
 }
 
 export type QueryIsEmailUniqueArgs = {
   email: Scalars['EmailAddress']
+}
+
+export type QueryIsUniqueNameUniqueArgs = {
+  uniqueName: Scalars['NonEmptyString']
+}
+
+export type QueryStoresByCategoryArgs = {
+  town: Scalars['NonEmptyString']
 }
 
 export type QueryStoresByTownArgs = {
@@ -509,7 +520,19 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryIsEmailUniqueArgs, 'email'>
   >
+  isUniqueNameUnique?: Resolver<
+    ResolversTypes['Boolean'],
+    ParentType,
+    ContextType,
+    RequireFields<QueryIsUniqueNameUniqueArgs, 'uniqueName'>
+  >
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>
+  storesByCategory?: Resolver<
+    Array<ResolversTypes['Store']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryStoresByCategoryArgs, 'town'>
+  >
   storesByTown?: Resolver<
     Array<ResolversTypes['Store']>,
     ParentType,

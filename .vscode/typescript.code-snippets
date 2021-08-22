@@ -2,7 +2,8 @@
   "ORM": {
     "prefix": "orm",
     "body": [
-      "import { ${TM_DIRECTORY/.*\\/(.*)$/${1:/capitalize}/g} } from '../generated/graphql'",
+      "import type { ${TM_DIRECTORY/.*\\/(.*)$/${1}/g} } from 'src/database/sobok'",
+      "import type { ${TM_DIRECTORY/.*\\/(.*)$/${1:/capitalize}/g} } from 'src/graphql/generated/graphql'",
       "import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'",
       "",
       "// All GraphQL fields -> Database columns",
@@ -14,7 +15,7 @@
       "}",
       "",
       "// All database columns -> GraphQL fields",
-      "export function ${TM_DIRECTORY/.*\\/(.*)$/$1/g}ORM(${TM_DIRECTORY/.*\\/(.*)$/$1/g}: Record<string, any>): any {",
+      "export function ${TM_DIRECTORY/.*\\/(.*)$/$1/g}ORM(${TM_DIRECTORY/.*\\/(.*)$/$1/g}: ${TM_DIRECTORY/.*\\/(.*)$/${1}/g}): any {",
       "  return {",
       "    ...snakeKeyToCamelKey(${TM_DIRECTORY/.*\\/(.*)$/$1/g}),",
       "  }",
@@ -27,7 +28,7 @@
     "prefix": "query",
     "body": [
       "import format from 'pg-format'",
-      "import { QueryResolvers } from 'src/graphql/generated/graphql'",
+      "import type { QueryResolvers } from 'src/graphql/generated/graphql'",
       "import { importSQL } from '../../utils/commons'",
       "import { poolQuery } from '../../database/postgres'",
       "import { selectColumnFromField } from '../../utils/ORM'",
