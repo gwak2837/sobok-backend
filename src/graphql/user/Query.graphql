@@ -8,4 +8,9 @@ type Query {
   이메일 중복 여부 검사
   """
   isEmailUnique(email: EmailAddress!): Boolean!
+
+  """
+  사용자 고유 이름 중복 여부 검사
+  """
+  isUniqueNameUnique(uniqueName: NonEmptyString!): Boolean!
 }
