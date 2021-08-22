@@ -20,11 +20,11 @@ assignees: ''
 
 ## What's the expected result?
 
-## <!-- 기대하신 동작은 어떤 것이었나요? -->
+<!-- 기대하신 동작은 어떤 것이었나요? -->
 
 ## What's the actual result?
 
-## <!-- 실제로 어떻게 동작하나요? -->
+<!-- 실제로 어떻게 동작하나요? -->
 
 ## Additional details
 
