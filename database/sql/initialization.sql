@@ -123,11 +123,13 @@ CREATE TABLE "comment" (
   comment_id bigint REFERENCES "comment" ON DELETE CASCADE
 );
 
+-- type: 0 = 매장, 1 = 메뉴
 CREATE TABLE bucket (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   modification_time timestamptz NOT NULL DEFAULT NOW(),
   name varchar(50) NOT NULL,
+  "type" int NOT NULL,
   user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE
 );
 
@@ -342,6 +344,7 @@ CREATE TABLE deleted.bucket (
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   modification_time timestamptz NOT NULL DEFAULT NOW(),
   name varchar(50) NOT NULL,
+  "type" int NOT NULL,
   user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE
 );
 
@@ -387,8 +390,11 @@ VALUES (
   )
 RETURNING id INTO user_id;
 
-INSERT INTO bucket (name, user_id)
-VALUES ('기본', user_id);
+INSERT INTO bucket (name, "type", user_id)
+VALUES ('기본', 0, user_id);
+
+INSERT INTO bucket (name, "type", user_id)
+VALUES ('기본', 1, user_id);
 
 END $$;
 
