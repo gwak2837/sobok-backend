@@ -5,13 +5,30 @@ import { poolQuery } from '../../database/postgres'
 import { selectColumnFromField } from '../../utils/ORM'
 import { storeFieldColumnMapping, storeORM } from './ORM'
 
+const storesByCategories = importSQL(__dirname, 'sql/storesByCategories.sql')
 const storesByTown = importSQL(__dirname, 'sql/storesByTown.sql')
+const storesByTownAndCategories = importSQL(__dirname, 'sql/storesByTownAndCategories.sql')
 
 export const Query: QueryResolvers = {
-  storesByTown: async (_, __, ___, info) => {
+  storesByTownAndCategories: async (_, { categories, town }, ___, info) => {
     const columns = selectColumnFromField(info, storeFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await storesByTown, columns))
+    if (!categories) {
+      const { rows } = await poolQuery(format(await storesByTown, columns), [town])
+
+      return rows.map((row) => storeORM(row))
+    }
+
+    if (!town) {
+      const { rows } = await poolQuery(format(await storesByCategories, columns), [categories])
+
+      return rows.map((row) => storeORM(row))
+    }
+
+    const { rows } = await poolQuery(format(await storesByTownAndCategories, columns), [
+      town,
+      categories,
+    ])
 
     return rows.map((row) => storeORM(row))
   },

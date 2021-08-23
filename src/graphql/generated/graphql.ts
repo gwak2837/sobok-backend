@@ -141,8 +141,8 @@ export type Query = {
   isUniqueNameUnique: Scalars['Boolean']
   /** 인증 토큰과 같이 요청하면 사용자 정보를 반환 */
   me: User
-  storesByCategory: Array<Store>
-  storesByTown: Array<Store>
+  /** 동네 및 카테고리별 매장 목록 */
+  storesByTownAndCategories: Array<Store>
 }
 
 export type QueryIsEmailUniqueArgs = {
@@ -153,12 +153,9 @@ export type QueryIsUniqueNameUniqueArgs = {
   uniqueName: Scalars['NonEmptyString']
 }
 
-export type QueryStoresByCategoryArgs = {
-  town: Scalars['NonEmptyString']
-}
-
-export type QueryStoresByTownArgs = {
-  town: Scalars['NonEmptyString']
+export type QueryStoresByTownAndCategoriesArgs = {
+  town?: Maybe<Scalars['NonEmptyString']>
+  categories?: Maybe<Array<Scalars['NonEmptyString']>>
 }
 
 export type RegisterInput = {
@@ -527,17 +524,11 @@ export type QueryResolvers<
     RequireFields<QueryIsUniqueNameUniqueArgs, 'uniqueName'>
   >
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>
-  storesByCategory?: Resolver<
+  storesByTownAndCategories?: Resolver<
     Array<ResolversTypes['Store']>,
     ParentType,
     ContextType,
-    RequireFields<QueryStoresByCategoryArgs, 'town'>
-  >
-  storesByTown?: Resolver<
-    Array<ResolversTypes['Store']>,
-    ParentType,
-    ContextType,
-    RequireFields<QueryStoresByTownArgs, 'town'>
+    RequireFields<QueryStoresByTownAndCategoriesArgs, never>
   >
 }
 
