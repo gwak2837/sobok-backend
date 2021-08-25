@@ -26,8 +26,8 @@ export function storeORM(store: store): any {
   }
 }
 
-function decodeCategories(ids: number[]) {
-  return ids.map((id) => {
+function decodeCategories(ids?: number[]) {
+  return ids?.map((id) => {
     switch (id) {
       case 0:
         return '콘센트'
