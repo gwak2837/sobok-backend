@@ -6,15 +6,24 @@ import { selectColumnFromField } from '../../utils/ORM'
 import { newsFieldColumnMapping, newsORM } from './ORM'
 
 const news = importSQL(__dirname, 'sql/news.sql')
+const newsList = importSQL(__dirname, 'sql/newsList.sql')
 const newsListByStoreId = importSQL(__dirname, 'sql/newsListByStoreId.sql')
 
 export const Query: QueryResolvers = {
-  news: async (_, __, { user }, info) => {
+  news: async (_, { id }, { user }, info) => {
     const columns = selectColumnFromField(info, newsFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await news, columns))
+    const { rows } = await poolQuery(format(await news, columns), [id])
 
     return newsORM(rows[0])
+  },
+
+  newsList: async (_, __, { user }, info) => {
+    const columns = selectColumnFromField(info, newsFieldColumnMapping)
+
+    const { rows } = await poolQuery(format(await newsList, columns))
+
+    return rows.map((row) => newsORM(row))
   },
 
   newsList2: async (_, { storeId }, { user }, info) => {
@@ -22,6 +31,6 @@ export const Query: QueryResolvers = {
 
     const { rows } = await poolQuery(format(await newsListByStoreId, columns), [storeId])
 
-    return newsORM(rows[0])
+    return rows.map((row) => newsORM(row))
   },
 }
