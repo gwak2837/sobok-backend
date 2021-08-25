@@ -3,7 +3,8 @@ import { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
 import { selectColumnFromField } from '../../utils/ORM'
-import { storeFieldColumnMapping, storeORM } from './ORM'
+import { encodeCategories, storeFieldColumnMapping, storeORM } from './ORM'
+import { UserInputError } from 'apollo-server-express'
 
 const store = importSQL(__dirname, 'sql/store.sql')
 const stores = importSQL(__dirname, 'sql/stores.sql')
@@ -21,12 +22,19 @@ export const Query: QueryResolvers = {
   },
 
   stores: async (_, { categories, town }, ___, info) => {
+    if (categories?.length === 0) throw new UserInputError('Invalid categories value')
+
     const columns = selectColumnFromField(info, storeFieldColumnMapping)
+
+    const encodedCategories = encodeCategories(categories as string[] | undefined)
+
+    if (encodedCategories?.some((encodeCategory) => encodeCategory === null))
+      throw new UserInputError('Invalid categories value')
 
     if (town && categories) {
       const { rows } = await poolQuery(format(await storesByTownAndCategories, columns), [
         town,
-        categories,
+        encodedCategories,
       ])
 
       return rows.map((row) => storeORM(row))
@@ -39,7 +47,7 @@ export const Query: QueryResolvers = {
     }
 
     if (categories) {
-      const { rows } = await poolQuery(format(await storesByCategories, columns), [categories])
+      const { rows } = await poolQuery(format(await storesByCategories, columns), [[1, 2]])
 
       return rows.map((row) => storeORM(row))
     }

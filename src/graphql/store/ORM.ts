@@ -26,6 +26,35 @@ export function storeORM(store: store): any {
   }
 }
 
+export function encodeCategories(categories?: string[]) {
+  return categories?.map((category) => {
+    switch (category) {
+      case '콘센트':
+        return 0
+      case '넓은테이블':
+        return 1
+      case '편한의자':
+        return 2
+      case '애견동반':
+        return 3
+      case '통유리':
+        return 4
+      case '흡연실':
+        return 5
+      case '노키즈존':
+        return 6
+      case '주차장':
+        return 7
+      case '루프탑':
+        return 8
+      case '야외석':
+        return 9
+      default:
+        return null
+    }
+  })
+}
+
 function decodeCategories(ids?: number[]) {
   return ids?.map((id) => {
     switch (id) {
