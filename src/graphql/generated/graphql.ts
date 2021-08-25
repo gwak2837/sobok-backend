@@ -144,6 +144,7 @@ export type Query = {
   /** 인증 토큰과 같이 요청하면 사용자 정보를 반환 */
   me: User
   menu?: Maybe<Menu>
+  menu2?: Maybe<Menu>
   menus?: Maybe<Array<Menu>>
   menus2?: Maybe<Array<Menu>>
   /** 특정 매장 정보 */
@@ -161,9 +162,12 @@ export type QueryIsUniqueNameUniqueArgs = {
 }
 
 export type QueryMenuArgs = {
-  id?: Maybe<Scalars['ID']>
-  name?: Maybe<Scalars['NonEmptyString']>
-  storeId?: Maybe<Scalars['ID']>
+  id: Scalars['ID']
+}
+
+export type QueryMenu2Args = {
+  storeId: Scalars['ID']
+  name: Scalars['NonEmptyString']
 }
 
 export type QueryMenusArgs = {
@@ -554,7 +558,13 @@ export type QueryResolvers<
     Maybe<ResolversTypes['Menu']>,
     ParentType,
     ContextType,
-    RequireFields<QueryMenuArgs, never>
+    RequireFields<QueryMenuArgs, 'id'>
+  >
+  menu2?: Resolver<
+    Maybe<ResolversTypes['Menu']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryMenu2Args, 'storeId' | 'name'>
   >
   menus?: Resolver<
     Maybe<Array<ResolversTypes['Menu']>>,

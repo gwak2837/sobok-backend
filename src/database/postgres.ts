@@ -11,7 +11,8 @@ export const pool = new Pool({
 
 export async function poolQuery(query: string, values?: unknown[]) {
   return pool.query(query, values).catch((error) => {
-    throw new DatabaseQueryError(error)
+    if (process.env.NODE_ENV === 'production') throw new DatabaseQueryError('Database query error')
+    else throw new DatabaseQueryError(error)
   })
 }
 
@@ -19,7 +20,8 @@ export async function transactionQuery(client: PoolClient, sql: string, values?:
   return client.query(sql, values).catch(async (error) => {
     await client.query('ROLLBACK')
     client.release()
-    throw new DatabaseQueryError(error)
+    if (process.env.NODE_ENV === 'production') throw new DatabaseQueryError('Database query error')
+    else throw new DatabaseQueryError(error)
   })
 }
 
