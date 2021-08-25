@@ -5,13 +5,22 @@ import { poolQuery } from '../../database/postgres'
 import { selectColumnFromField } from '../../utils/ORM'
 import { storeFieldColumnMapping, storeORM } from './ORM'
 
+const store = importSQL(__dirname, 'sql/store.sql')
 const stores = importSQL(__dirname, 'sql/stores.sql')
 const storesByCategories = importSQL(__dirname, 'sql/storesByCategories.sql')
 const storesByTown = importSQL(__dirname, 'sql/storesByTown.sql')
 const storesByTownAndCategories = importSQL(__dirname, 'sql/storesByTownAndCategories.sql')
 
 export const Query: QueryResolvers = {
-  storesByTownAndCategories: async (_, { categories, town }, ___, info) => {
+  store: async (_, { id }, ___, info) => {
+    const columns = selectColumnFromField(info, storeFieldColumnMapping)
+
+    const { rows } = await poolQuery(format(await store, columns), [id])
+
+    return storeORM(rows[0])
+  },
+
+  stores: async (_, { categories, town }, ___, info) => {
     const columns = selectColumnFromField(info, storeFieldColumnMapping)
 
     if (town && categories) {
