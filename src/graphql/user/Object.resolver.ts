@@ -8,12 +8,14 @@ import { importSQL, removeDoubleQuotesAround } from '../../utils/commons'
 import { selectColumnFromField } from '../../utils/ORM'
 import { bucketFieldColumnMapping, bucketORM } from '../bucket/ORM'
 import { AuthenticationError } from 'apollo-server-express'
+import { menuFieldColumnMapping, menuORM } from '../menu/ORM'
 
 const comments = importSQL(__dirname, 'sql/comments.sql')
 const feed = importSQL(__dirname, 'sql/feed.sql')
+const likedMenus = importSQL(__dirname, 'sql/likedMenus.sql')
+const likedStores = importSQL(__dirname, 'sql/likedStores.sql')
 const menuBuckets = importSQL(__dirname, 'sql/menuBuckets.sql')
 const storeBuckets = importSQL(__dirname, 'sql/storeBuckets.sql')
-const likedStores = importSQL(__dirname, 'sql/likedStores.sql')
 
 export const User: UserResolvers = {
   comments: async ({ id }, _, { user }, info) => {
@@ -36,24 +38,23 @@ export const User: UserResolvers = {
     return rows.map((row) => commentORM(row))
   },
 
-  menuBuckets: async ({ id }, _, { user }, info) => {
+  likedMenus: async ({ id }, _, { user }, info) => {
     if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
-    const columns = selectColumnFromField(info, bucketFieldColumnMapping)
+    // 좋아하는 메뉴를 수정하지 않았다면 레디스 캐시에서 가져오기
 
-    const { rows } = await poolQuery(format(await menuBuckets, columns), [id])
+    const columns = selectColumnFromField(info, menuFieldColumnMapping).map((column) =>
+      column === 'user_id' ? 'menu.user_id' : column
+    )
 
-    return rows.map((row) => bucketORM(row))
-  },
+    const formattedSQL = removeDoubleQuotesAround(
+      ['menu.user_id'],
+      format(await likedMenus, columns)
+    )
 
-  storeBuckets: async ({ id }, _, { user }, info) => {
-    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+    const { rows } = await poolQuery(formattedSQL, [id])
 
-    const columns = selectColumnFromField(info, bucketFieldColumnMapping)
-
-    const { rows } = await poolQuery(format(await storeBuckets, columns), [id])
-
-    return rows.map((row) => bucketORM(row))
+    return rows.map((row) => menuORM(row))
   },
 
   likedStores: async ({ id }, _, { user }, info) => {
@@ -73,5 +74,25 @@ export const User: UserResolvers = {
     const { rows } = await poolQuery(formattedSQL, [id])
 
     return rows.map((row) => storeORM(row))
+  },
+
+  menuBuckets: async ({ id }, _, { user }, info) => {
+    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+
+    const columns = selectColumnFromField(info, bucketFieldColumnMapping)
+
+    const { rows } = await poolQuery(format(await menuBuckets, columns), [id])
+
+    return rows.map((row) => bucketORM(row))
+  },
+
+  storeBuckets: async ({ id }, _, { user }, info) => {
+    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+
+    const columns = selectColumnFromField(info, bucketFieldColumnMapping)
+
+    const { rows } = await poolQuery(format(await storeBuckets, columns), [id])
+
+    return rows.map((row) => bucketORM(row))
   },
 }
