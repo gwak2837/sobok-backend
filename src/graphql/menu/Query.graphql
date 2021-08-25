@@ -1,5 +1,7 @@
 type Query {
-  menu(id: ID, name: NonEmptyString, storeId: ID): Menu
+  menu(id: ID!): Menu
+
+  menu2(storeId: ID!, name: NonEmptyString!): Menu
 
   menus(town: NonEmptyString, category: NonEmptyString): [Menu!]
 

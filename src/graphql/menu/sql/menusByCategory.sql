@@ -1,3 +1,3 @@
 SELECT %I
 FROM menu
-WHERE categories = $1;
+WHERE category = $1;
