@@ -150,6 +150,9 @@ export type Query = {
   menu2?: Maybe<Menu>
   menus?: Maybe<Array<Menu>>
   menus2?: Maybe<Array<Menu>>
+  news?: Maybe<News>
+  newsList?: Maybe<Array<News>>
+  newsList2?: Maybe<Array<News>>
   /** 특정 매장 정보 */
   store?: Maybe<Store>
   /** 동네 및 카테고리별 매장 목록 */
@@ -192,6 +195,14 @@ export type QueryMenusArgs = {
 
 export type QueryMenus2Args = {
   storeId?: Maybe<Scalars['ID']>
+}
+
+export type QueryNewsArgs = {
+  id: Scalars['ID']
+}
+
+export type QueryNewsList2Args = {
+  storeId: Scalars['ID']
 }
 
 export type QueryStoreArgs = {
@@ -610,6 +621,19 @@ export type QueryResolvers<
     ParentType,
     ContextType,
     RequireFields<QueryMenus2Args, never>
+  >
+  news?: Resolver<
+    Maybe<ResolversTypes['News']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryNewsArgs, 'id'>
+  >
+  newsList?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
+  newsList2?: Resolver<
+    Maybe<Array<ResolversTypes['News']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryNewsList2Args, 'storeId'>
   >
   store?: Resolver<
     Maybe<ResolversTypes['Store']>,
