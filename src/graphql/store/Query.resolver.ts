@@ -3,21 +3,38 @@ import { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
 import { selectColumnFromField } from '../../utils/ORM'
-import { storeFieldColumnMapping, storeORM } from './ORM'
+import { encodeCategories, storeFieldColumnMapping, storeORM } from './ORM'
+import { UserInputError } from 'apollo-server-express'
 
+const store = importSQL(__dirname, 'sql/store.sql')
 const stores = importSQL(__dirname, 'sql/stores.sql')
 const storesByCategories = importSQL(__dirname, 'sql/storesByCategories.sql')
 const storesByTown = importSQL(__dirname, 'sql/storesByTown.sql')
 const storesByTownAndCategories = importSQL(__dirname, 'sql/storesByTownAndCategories.sql')
 
 export const Query: QueryResolvers = {
-  storesByTownAndCategories: async (_, { categories, town }, ___, info) => {
+  store: async (_, { id }, ___, info) => {
     const columns = selectColumnFromField(info, storeFieldColumnMapping)
+
+    const { rows } = await poolQuery(format(await store, columns), [id])
+
+    return storeORM(rows[0])
+  },
+
+  stores: async (_, { categories, town }, ___, info) => {
+    if (categories?.length === 0) throw new UserInputError('Invalid categories value')
+
+    const columns = selectColumnFromField(info, storeFieldColumnMapping)
+
+    const encodedCategories = encodeCategories(categories as string[] | undefined)
+
+    if (encodedCategories?.some((encodeCategory) => encodeCategory === null))
+      throw new UserInputError('Invalid categories value')
 
     if (town && categories) {
       const { rows } = await poolQuery(format(await storesByTownAndCategories, columns), [
         town,
-        categories,
+        encodedCategories,
       ])
 
       return rows.map((row) => storeORM(row))
@@ -30,7 +47,7 @@ export const Query: QueryResolvers = {
     }
 
     if (categories) {
-      const { rows } = await poolQuery(format(await storesByCategories, columns), [categories])
+      const { rows } = await poolQuery(format(await storesByCategories, columns), [[1, 2]])
 
       return rows.map((row) => storeORM(row))
     }

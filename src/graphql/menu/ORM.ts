@@ -24,6 +24,27 @@ export function menuORM(menu: menu): any {
   }
 }
 
+export function encodeCategory(id: string) {
+  switch (id) {
+    case '음료':
+      return 0
+    case '케이크':
+      return 1
+    case '구움과자':
+      return 2
+    case '커피':
+      return 3
+    case '베이커리':
+      return 4
+    case '마카롱':
+      return 5
+    case '브런치':
+      return 6
+    default:
+      return null
+  }
+}
+
 function decodeCategory(id: number) {
   switch (id) {
     case 0:

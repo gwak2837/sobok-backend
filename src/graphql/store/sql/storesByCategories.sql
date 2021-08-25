@@ -1,3 +1,3 @@
 SELECT %I
 FROM store
-WHERE categories = ANY($1);
+WHERE categories && $1;
