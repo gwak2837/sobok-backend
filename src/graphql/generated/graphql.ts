@@ -93,23 +93,23 @@ export type Menu = {
 
 export type Mutation = {
   __typename?: 'Mutation'
-  /** 회원가입에 필요한 정보를 주면 성공했을 때 인증 토큰을 반환한다. */
-  register: Scalars['JWT']
-  /** 회원탈퇴 시 사용자 정보가 모두 초기화된다. */
-  unregister: Scalars['Boolean']
-  /** 이메일과 1번 해싱한 비밀번호를 전송하면 인증 토큰을 반환한다. */
-  login: Scalars['JWT']
+  /** 고유 이름 또는 이메일과 1번 해싱한 비밀번호를 전송하면 인증 토큰을 반환한다. */
+  login?: Maybe<Scalars['JWT']>
   /** 인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환한다. */
   logout: Scalars['Boolean']
+  /** 회원가입에 필요한 정보를 주면 성공했을 때 인증 토큰을 반환한다. */
+  register?: Maybe<Scalars['JWT']>
+  /** 회원탈퇴 시 사용자 정보가 모두 초기화된다. */
+  unregister: Scalars['Boolean']
+}
+
+export type MutationLoginArgs = {
+  uniqueNameOrEmail: Scalars['NonEmptyString']
+  passwordHash: Scalars['NonEmptyString']
 }
 
 export type MutationRegisterArgs = {
   input: RegisterInput
-}
-
-export type MutationLoginArgs = {
-  email: Scalars['EmailAddress']
-  passwordHash: Scalars['NonEmptyString']
 }
 
 export type News = {
@@ -137,9 +137,12 @@ export enum Provider {
 
 export type Query = {
   __typename?: 'Query'
+  /** 피드 상세 */
   feed?: Maybe<Feed>
-  feedList?: Maybe<Array<Feed>>
-  feedList2?: Maybe<Array<Feed>>
+  /** 특정 매장 피드 목록 */
+  feed2?: Maybe<Array<Feed>>
+  /** 특정 동네 피드 목록 */
+  feed3?: Maybe<Array<Feed>>
   /** 이메일 중복 여부 검사 */
   isEmailUnique: Scalars['Boolean']
   /** 사용자 고유 이름 중복 여부 검사 */
@@ -150,9 +153,12 @@ export type Query = {
   menu2?: Maybe<Menu>
   menus?: Maybe<Array<Menu>>
   menus2?: Maybe<Array<Menu>>
+  /** 소식 상세 */
   news?: Maybe<News>
-  newsList?: Maybe<Array<News>>
-  newsList2?: Maybe<Array<News>>
+  /** 전체 매장 소식 목록 */
+  news2?: Maybe<Array<News>>
+  /** 특정 매장 소식 목록 */
+  news3?: Maybe<Array<News>>
   /** 특정 매장 정보 */
   store?: Maybe<Store>
   /** 동네 및 카테고리별 매장 목록 */
@@ -163,11 +169,11 @@ export type QueryFeedArgs = {
   id: Scalars['ID']
 }
 
-export type QueryFeedListArgs = {
+export type QueryFeed2Args = {
   storeId: Scalars['ID']
 }
 
-export type QueryFeedList2Args = {
+export type QueryFeed3Args = {
   town: Scalars['ID']
 }
 
@@ -201,7 +207,7 @@ export type QueryNewsArgs = {
   id: Scalars['ID']
 }
 
-export type QueryNewsList2Args = {
+export type QueryNews3Args = {
   storeId: Scalars['ID']
 }
 
@@ -283,10 +289,6 @@ export type User = {
   comments?: Maybe<Array<Comment>>
   /** 내가 쓴 피드 */
   feed?: Maybe<Array<Feed>>
-  /** 내 메뉴 버킷 리스트 */
-  menuBuckets?: Maybe<Array<Bucket>>
-  /** 내 매장 버킷 리스트 */
-  storeBuckets?: Maybe<Array<Bucket>>
   /** 사용자가 따르고 있는 다른 사용자 */
   followings?: Maybe<Array<User>>
   /** 사용자를 따르는 다른 사용자 */
@@ -303,6 +305,10 @@ export type User = {
   likedStores?: Maybe<Array<Store>>
   /** 좋아요 누른 트렌드 */
   likedTrends?: Maybe<Array<Trend>>
+  /** 내 메뉴 버킷 리스트 */
+  menuBuckets?: Maybe<Array<Bucket>>
+  /** 내 매장 버킷 리스트 */
+  storeBuckets?: Maybe<Array<Bucket>>
 }
 
 export type ResolverTypeWrapper<T> = Promise<T> | T
@@ -526,20 +532,20 @@ export type MutationResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']
 > = {
+  login?: Resolver<
+    Maybe<ResolversTypes['JWT']>,
+    ParentType,
+    ContextType,
+    RequireFields<MutationLoginArgs, 'uniqueNameOrEmail' | 'passwordHash'>
+  >
+  logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   register?: Resolver<
-    ResolversTypes['JWT'],
+    Maybe<ResolversTypes['JWT']>,
     ParentType,
     ContextType,
     RequireFields<MutationRegisterArgs, 'input'>
   >
   unregister?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
-  login?: Resolver<
-    ResolversTypes['JWT'],
-    ParentType,
-    ContextType,
-    RequireFields<MutationLoginArgs, 'email' | 'passwordHash'>
-  >
-  logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
 }
 
 export type NewsResolvers<
@@ -573,17 +579,17 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryFeedArgs, 'id'>
   >
-  feedList?: Resolver<
+  feed2?: Resolver<
     Maybe<Array<ResolversTypes['Feed']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryFeedListArgs, 'storeId'>
+    RequireFields<QueryFeed2Args, 'storeId'>
   >
-  feedList2?: Resolver<
+  feed3?: Resolver<
     Maybe<Array<ResolversTypes['Feed']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryFeedList2Args, 'town'>
+    RequireFields<QueryFeed3Args, 'town'>
   >
   isEmailUnique?: Resolver<
     ResolversTypes['Boolean'],
@@ -628,12 +634,12 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryNewsArgs, 'id'>
   >
-  newsList?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
-  newsList2?: Resolver<
+  news2?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
+  news3?: Resolver<
     Maybe<Array<ResolversTypes['News']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryNewsList2Args, 'storeId'>
+    RequireFields<QueryNews3Args, 'storeId'>
   >
   store?: Resolver<
     Maybe<ResolversTypes['Store']>,
@@ -712,8 +718,6 @@ export type UserResolvers<
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>
   comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
   feed?: Resolver<Maybe<Array<ResolversTypes['Feed']>>, ParentType, ContextType>
-  menuBuckets?: Resolver<Maybe<Array<ResolversTypes['Bucket']>>, ParentType, ContextType>
-  storeBuckets?: Resolver<Maybe<Array<ResolversTypes['Bucket']>>, ParentType, ContextType>
   followings?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>
   followers?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>
   likedComments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
@@ -722,6 +726,8 @@ export type UserResolvers<
   likedNews?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
   likedStores?: Resolver<Maybe<Array<ResolversTypes['Store']>>, ParentType, ContextType>
   likedTrends?: Resolver<Maybe<Array<ResolversTypes['Trend']>>, ParentType, ContextType>
+  menuBuckets?: Resolver<Maybe<Array<ResolversTypes['Bucket']>>, ParentType, ContextType>
+  storeBuckets?: Resolver<Maybe<Array<ResolversTypes['Bucket']>>, ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
