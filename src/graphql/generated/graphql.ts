@@ -137,6 +137,9 @@ export enum Provider {
 
 export type Query = {
   __typename?: 'Query'
+  feed?: Maybe<Feed>
+  feedList?: Maybe<Array<Feed>>
+  feedList2?: Maybe<Array<Feed>>
   /** 이메일 중복 여부 검사 */
   isEmailUnique: Scalars['Boolean']
   /** 사용자 고유 이름 중복 여부 검사 */
@@ -151,6 +154,18 @@ export type Query = {
   store?: Maybe<Store>
   /** 동네 및 카테고리별 매장 목록 */
   stores: Array<Store>
+}
+
+export type QueryFeedArgs = {
+  id: Scalars['ID']
+}
+
+export type QueryFeedListArgs = {
+  storeId: Scalars['ID']
+}
+
+export type QueryFeedList2Args = {
+  town: Scalars['ID']
 }
 
 export type QueryIsEmailUniqueArgs = {
@@ -541,6 +556,24 @@ export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']
 > = {
+  feed?: Resolver<
+    Maybe<ResolversTypes['Feed']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryFeedArgs, 'id'>
+  >
+  feedList?: Resolver<
+    Maybe<Array<ResolversTypes['Feed']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryFeedListArgs, 'storeId'>
+  >
+  feedList2?: Resolver<
+    Maybe<Array<ResolversTypes['Feed']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryFeedList2Args, 'town'>
+  >
   isEmailUnique?: Resolver<
     ResolversTypes['Boolean'],
     ParentType,

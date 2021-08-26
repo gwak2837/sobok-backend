@@ -1,0 +1,7 @@
+type Query {
+  feed(id: ID!): Feed
+
+  feedList(storeId: ID!): [Feed!]
+
+  feedList2(town: ID!): [Feed!]
+}
