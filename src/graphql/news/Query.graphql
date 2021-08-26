@@ -1,0 +1,16 @@
+type Query {
+  """
+  소식 상세
+  """
+  news(id: ID!): News
+
+  """
+  전체 매장 소식 목록
+  """
+  newsList: [News!]
+
+  """
+  특정 매장 소식 목록
+  """
+  newsList2(storeId: ID!): [News!]
+}
