@@ -56,13 +56,16 @@ export type Feed = {
   imageUrls: Array<Scalars['URL']>
   likeCount: Scalars['Int']
   commentCount: Scalars['Int']
-  /** from other table */
+  /** 피드에 태그된 매장 */
+  store: Store
+  /** 피드 작성자 */
   user: User
-  /** from other table - nullable */
+  /** 피드에 달린 댓글 */
   comments?: Maybe<Array<Comment>>
+  /** 피드에 달린 해시태그 */
   hashtags?: Maybe<Array<Scalars['NonEmptyString']>>
+  /** 피드에 태그된 메뉴 목록 */
   menus?: Maybe<Array<Menu>>
-  store?: Maybe<Store>
 }
 
 /** 성별 */
@@ -81,6 +84,7 @@ export type Menu = {
   price: Scalars['Int']
   imageUrls: Array<Scalars['URL']>
   category: Scalars['NonEmptyString']
+  storeId: Scalars['ID']
   /** 로그인한 사용자가 이 메뉴를 버킷에 담은 여부 */
   isInBucket: Scalars['Boolean']
   /** 로그인한 사용자가 이 메뉴를 좋아하는 여부 */
@@ -120,10 +124,10 @@ export type News = {
   title: Scalars['NonEmptyString']
   contents: Array<Scalars['NonEmptyString']>
   category: Scalars['NonEmptyString']
-  /** nullable */
   imageUrls?: Maybe<Array<Scalars['URL']>>
-  /** from other table */
+  /** 로그인한 사용자가 이 메뉴를 좋아하는 여부 */
   isLiked: Scalars['Boolean']
+  /** 이 소식을 올린 매장 */
   store: Store
 }
 
@@ -159,6 +163,9 @@ export type Query = {
   news2?: Maybe<Array<News>>
   /** 특정 매장 소식 목록 */
   news3?: Maybe<Array<News>>
+  searchFeed?: Maybe<Array<Menu>>
+  searchMenus?: Maybe<Array<Menu>>
+  searchStores?: Maybe<Array<Menu>>
   /** 특정 매장 정보 */
   store?: Maybe<Store>
   /** 동네 및 카테고리별 매장 목록 */
@@ -209,6 +216,19 @@ export type QueryNewsArgs = {
 
 export type QueryNews3Args = {
   storeId: Scalars['ID']
+  categories?: Maybe<Array<Scalars['NonEmptyString']>>
+}
+
+export type QuerySearchFeedArgs = {
+  hashtags: Array<Scalars['NonEmptyString']>
+}
+
+export type QuerySearchMenusArgs = {
+  hashtags: Array<Scalars['NonEmptyString']>
+}
+
+export type QuerySearchStoresArgs = {
+  hashtags: Array<Scalars['NonEmptyString']>
 }
 
 export type QueryStoreArgs = {
@@ -498,11 +518,11 @@ export type FeedResolvers<
   imageUrls?: Resolver<Array<ResolversTypes['URL']>, ParentType, ContextType>
   likeCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
   commentCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  store?: Resolver<ResolversTypes['Store'], ParentType, ContextType>
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
   comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
   hashtags?: Resolver<Maybe<Array<ResolversTypes['NonEmptyString']>>, ParentType, ContextType>
   menus?: Resolver<Maybe<Array<ResolversTypes['Menu']>>, ParentType, ContextType>
-  store?: Resolver<Maybe<ResolversTypes['Store']>, ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
@@ -521,6 +541,7 @@ export type MenuResolvers<
   price?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
   imageUrls?: Resolver<Array<ResolversTypes['URL']>, ParentType, ContextType>
   category?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  storeId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   isInBucket?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   isLiked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType>
@@ -640,6 +661,24 @@ export type QueryResolvers<
     ParentType,
     ContextType,
     RequireFields<QueryNews3Args, 'storeId'>
+  >
+  searchFeed?: Resolver<
+    Maybe<Array<ResolversTypes['Menu']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QuerySearchFeedArgs, 'hashtags'>
+  >
+  searchMenus?: Resolver<
+    Maybe<Array<ResolversTypes['Menu']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QuerySearchMenusArgs, 'hashtags'>
+  >
+  searchStores?: Resolver<
+    Maybe<Array<ResolversTypes['Menu']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QuerySearchStoresArgs, 'hashtags'>
   >
   store?: Resolver<
     Maybe<ResolversTypes['Store']>,
