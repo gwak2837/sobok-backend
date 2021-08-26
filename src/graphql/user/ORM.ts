@@ -7,6 +7,30 @@ export function userFieldColumnMapping(userField: keyof User) {
   switch (userField) {
     case 'providers':
       return ['google_oauth', 'naver_oauth', 'kakao_oauth']
+    case 'comments':
+      return ''
+    case 'feed':
+      return ''
+    case 'followings':
+      return ''
+    case 'followers':
+      return ''
+    case 'likedComments':
+      return ''
+    case 'likedFeed':
+      return ''
+    case 'likedMenus':
+      return ''
+    case 'likedNews':
+      return ''
+    case 'likedStores':
+      return ''
+    case 'likedTrends':
+      return ''
+    case 'menuBuckets':
+      return ''
+    case 'storeBuckets':
+      return ''
     default:
       return camelToSnake(userField)
   }

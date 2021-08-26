@@ -5,6 +5,16 @@ import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 // All GraphQL fields -> Database columns
 export function feedFieldColumnMapping(feedField: keyof Feed) {
   switch (feedField) {
+    case 'user':
+      return 'user_id'
+    case 'comments':
+      return 'id'
+    case 'hashtags':
+      return 'id'
+    case 'menus':
+      return 'id'
+    case 'store':
+      return 'store_id'
     default:
       return camelToSnake(feedField)
   }
