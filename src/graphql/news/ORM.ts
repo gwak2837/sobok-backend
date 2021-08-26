@@ -22,7 +22,7 @@ export function newsORM(news: news): any {
   }
 }
 
-function encodeCategory(category: string) {
+export function encodeCategory(category: string) {
   switch (category) {
     case '오늘의라인업':
       return 0
