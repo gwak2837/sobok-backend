@@ -18,7 +18,7 @@ export const Query: QueryResolvers = {
     return newsORM(rows[0])
   },
 
-  newsList: async (_, __, { user }, info) => {
+  news2: async (_, __, { user }, info) => {
     const columns = selectColumnFromField(info, newsFieldColumnMapping)
 
     const { rows } = await poolQuery(format(await newsList, columns))
@@ -26,7 +26,7 @@ export const Query: QueryResolvers = {
     return rows.map((row) => newsORM(row))
   },
 
-  newsList2: async (_, { storeId }, { user }, info) => {
+  news3: async (_, { storeId }, { user }, info) => {
     const columns = selectColumnFromField(info, newsFieldColumnMapping)
 
     const { rows } = await poolQuery(format(await newsListByStoreId, columns), [storeId])
