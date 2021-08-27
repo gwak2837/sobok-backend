@@ -12,8 +12,6 @@ export const Menu: MenuResolvers = {
   hashtags: async ({ id }, __) => {
     const { rows } = await poolQuery(await hashtags, [id])
 
-    console.log(rows)
-
     return rows.map((row) => row.name)
   },
 
