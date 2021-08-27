@@ -21,7 +21,7 @@ export const apolloServer = new ApolloServer({
 
     if (!rowCount) return { user: null } // 로그아웃 등으로 인해 JWT가 유효하지 않을 때
 
-    return { user: userORM(rows[0]) }
+    return { user: rows[0].id }
   },
   introspection: true,
   schema,
