@@ -6,6 +6,7 @@ type Menu {
   price: Int!
   imageUrls: [URL!]!
   category: NonEmptyString!
+  storeId: ID!
 
   # from other table
   """

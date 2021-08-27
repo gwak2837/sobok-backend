@@ -24,12 +24,12 @@ export const Query: QueryResolvers = {
   stores: async (_, { categories, town }, ___, info) => {
     if (categories?.length === 0) throw new UserInputError('Invalid categories value')
 
-    const columns = selectColumnFromField(info, storeFieldColumnMapping)
-
     const encodedCategories = encodeCategories(categories as string[] | undefined)
 
     if (encodedCategories?.some((encodeCategory) => encodeCategory === null))
       throw new UserInputError('Invalid categories value')
+
+    const columns = selectColumnFromField(info, storeFieldColumnMapping)
 
     if (town && categories) {
       const { rows } = await poolQuery(format(await storesByTownAndCategories, columns), [

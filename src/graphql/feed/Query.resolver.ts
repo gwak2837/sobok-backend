@@ -18,7 +18,7 @@ export const Query: QueryResolvers = {
     return feedORM(rows[0])
   },
 
-  feedList: async (_, { storeId }, { user }, info) => {
+  feed2: async (_, { storeId }, { user }, info) => {
     const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
     const { rows } = await poolQuery(format(await feedListByStoreId, columns), [storeId])
@@ -26,7 +26,7 @@ export const Query: QueryResolvers = {
     return rows.map((row) => feedORM(row))
   },
 
-  feedList2: async (_, { town }, { user }, info) => {
+  feed3: async (_, { town }, { user }, info) => {
     const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
     const columnsWithTable = columns.map((column) => `feed.${column}`)

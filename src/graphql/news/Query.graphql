@@ -7,10 +7,10 @@ type Query {
   """
   전체 매장 소식 목록
   """
-  newsList: [News!]
+  news2: [News!]
 
   """
   특정 매장 소식 목록
   """
-  newsList2(storeId: ID!): [News!]
+  news3(storeId: ID!, categories: [NonEmptyString!]): [News!]
 }

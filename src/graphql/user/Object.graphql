@@ -47,17 +47,6 @@ type User {
   feed: [Feed!]
 
   """
-  내 메뉴 버킷 리스트
-  """
-  menuBuckets: [Bucket!]
-
-  """
-  내 매장 버킷 리스트
-  """
-  storeBuckets: [Bucket!]
-
-  # from other table - nullable
-  """
   사용자가 따르고 있는 다른 사용자
   """
   followings: [User!]
@@ -96,4 +85,14 @@ type User {
   좋아요 누른 트렌드
   """
   likedTrends: [Trend!]
+
+  """
+  내 메뉴 버킷 리스트
+  """
+  menuBuckets: [Bucket!]
+
+  """
+  내 매장 버킷 리스트
+  """
+  storeBuckets: [Bucket!]
 }

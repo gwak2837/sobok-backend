@@ -7,10 +7,10 @@ type Query {
   """
   특정 매장 피드 목록
   """
-  feedList(storeId: ID!): [Feed!]
+  feed2(storeId: ID!): [Feed!]
 
   """
   특정 동네 피드 목록
   """
-  feedList2(town: ID!): [Feed!]
+  feed3(town: ID!): [Feed!]
 }

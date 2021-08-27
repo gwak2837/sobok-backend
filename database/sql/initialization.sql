@@ -1010,10 +1010,11 @@ END IF;
 
 END $$;
 
+-- 비밀번호: 1234
 SELECT create_user (
-    'bok1',
-    'bok1@sindy.com',
-    '12345',
+    'bok',
+    'bok@sindy.in',
+    '$2a$10$Cx/I36RMLhWhfM7YCiDxwut.sHfeiJkrKTR.rCCKa6dJGofSbqy6O',
     '김효진',
     '010-6866-4135',
     2,
@@ -1022,10 +1023,11 @@ SELECT create_user (
     'https://storage.googleapis.com/sobok/%EA%B9%80%ED%9A%A8%EC%A7%84.webp'
   );
 
+-- 비밀번호: 5678
 SELECT create_user (
     'bok2',
-    'bok2@sindy.com',
-    '12345',
+    'bok2@sindy.in',
+    '$2a$10$PtO9itHS8k.pRmrO1uF4r.wuQCp0Ikf/ZLaEJUXB.HzPBiVAhITCW',
     '곽태욱',
     '010-9203-2837',
     1,
