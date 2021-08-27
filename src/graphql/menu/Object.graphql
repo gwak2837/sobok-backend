@@ -7,19 +7,25 @@ type Menu {
   imageUrls: [URL!]!
   category: NonEmptyString!
 
+  # from other table
   """
-  from other table
+  로그인한 사용자가 이 메뉴를 버킷에 담은 여부
   """
-  # 로그인한 사용자가 이 메뉴를 버킷에 담은 여부
   isInBucket: Boolean!
-  # 로그인한 사용자가 이 메뉴를 좋아하는 여부
-  isLiked: Boolean!
-  # 이 메뉴를 판매하는 매장
-  store: Store!
 
   """
-  from other table - nullable
+  로그인한 사용자가 이 메뉴를 좋아하는 여부
   """
-  # 메뉴에 달린 해시태그
+  isLiked: Boolean!
+
+  """
+  이 메뉴를 판매하는 매장
+  """
+  store: Store!
+
+  # from other table - nullable
+  """
+  메뉴에 달린 해시태그
+  """
   hashtags: [NonEmptyString!]
 }

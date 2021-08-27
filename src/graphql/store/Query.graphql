@@ -1,3 +1,11 @@
 type Query {
-  storesByTown(town: NonEmptyString!): [Store!]!
+  """
+  특정 매장 정보
+  """
+  store(id: ID!): Store
+
+  """
+  동네 및 카테고리별 매장 목록
+  """
+  stores(town: NonEmptyString, categories: [NonEmptyString!]): [Store!]!
 }

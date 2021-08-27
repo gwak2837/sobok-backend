@@ -1,4 +1,5 @@
-import { Bucket } from '../generated/graphql'
+import type { bucket } from 'src/database/sobok'
+import type { Bucket } from 'src/graphql/generated/graphql'
 import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 
 // All GraphQL fields -> Database columns
@@ -10,7 +11,7 @@ export function bucketFieldColumnMapping(bucketField: keyof Bucket) {
 }
 
 // All database columns -> GraphQL fields
-export function bucketORM(bucket: Record<string, any>): any {
+export function bucketORM(bucket: bucket): any {
   return {
     ...snakeKeyToCamelKey(bucket),
   }

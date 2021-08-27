@@ -81,11 +81,13 @@ export type Menu = {
   price: Scalars['Int']
   imageUrls: Array<Scalars['URL']>
   category: Scalars['NonEmptyString']
-  /** from other table */
+  /** 로그인한 사용자가 이 메뉴를 버킷에 담은 여부 */
   isInBucket: Scalars['Boolean']
+  /** 로그인한 사용자가 이 메뉴를 좋아하는 여부 */
   isLiked: Scalars['Boolean']
+  /** 이 메뉴를 판매하는 매장 */
   store: Store
-  /** from other table - nullable */
+  /** 메뉴에 달린 해시태그 */
   hashtags?: Maybe<Array<Scalars['NonEmptyString']>>
 }
 
@@ -135,19 +137,81 @@ export enum Provider {
 
 export type Query = {
   __typename?: 'Query'
+  feed?: Maybe<Feed>
+  feedList?: Maybe<Array<Feed>>
+  feedList2?: Maybe<Array<Feed>>
   /** 이메일 중복 여부 검사 */
   isEmailUnique: Scalars['Boolean']
+  /** 사용자 고유 이름 중복 여부 검사 */
+  isUniqueNameUnique: Scalars['Boolean']
   /** 인증 토큰과 같이 요청하면 사용자 정보를 반환 */
   me: User
-  storesByTown: Array<Store>
+  menu?: Maybe<Menu>
+  menu2?: Maybe<Menu>
+  menus?: Maybe<Array<Menu>>
+  menus2?: Maybe<Array<Menu>>
+  news?: Maybe<News>
+  newsList?: Maybe<Array<News>>
+  newsList2?: Maybe<Array<News>>
+  /** 특정 매장 정보 */
+  store?: Maybe<Store>
+  /** 동네 및 카테고리별 매장 목록 */
+  stores: Array<Store>
+}
+
+export type QueryFeedArgs = {
+  id: Scalars['ID']
+}
+
+export type QueryFeedListArgs = {
+  storeId: Scalars['ID']
+}
+
+export type QueryFeedList2Args = {
+  town: Scalars['ID']
 }
 
 export type QueryIsEmailUniqueArgs = {
   email: Scalars['EmailAddress']
 }
 
-export type QueryStoresByTownArgs = {
-  town: Scalars['NonEmptyString']
+export type QueryIsUniqueNameUniqueArgs = {
+  uniqueName: Scalars['NonEmptyString']
+}
+
+export type QueryMenuArgs = {
+  id: Scalars['ID']
+}
+
+export type QueryMenu2Args = {
+  storeId: Scalars['ID']
+  name: Scalars['NonEmptyString']
+}
+
+export type QueryMenusArgs = {
+  town?: Maybe<Scalars['NonEmptyString']>
+  category?: Maybe<Scalars['NonEmptyString']>
+}
+
+export type QueryMenus2Args = {
+  storeId?: Maybe<Scalars['ID']>
+}
+
+export type QueryNewsArgs = {
+  id: Scalars['ID']
+}
+
+export type QueryNewsList2Args = {
+  storeId: Scalars['ID']
+}
+
+export type QueryStoreArgs = {
+  id: Scalars['ID']
+}
+
+export type QueryStoresArgs = {
+  town?: Maybe<Scalars['NonEmptyString']>
+  categories?: Maybe<Array<Scalars['NonEmptyString']>>
 }
 
 export type RegisterInput = {
@@ -503,18 +567,85 @@ export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']
 > = {
+  feed?: Resolver<
+    Maybe<ResolversTypes['Feed']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryFeedArgs, 'id'>
+  >
+  feedList?: Resolver<
+    Maybe<Array<ResolversTypes['Feed']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryFeedListArgs, 'storeId'>
+  >
+  feedList2?: Resolver<
+    Maybe<Array<ResolversTypes['Feed']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryFeedList2Args, 'town'>
+  >
   isEmailUnique?: Resolver<
     ResolversTypes['Boolean'],
     ParentType,
     ContextType,
     RequireFields<QueryIsEmailUniqueArgs, 'email'>
   >
+  isUniqueNameUnique?: Resolver<
+    ResolversTypes['Boolean'],
+    ParentType,
+    ContextType,
+    RequireFields<QueryIsUniqueNameUniqueArgs, 'uniqueName'>
+  >
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>
-  storesByTown?: Resolver<
+  menu?: Resolver<
+    Maybe<ResolversTypes['Menu']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryMenuArgs, 'id'>
+  >
+  menu2?: Resolver<
+    Maybe<ResolversTypes['Menu']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryMenu2Args, 'storeId' | 'name'>
+  >
+  menus?: Resolver<
+    Maybe<Array<ResolversTypes['Menu']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryMenusArgs, never>
+  >
+  menus2?: Resolver<
+    Maybe<Array<ResolversTypes['Menu']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryMenus2Args, never>
+  >
+  news?: Resolver<
+    Maybe<ResolversTypes['News']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryNewsArgs, 'id'>
+  >
+  newsList?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
+  newsList2?: Resolver<
+    Maybe<Array<ResolversTypes['News']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryNewsList2Args, 'storeId'>
+  >
+  store?: Resolver<
+    Maybe<ResolversTypes['Store']>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryStoreArgs, 'id'>
+  >
+  stores?: Resolver<
     Array<ResolversTypes['Store']>,
     ParentType,
     ContextType,
-    RequireFields<QueryStoresByTownArgs, 'town'>
+    RequireFields<QueryStoresArgs, never>
   >
 }
 

@@ -27,6 +27,7 @@
   },
   "root": true,
   "rules": {
+    "camelcase": "off",
     "no-console": [
       "warn",
       {

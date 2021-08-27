@@ -211,22 +211,28 @@ CREATE TABLE leader_user_x_follower_user (
   PRIMARY KEY (leader_user_id, follower_user_id)
 );
 
+-- x, y: 사진에서 태그된 x, y 위치
+-- nth_image: 태그된 사진 번호
 CREATE TABLE news_x_tagged_menu (
   news_id bigint REFERENCES news ON DELETE CASCADE,
   menu_id bigint REFERENCES menu ON DELETE CASCADE,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   x int NOT NULL,
   y int NOT NULL,
+  nth_image int NOT NULL,
   --
   PRIMARY KEY (news_id, menu_id)
 );
 
+-- x, y: 사진에서 태그된 x, y 위치
+-- nth_image: 태그된 사진 번호
 CREATE TABLE feed_x_rated_menu (
   feed_id bigint REFERENCES feed ON DELETE CASCADE,
   menu_id bigint REFERENCES menu ON DELETE CASCADE,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   x int NOT NULL,
   y int NOT NULL,
+  nth_image int NOT NULL,
   --
   PRIMARY KEY (feed_id, menu_id)
 );
@@ -515,6 +521,7 @@ CREATE FUNCTION create_news (
   menu_ids bigint [] DEFAULT NULL,
   xs int [] DEFAULT NULL,
   ys int [] DEFAULT NULL,
+  nth_images int [] DEFAULT NULL,
   image_urls text [] DEFAULT NULL,
   out news_id bigint
 ) LANGUAGE SQL AS $$ WITH inserted_news AS (
@@ -531,16 +538,21 @@ x (x) AS (
 y (y) AS (
   SELECT unnest(ys)
 ),
+nth_image (nth_image) AS (
+  SELECT unnest(nth_images)
+),
 inserted__news_x_tagged_menu AS (
-  INSERT INTO news_x_tagged_menu (news_id, menu_id, x, y)
+  INSERT INTO news_x_tagged_menu (news_id, menu_id, x, y, nth_image)
   SELECT inserted_news.id,
     menu_id.id,
     x.x,
-    y.y
+    y.y,
+    nth_image.nth_image
   FROM inserted_news,
     menu_id,
     x,
-    y
+    y,
+    nth_image
 )
 SELECT id
 FROM inserted_news;
@@ -557,6 +569,7 @@ CREATE FUNCTION create_feed (
   menu_ids bigint [] DEFAULT NULL,
   xs int [] DEFAULT NULL,
   ys int [] DEFAULT NULL,
+  nth_images int [] DEFAULT NULL,
   hashtags text [] DEFAULT NULL,
   out feed_id bigint
 ) LANGUAGE SQL AS $$ WITH inserted_feed AS (
@@ -607,16 +620,21 @@ x (x) AS (
 y (y) AS (
   SELECT unnest(ys)
 ),
+nth_image (nth_image) AS (
+  SELECT unnest(nth_images)
+),
 inserted__feed_x_rated_menu AS (
-  INSERT INTO feed_x_rated_menu (feed_id, menu_id, x, y)
+  INSERT INTO feed_x_rated_menu (feed_id, menu_id, x, y, nth_image)
   SELECT inserted_feed.id,
     menu_id.id,
     x.x,
-    y.y
+    y.y,
+    nth_image.nth_image
   FROM inserted_feed,
     menu_id,
     x,
-    y
+    y,
+    nth_image
 )
 SELECT id
 FROM inserted_feed;
@@ -1604,6 +1622,7 @@ SELECT create_news (
     NULL,
     NULL,
     NULL,
+    NULL,
     ARRAY ['https://storage.googleapis.com/sobok/%EB%94%94%EC%A0%80%ED%8A%B8%EC%A0%95.webp']
   );
 
@@ -1612,6 +1631,7 @@ SELECT create_news (
     ARRAY ['20,000원 이상 구매시 아메리카노 증정드립니다.'],
     2,
     2,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -1626,6 +1646,7 @@ SELECT create_news (
     NULL,
     NULL,
     NULL,
+    NULL,
     ARRAY ['https://storage.googleapis.com/sobok/%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88.webp']
   );
 
@@ -1634,6 +1655,7 @@ SELECT create_news (
     ARRAY ['코로나로 시간이 많아져서 새로운 쿠키들 4종류 판매합니다.'],
     1,
     4,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -1648,6 +1670,7 @@ SELECT create_news (
     NULL,
     NULL,
     NULL,
+    NULL,
     ARRAY ['https://storage.googleapis.com/sobok/%EA%B7%B8%EB%9E%A9%EC%BB%A4%ED%94%BC%26%EB%B8%8C%EB%9F%B0%EC%B9%98.webp']
   );
 
@@ -1656,6 +1679,7 @@ SELECT create_news (
     ARRAY ['우유 소진으로 라떼류 메뉴 주문은 제한됩니다. 죄송해요~'],
     4,
     6,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -1670,6 +1694,7 @@ SELECT create_news (
     NULL,
     NULL,
     NULL,
+    NULL,
     ARRAY ['https://storage.googleapis.com/sobok/%EC%9D%B4%EA%B3%B5%EC%BB%A4%ED%94%BC.webp']
   );
 
@@ -1678,6 +1703,7 @@ SELECT create_news (
     ARRAY ['금일 사장님 개인사정으로 한시간 단축 영업합니다! 09:00 ~ 20:00'],
     3,
     8,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -1692,6 +1718,7 @@ SELECT create_news (
     NULL,
     NULL,
     NULL,
+    NULL,
     ARRAY ['https://storage.googleapis.com/sobok/9.webp']
   );
 
@@ -1700,6 +1727,7 @@ SELECT create_news (
     ARRAY ['흑석커피는 코로나 예방을 위해 매일 매일 매장과 식기를 소독을 하고 있습니다.'],
     3,
     10,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -1716,6 +1744,7 @@ SELECT create_feed (
     ARRAY [34],
     ARRAY [1],
     ARRAY [2],
+    ARRAY [1],
     ARRAY ['커피맛집', '친절', '흑석동', '카공']
   );
 
@@ -1729,6 +1758,7 @@ SELECT create_feed (
     ARRAY [13],
     ARRAY [1],
     ARRAY [2],
+    ARRAY [1],
     ARRAY ['통밀', '스콘', '견과류', '청결', '데이트']
   );
 
@@ -1742,6 +1772,7 @@ SELECT create_feed (
     ARRAY [32],
     ARRAY [50],
     ARRAY [50],
+    ARRAY [1],
     ARRAY ['오이', '실망', '양많음', '분위기좋음']
   );
 
@@ -1755,6 +1786,7 @@ SELECT create_feed (
     ARRAY [27],
     ARRAY [50],
     ARRAY [50],
+    ARRAY [1],
     ARRAY ['미숫가루', '고칼로리', '아침식사', '쏘쏘']
   );
 
@@ -1768,6 +1800,7 @@ SELECT create_feed (
     ARRAY [7],
     ARRAY [50],
     ARRAY [50],
+    ARRAY [1],
     ARRAY ['비쌈', '달달', '상큼', '자몽', '꿀']
   );
 
@@ -1781,6 +1814,7 @@ SELECT create_feed (
     ARRAY [25],
     ARRAY [50],
     ARRAY [50],
+    ARRAY [1],
     ARRAY ['고구마라떼', '다이어트', '친구랑', '아늑']
   );
 

@@ -117,7 +117,7 @@ BACKEND_URL=
 PORT=4000
 ```
 
-루트 폴더에 `.env` (또는 `.env.development`) 파일을 생성하고 거기에 프로젝트에 필요한 환경 변수를 설정합니다.
+루트 폴더에 `.env` (또는 `.env.development`, `.env.test`) 파일을 생성하고 거기에 프로젝트에 필요한 환경 변수를 설정합니다.
 
 ### 개발 모드
 
@@ -155,6 +155,15 @@ http://localhost:4000/graphql
 ### Cloud Run 배포
 
 Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문에 GitHub로 commit을 push할 때마다 Cloud Run에 자동으로 배포됩니다.
+
+### PostgreSQL -> TypeScript 자동 생성
+
+```bash
+$ export $(grep -v '^#' .env | xargs)
+$ yarn generate-db
+```
+
+환경 변수로 넣어줄 파일 이름을 입력해주고 `yarn generate-db` 명령어를 실행한다.
 
 ## 데이터베이스 ERD
 
