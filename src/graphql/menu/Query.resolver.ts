@@ -5,6 +5,7 @@ import { poolQuery } from '../../database/postgres'
 import { selectColumnFromField } from '../../utils/ORM'
 import { encodeCategory, menuFieldColumnMapping, menuORM } from './ORM'
 import { UserInputError } from 'apollo-server-express'
+import type { menu as Menu } from 'src/database/sobok'
 
 const menu = importSQL(__dirname, 'sql/menu.sql')
 const menuByName = importSQL(__dirname, 'sql/menuByName.sql')
@@ -18,7 +19,7 @@ export const Query: QueryResolvers = {
   menu: async (_, { id }, { user }, info) => {
     const columns = selectColumnFromField(info, menuFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await menu, columns), [id])
+    const { rows } = await poolQuery<Menu>(format(await menu, columns), [id])
 
     return menuORM(rows[0])
   },
@@ -26,9 +27,12 @@ export const Query: QueryResolvers = {
   menu2: async (_, { storeId, name }, { user }, info) => {
     const columns = selectColumnFromField(info, menuFieldColumnMapping)
 
-    const { rowCount, rows } = await poolQuery(format(await menuByName, columns), [storeId, name])
+    const { rowCount, rows } = await poolQuery<Menu>(format(await menuByName, columns), [
+      storeId,
+      name,
+    ])
 
-    if (rowCount === 0) throw new UserInputError('Invalid value of storeId, name pair')
+    if (rowCount === 0) return null
 
     return menuORM(rows[0])
   },
@@ -42,36 +46,28 @@ export const Query: QueryResolvers = {
 
     if (encodedCategory === null) throw new UserInputError('Invalid category value')
 
+    let result
+
     if (town && category) {
-      const { rows } = await poolQuery(format(await menusByTownAndCategory, columnsWithTable), [
+      result = await poolQuery<Menu>(format(await menusByTownAndCategory, columnsWithTable), [
         town,
         encodedCategory,
       ])
-
-      return rows.map((row) => menuORM(row))
+    } else if (town) {
+      result = await poolQuery<Menu>(format(await menusByTown, columnsWithTable), [town])
+    } else if (category) {
+      result = await poolQuery<Menu>(format(await menusByCategory, columns), [encodedCategory])
+    } else {
+      result = await poolQuery<Menu>(format(await menus, columns))
     }
 
-    if (town) {
-      const { rows } = await poolQuery(format(await menusByTown, columnsWithTable), [town])
-
-      return rows.map((row) => menuORM(row))
-    }
-
-    if (category) {
-      const { rows } = await poolQuery(format(await menusByCategory, columns), [encodedCategory])
-
-      return rows.map((row) => menuORM(row))
-    }
-
-    const { rows } = await poolQuery(format(await menus, columns))
-
-    return rows.map((row) => menuORM(row))
+    return result.rows.map((row) => menuORM(row))
   },
 
   menus2: async (_, { storeId }, { user }, info) => {
     const columns = selectColumnFromField(info, menuFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await menusByStoreId, columns), [storeId])
+    const { rows } = await poolQuery<Menu>(format(await menusByStoreId, columns), [storeId])
 
     return rows.map((row) => menuORM(row))
   },
