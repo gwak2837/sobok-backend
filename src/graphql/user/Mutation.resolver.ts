@@ -39,6 +39,8 @@ export const Mutation: MutationResolvers = {
   register: async (_, { input }, { user }) => {
     if (user) throw new ForbiddenError('이미 로그인되어 있습니다. 로그아웃 후 시도해주세요.')
 
+    // 경고: uniqueName 를 다른 사람 이메일로 하면 로그인이 될 수 있음 -> 걸러줘야 함
+
     const passwordHashWithSalt = await hash(input.passwordHash, await genSalt())
 
     const registerValues = [

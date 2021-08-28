@@ -12,6 +12,16 @@ import { menuFieldColumnMapping, menuORM } from '../menu/ORM'
 import { newsFieldColumnMapping, newsORM } from '../news/ORM'
 import { trendFieldColumnMapping, trendORM } from '../trend/ORM'
 import { userFieldColumnMapping, userORM } from './ORM'
+import type {
+  comment as Comment,
+  feed as Feed,
+  user as TUser,
+  menu as Menu,
+  store as Store,
+  news as News,
+  bucket as Bucket,
+  trend as Trend,
+} from 'src/database/sobok'
 
 const comments = importSQL(__dirname, 'sql/comments.sql')
 const feed = importSQL(__dirname, 'sql/feed.sql')
@@ -32,7 +42,7 @@ export const User: UserResolvers = {
 
     const columns = selectColumnFromField(info, commentFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await comments, columns), [user.id])
+    const { rows } = await poolQuery<Comment>(format(await comments, columns), [user.id])
 
     return rows.map((row) => commentORM(row))
   },
@@ -42,7 +52,7 @@ export const User: UserResolvers = {
 
     const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await feed, columns), [user.id])
+    const { rows } = await poolQuery<Feed>(format(await feed, columns), [user.id])
 
     return rows.map((row) => feedORM(row))
   },
@@ -52,7 +62,7 @@ export const User: UserResolvers = {
 
     const columns = selectColumnFromField(info, userFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await followers, columns), [user.id])
+    const { rows } = await poolQuery<TUser>(format(await followers, columns), [user.id])
 
     return rows.map((row) => userORM(row))
   },
@@ -62,7 +72,7 @@ export const User: UserResolvers = {
 
     const columns = selectColumnFromField(info, userFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await followings, columns), [user.id])
+    const { rows } = await poolQuery<TUser>(format(await followings, columns), [user.id])
 
     return rows.map((row) => userORM(row))
   },
@@ -79,7 +89,7 @@ export const User: UserResolvers = {
       format(await likedComments, columns)
     )
 
-    const { rows } = await poolQuery(formattedSQL, [user.id])
+    const { rows } = await poolQuery<Comment>(formattedSQL, [user.id])
 
     return rows.map((row) => commentORM(row))
   },
@@ -96,7 +106,7 @@ export const User: UserResolvers = {
       format(await likedFeed, columns)
     )
 
-    const { rows } = await poolQuery(formattedSQL, [user.id])
+    const { rows } = await poolQuery<Feed>(formattedSQL, [user.id])
 
     return rows.map((row) => feedORM(row))
   },
@@ -108,7 +118,7 @@ export const User: UserResolvers = {
 
     const columns = selectColumnFromField(info, menuFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await likedMenus, columns), [user.id])
+    const { rows } = await poolQuery<Menu>(format(await likedMenus, columns), [user.id])
 
     return rows.map((row) => menuORM(row))
   },
@@ -125,7 +135,7 @@ export const User: UserResolvers = {
       format(await likedNews, columns)
     )
 
-    const { rows } = await poolQuery(formattedSQL, [user.id])
+    const { rows } = await poolQuery<News>(formattedSQL, [user.id])
 
     return rows.map((row) => newsORM(row))
   },
@@ -144,7 +154,7 @@ export const User: UserResolvers = {
       format(await likedStores, columns)
     )
 
-    const { rows } = await poolQuery(formattedSQL, [user.id])
+    const { rows } = await poolQuery<Store>(formattedSQL, [user.id])
 
     return rows.map((row) => storeORM(row))
   },
@@ -161,7 +171,7 @@ export const User: UserResolvers = {
       format(await likedTrends, columns)
     )
 
-    const { rows } = await poolQuery(formattedSQL, [user.id])
+    const { rows } = await poolQuery<Trend>(formattedSQL, [user.id])
 
     return rows.map((row) => trendORM(row))
   },
@@ -171,7 +181,7 @@ export const User: UserResolvers = {
 
     const columns = selectColumnFromField(info, bucketFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await menuBuckets, columns), [user.id])
+    const { rows } = await poolQuery<Bucket>(format(await menuBuckets, columns), [user.id])
 
     return rows.map((row) => bucketORM(row))
   },
@@ -181,7 +191,7 @@ export const User: UserResolvers = {
 
     const columns = selectColumnFromField(info, bucketFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await storeBuckets, columns), [user.id])
+    const { rows } = await poolQuery<Bucket>(format(await storeBuckets, columns), [user.id])
 
     return rows.map((row) => bucketORM(row))
   },
