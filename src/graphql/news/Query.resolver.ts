@@ -2,85 +2,88 @@ import format from 'pg-format'
 import type { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
-import { selectColumnFromField, selectColumnFromSubField } from '../../utils/ORM'
-import { encodeCategory, newsFieldColumnMapping, newsORM } from './ORM'
-import { UserInputError } from 'apollo-server-express'
-import type { news as News, store as Store } from 'src/database/sobok'
-import graphqlFields from 'graphql-fields'
-import { storeFieldColumnMapping } from '../store/ORM'
+import { serializeSQLParameters } from '../../utils/ORM'
+import { encodeCategory, newsORMv2, buildBasicNewsQuery } from './ORM'
+import { AuthenticationError, UserInputError } from 'apollo-server-express'
 
-const news = importSQL(__dirname, 'sql/news.sql')
-const newsList = importSQL(__dirname, 'sql/newsList.sql')
-const newsListByLikedStores = importSQL(__dirname, 'sql/newsListByLikedStores.sql')
-const newsListByStoreId = importSQL(__dirname, 'sql/newsListByStoreId.sql')
-const newsListByStoreIdAndCategories = importSQL(
-  __dirname,
-  'sql/newsListByStoreIdAndCategories.sql'
-)
-const stores = importSQL(__dirname, 'sql/stores.sql')
+const joinLikedStore = importSQL(__dirname, 'sql/joinLikedStore.sql')
+const byId = importSQL(__dirname, 'sql/byId.sql')
+const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
+const byStoreIdAndCategories = importSQL(__dirname, 'sql/byStoreIdAndCategories.sql')
 
 export const Query: QueryResolvers = {
   news: async (_, { id }, { user }, info) => {
-    const columns = selectColumnFromField(info, newsFieldColumnMapping)
+    let [sql, columns, values] = await buildBasicNewsQuery(user, info)
 
-    const { rows } = await poolQuery<News>(format(await news, columns), [id])
+    sql = `${sql} ${await byId}`
+    values.push(id)
 
-    return newsORM(rows[0])
+    const { rows } = await poolQuery({
+      text: format(serializeSQLParameters(sql), columns),
+      values,
+      rowMode: 'array',
+    })
+
+    return newsORMv2(rows, columns)[0]
   },
 
-  news2: async (_, __, { user }, info) => {
-    const columns = selectColumnFromField(info, newsFieldColumnMapping)
+  newsByAllStores: async (_, __, { user }, info) => {
+    const [sql, columns, values] = await buildBasicNewsQuery(user, info)
 
-    const { rows } = await poolQuery<News>(format(await newsList, columns))
+    const { rows } = await poolQuery({
+      text: format(serializeSQLParameters(sql), columns),
+      values,
+      rowMode: 'array',
+    })
 
-    // if (colu) {
-    //   const storeColumns = selectColumnFromSubField(
-    //     graphqlFields(info).store,
-    //     storeFieldColumnMapping
-    //   )
-
-    //   const storeIds = rows.map((row) => row.store_id)
-
-    //   const storesResult = await poolQuery<Store>(format(await stores, storeColumns), [storeIds])
-
-    //   return
-    // }
-
-    // store: { id: '1', name: 'name', imageUrls: ['https://www.cmd.com'] },
-
-    return rows.map((row) => newsORM(row))
+    return newsORMv2(rows, columns)
   },
 
-  news3: async (_, { storeId, categories }, { user }, info) => {
-    const columns = selectColumnFromField(info, newsFieldColumnMapping)
-
-    let sql, values: unknown[]
+  newsByOneStore: async (_, { storeId, categories }, { user }, info) => {
+    let encodedCategories
 
     if (categories) {
-      if (categories.length === 0) throw new UserInputError('Invalid categories value')
+      if (categories?.length === 0) throw new UserInputError('Invalid categories value')
 
-      const encodedCategories = categories.map((category) => encodeCategory(category))
+      encodedCategories = categories.map((category) => encodeCategory(category))
 
       if (encodedCategories.some((encodeCategory) => encodeCategory === null))
         throw new UserInputError('Invalid categories value')
-
-      sql = await newsListByStoreIdAndCategories
-      values = [storeId, encodedCategories]
-    } else {
-      sql = await newsListByStoreId
-      values = [storeId]
     }
 
-    const { rows } = await poolQuery<News>(format(sql, columns), values)
+    let [sql, columns, values] = await buildBasicNewsQuery(user, info)
 
-    return rows.map((row) => newsORM(row))
+    if (categories) {
+      sql = `${sql} ${await byStoreIdAndCategories}`
+      values.push(storeId, encodedCategories)
+    } else {
+      sql = `${sql} ${await byStoreId}`
+      values.push(storeId)
+    }
+
+    const { rows } = await poolQuery({
+      text: format(serializeSQLParameters(sql), columns),
+      values,
+      rowMode: 'array',
+    })
+
+    return newsORMv2(rows, columns)
   },
 
-  news4: async (_, __, { user }, info) => {
-    const columns = selectColumnFromField(info, newsFieldColumnMapping)
+  newsByLikedStores: async (_, __, { user }, info) => {
+    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
-    const { rows } = await poolQuery<News>(format(await newsListByLikedStores, columns), [user.id])
+    let [sql, columns, values] = await buildBasicNewsQuery(user, info)
 
-    return rows.map((row) => newsORM(row))
+    sql = `${sql} ${await joinLikedStore}`
+    values.push(user.id)
+
+    const { rows } = await poolQuery({
+      text: format(serializeSQLParameters(sql), columns),
+      values,
+      rowMode: 'array',
+    })
+
+    return newsORMv2(rows, columns)
   },
 }

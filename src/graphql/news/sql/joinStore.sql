@@ -1,0 +1,1 @@
+JOIN store ON news.store_id = store.id

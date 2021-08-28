@@ -162,11 +162,11 @@ export type Query = {
   /** 소식 상세 */
   news?: Maybe<News>
   /** 전체 매장 소식 목록 */
-  news2?: Maybe<Array<News>>
-  /** 특정 매장 소식 목록 */
-  news3?: Maybe<Array<News>>
+  newsByAllStores?: Maybe<Array<News>>
   /** 좋아하는 매장 소식 목록 (로그인 필요) */
-  news4?: Maybe<Array<News>>
+  newsByLikedStores?: Maybe<Array<News>>
+  /** 특정 매장 소식 목록 */
+  newsByOneStore?: Maybe<Array<News>>
   searchFeed?: Maybe<Array<Menu>>
   searchMenus?: Maybe<Array<Menu>>
   searchStores?: Maybe<Array<Menu>>
@@ -218,7 +218,7 @@ export type QueryNewsArgs = {
   id: Scalars['ID']
 }
 
-export type QueryNews3Args = {
+export type QueryNewsByOneStoreArgs = {
   storeId: Scalars['ID']
   categories?: Maybe<Array<Scalars['NonEmptyString']>>
 }
@@ -661,14 +661,14 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryNewsArgs, 'id'>
   >
-  news2?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
-  news3?: Resolver<
+  newsByAllStores?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
+  newsByLikedStores?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
+  newsByOneStore?: Resolver<
     Maybe<Array<ResolversTypes['News']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryNews3Args, 'storeId'>
+    RequireFields<QueryNewsByOneStoreArgs, 'storeId'>
   >
-  news4?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
   searchFeed?: Resolver<
     Maybe<Array<ResolversTypes['Menu']>>,
     ParentType,

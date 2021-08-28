@@ -7,15 +7,15 @@ type Query {
   """
   전체 매장 소식 목록
   """
-  news2: [News!]
+  newsByAllStores: [News!]
 
   """
   특정 매장 소식 목록
   """
-  news3(storeId: ID!, categories: [NonEmptyString!]): [News!]
+  newsByOneStore(storeId: ID!, categories: [NonEmptyString!]): [News!]
 
   """
   좋아하는 매장 소식 목록 (로그인 필요)
   """
-  news4: [News!]
+  newsByLikedStores: [News!]
 }
