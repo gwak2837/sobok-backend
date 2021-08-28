@@ -46,22 +46,29 @@ export const Query: QueryResolvers = {
 
     if (encodedCategory === null) throw new UserInputError('Invalid category value')
 
-    let result
+    let selectedColumes, sql, values: unknown[]
 
     if (town && category) {
-      result = await poolQuery<Menu>(format(await menusByTownAndCategory, columnsWithTable), [
-        town,
-        encodedCategory,
-      ])
+      selectedColumes = columnsWithTable
+      sql = await menusByTownAndCategory
+      values = [town, encodedCategory]
     } else if (town) {
-      result = await poolQuery<Menu>(format(await menusByTown, columnsWithTable), [town])
+      selectedColumes = columnsWithTable
+      sql = await menusByTown
+      values = [town]
     } else if (category) {
-      result = await poolQuery<Menu>(format(await menusByCategory, columns), [encodedCategory])
+      selectedColumes = columns
+      sql = await menusByCategory
+      values = [encodedCategory]
     } else {
-      result = await poolQuery<Menu>(format(await menus, columns))
+      selectedColumes = columns
+      sql = await menus
+      values = []
     }
 
-    return result.rows.map((row) => menuORM(row))
+    const { rows } = await poolQuery<Menu>(format(sql, selectedColumes), values)
+
+    return rows.map((row) => menuORM(row))
   },
 
   menus2: async (_, { storeId }, { user }, info) => {
