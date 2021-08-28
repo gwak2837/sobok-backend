@@ -159,7 +159,7 @@ Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문�
 ### PostgreSQL -> TypeScript 자동 생성
 
 ```bash
-$ export $(grep -v '^#' .env | xargs)
+$ export $(grep -v '^#' .env.development | xargs)
 $ yarn generate-db
 ```
 

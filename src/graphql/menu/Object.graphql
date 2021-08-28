@@ -4,6 +4,7 @@ type Menu {
   modificationTime: DateTime!
   name: NonEmptyString!
   price: Int!
+  isSoldOut: Boolean!
   imageUrls: [URL!]!
   category: NonEmptyString!
   storeId: ID!

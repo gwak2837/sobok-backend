@@ -82,6 +82,7 @@ export type Menu = {
   modificationTime: Scalars['DateTime']
   name: Scalars['NonEmptyString']
   price: Scalars['Int']
+  isSoldOut: Scalars['Boolean']
   imageUrls: Array<Scalars['URL']>
   category: Scalars['NonEmptyString']
   storeId: Scalars['ID']
@@ -124,6 +125,7 @@ export type News = {
   title: Scalars['NonEmptyString']
   contents: Array<Scalars['NonEmptyString']>
   category: Scalars['NonEmptyString']
+  storeId: Scalars['ID']
   imageUrls?: Maybe<Array<Scalars['URL']>>
   /** 로그인한 사용자가 이 메뉴를 좋아하는 여부 */
   isLiked: Scalars['Boolean']
@@ -163,6 +165,8 @@ export type Query = {
   news2?: Maybe<Array<News>>
   /** 특정 매장 소식 목록 */
   news3?: Maybe<Array<News>>
+  /** 좋아하는 매장 소식 목록 (로그인 필요) */
+  news4?: Maybe<Array<News>>
   searchFeed?: Maybe<Array<Menu>>
   searchMenus?: Maybe<Array<Menu>>
   searchStores?: Maybe<Array<Menu>>
@@ -539,6 +543,7 @@ export type MenuResolvers<
   modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
   name?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   price?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  isSoldOut?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   imageUrls?: Resolver<Array<ResolversTypes['URL']>, ParentType, ContextType>
   category?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   storeId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
@@ -579,6 +584,7 @@ export type NewsResolvers<
   title?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   contents?: Resolver<Array<ResolversTypes['NonEmptyString']>, ParentType, ContextType>
   category?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  storeId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   imageUrls?: Resolver<Maybe<Array<ResolversTypes['URL']>>, ParentType, ContextType>
   isLiked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType>
@@ -662,6 +668,7 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryNews3Args, 'storeId'>
   >
+  news4?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
   searchFeed?: Resolver<
     Maybe<Array<ResolversTypes['Menu']>>,
     ParentType,
