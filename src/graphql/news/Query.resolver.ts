@@ -6,10 +6,10 @@ import { serializeSQLParameters } from '../../utils/ORM'
 import { encodeCategory, newsORMv2, buildBasicNewsQuery } from './ORM'
 import { AuthenticationError, UserInputError } from 'apollo-server-express'
 
-const joinLikedStore = importSQL(__dirname, 'sql/joinLikedStore.sql')
 const byId = importSQL(__dirname, 'sql/byId.sql')
 const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
 const byStoreIdAndCategories = importSQL(__dirname, 'sql/byStoreIdAndCategories.sql')
+const joinLikedStore = importSQL(__dirname, 'sql/joinLikedStore.sql')
 
 export const Query: QueryResolvers = {
   news: async (_, { id }, { user }, info) => {

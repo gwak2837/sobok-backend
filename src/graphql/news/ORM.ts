@@ -51,7 +51,7 @@ export async function buildBasicNewsQuery(user: any, info: GraphQLResolveInfo) {
   return [sql, columns, values] as const
 }
 
-// Database record (object) -> GraphQL fields
+// Database record -> GraphQL fields
 export function newsORM(news: Partial<DatabaseNews>): any {
   return {
     ...snakeKeyToCamelKey(news),
@@ -59,10 +59,10 @@ export function newsORM(news: Partial<DatabaseNews>): any {
   }
 }
 
-// Database record (array) -> GraphQL fields
-export function newsORMv2(rows: any[], tableColumns: string[]): any {
+// Database record -> GraphQL fields
+export function newsORMv2(rows: any[][], tableColumns: string[]): GraphQLNews[] {
   return rows.map((row) => {
-    const graphQLNews: Record<string, any> = {
+    const graphQLNews: any = {
       isLiked: false,
     }
 
