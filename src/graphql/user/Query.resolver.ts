@@ -19,7 +19,7 @@ export const Query: QueryResolvers = {
 
     const columns = selectColumnFromField(info, userFieldColumnMapping)
 
-    const { rows } = await poolQuery<User>(format(await me, columns), [user.id])
+    const { rows } = await poolQuery(format(await me, columns), [user.id])
 
     return userORM(rows[0])
   },

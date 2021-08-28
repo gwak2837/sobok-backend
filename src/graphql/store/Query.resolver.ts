@@ -17,7 +17,7 @@ export const Query: QueryResolvers = {
   store: async (_, { id }, ___, info) => {
     const columns = selectColumnFromField(info, storeFieldColumnMapping)
 
-    const { rows } = await poolQuery<Store>(format(await store, columns), [id])
+    const { rows } = await poolQuery(format(await store, columns), [id])
 
     return storeORM(rows[0])
   },
@@ -48,7 +48,7 @@ export const Query: QueryResolvers = {
       values = []
     }
 
-    const { rows } = await poolQuery<Store>(format(sql, columns), values)
+    const { rows } = await poolQuery(format(sql, columns), values)
 
     return rows.map((row) => storeORM(row))
   },

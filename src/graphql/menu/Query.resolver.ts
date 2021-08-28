@@ -19,7 +19,7 @@ export const Query: QueryResolvers = {
   menu: async (_, { id }, { user }, info) => {
     const columns = selectColumnFromField(info, menuFieldColumnMapping)
 
-    const { rows } = await poolQuery<Menu>(format(await menu, columns), [id])
+    const { rows } = await poolQuery(format(await menu, columns), [id])
 
     return menuORM(rows[0])
   },
@@ -27,10 +27,7 @@ export const Query: QueryResolvers = {
   menu2: async (_, { storeId, name }, { user }, info) => {
     const columns = selectColumnFromField(info, menuFieldColumnMapping)
 
-    const { rowCount, rows } = await poolQuery<Menu>(format(await menuByName, columns), [
-      storeId,
-      name,
-    ])
+    const { rowCount, rows } = await poolQuery(format(await menuByName, columns), [storeId, name])
 
     if (rowCount === 0) return null
 
@@ -66,7 +63,7 @@ export const Query: QueryResolvers = {
       values = []
     }
 
-    const { rows } = await poolQuery<Menu>(format(sql, selectedColumes), values)
+    const { rows } = await poolQuery(format(sql, selectedColumes), values)
 
     return rows.map((row) => menuORM(row))
   },
@@ -74,7 +71,7 @@ export const Query: QueryResolvers = {
   menus2: async (_, { storeId }, { user }, info) => {
     const columns = selectColumnFromField(info, menuFieldColumnMapping)
 
-    const { rows } = await poolQuery<Menu>(format(await menusByStoreId, columns), [storeId])
+    const { rows } = await poolQuery(format(await menusByStoreId, columns), [storeId])
 
     return rows.map((row) => menuORM(row))
   },

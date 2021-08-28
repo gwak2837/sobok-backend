@@ -40,7 +40,7 @@
       "  $1: async (_, __, { user }, info) => {",
       "    const columns = selectColumnFromField(info, $1FieldColumnMapping)",
       "",
-      "    const { rows } = await poolQuery<$2>(format(await $1, columns))",
+      "    const { rows } = await poolQuery(format(await $1, columns))",
       "",
       "    return rows.map((row) => $1ORM(row))",
       "  },",
