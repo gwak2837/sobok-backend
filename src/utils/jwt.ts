@@ -1,9 +1,6 @@
 /* eslint-disable no-process-exit */
-import dotenv from 'dotenv'
 import { sign, verify } from 'jsonwebtoken'
 import { NO_JWT_SECRET_KEY_ERROR_CODE } from '../common/errors'
-
-dotenv.config()
 
 const secretKey = process.env.JWT_SECRET_KEY ?? ''
 

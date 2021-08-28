@@ -1,5 +1,6 @@
 import { promises } from 'fs'
 import { join } from 'path'
+import { string } from 'pg-format'
 
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -52,4 +53,10 @@ export function snakeKeyToCamelKey(snakeObject: Record<string, any>) {
   return Object.fromEntries(
     Object.entries(snakeObject).map(([snakeKey, value]) => [snakeToCamel(snakeKey), value])
   )
+}
+
+export function formatDate(date: Date): string {
+  return `${date.getUTCFullYear()}년 ${
+    date.getUTCMonth() + 1
+  }월 ${date.getUTCDate()}일 ${date.getUTCHours()}시 ${date.getUTCMinutes()}분 ${date.getUTCSeconds()}초`
 }
