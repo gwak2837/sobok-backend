@@ -36,7 +36,7 @@ export function userFieldColumnMapping(userField: keyof User) {
   }
 }
 
-export function userORM(user: user): any {
+export function userORM(user: Partial<user>): any {
   return {
     ...snakeKeyToCamelKey(user),
     providers: decodeProviders(user),
@@ -44,7 +44,7 @@ export function userORM(user: user): any {
   }
 }
 
-function decodeProviders(user: user) {
+function decodeProviders(user: Partial<user>) {
   const providers = []
 
   if (user.google_oauth) providers.push(Provider.Google)
@@ -68,7 +68,7 @@ export function encodeGender(gender: Gender) {
   }
 }
 
-function decodeGender(user: user) {
+function decodeGender(user: Partial<user>) {
   switch (user.gender) {
     case 0:
       return Gender.Other

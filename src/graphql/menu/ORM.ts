@@ -17,7 +17,7 @@ export function menuFieldColumnMapping(menuField: keyof Menu) {
   }
 }
 
-export function menuORM(menu: menu): any {
+export function menuORM(menu: Partial<menu>): any {
   return {
     ...snakeKeyToCamelKey(menu),
     category: decodeCategory(menu.category),
@@ -45,7 +45,7 @@ export function encodeCategory(id: string) {
   }
 }
 
-function decodeCategory(id: number) {
+function decodeCategory(id?: number) {
   switch (id) {
     case 0:
       return '음료'

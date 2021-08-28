@@ -15,7 +15,7 @@ export function newsFieldColumnMapping(newsField: keyof News) {
 }
 
 // All database columns -> GraphQL fields
-export function newsORM(news: news): any {
+export function newsORM(news: Partial<news>): any {
   return {
     ...snakeKeyToCamelKey(news),
     category: decodeCategory(news.category),
@@ -39,7 +39,7 @@ export function encodeCategory(category: string) {
   }
 }
 
-function decodeCategory(id: number) {
+function decodeCategory(id?: number) {
   switch (id) {
     case 0:
       return '오늘의라인업'

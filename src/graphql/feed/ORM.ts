@@ -21,7 +21,7 @@ export function feedFieldColumnMapping(feedField: keyof Feed) {
 }
 
 // All database columns -> GraphQL fields
-export function feedORM(feed: feed): any {
+export function feedORM(feed: Partial<feed>): any {
   return {
     ...snakeKeyToCamelKey(feed),
   }

@@ -19,7 +19,7 @@ export function storeFieldColumnMapping(storeField: keyof Store) {
   }
 }
 
-export function storeORM(store: store): any {
+export function storeORM(store: Partial<store>): any {
   return {
     ...snakeKeyToCamelKey(store),
     categories: decodeCategories(store.categories),
