@@ -13,4 +13,9 @@ type Query {
   특정 매장 소식 목록
   """
   news3(storeId: ID!, categories: [NonEmptyString!]): [News!]
+
+  """
+  좋아하는 매장 소식 목록 (로그인 필요)
+  """
+  news4: [News!]
 }

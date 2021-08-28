@@ -2,10 +2,12 @@ import format from 'pg-format'
 import type { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
-import { selectColumnFromField } from '../../utils/ORM'
+import { selectColumnFromField, selectColumnFromSubField } from '../../utils/ORM'
 import { encodeCategory, newsFieldColumnMapping, newsORM } from './ORM'
 import { UserInputError } from 'apollo-server-express'
-import type { news as News } from 'src/database/sobok'
+import type { news as News, store as Store } from 'src/database/sobok'
+import graphqlFields from 'graphql-fields'
+import { storeFieldColumnMapping } from '../store/ORM'
 
 const news = importSQL(__dirname, 'sql/news.sql')
 const newsList = importSQL(__dirname, 'sql/newsList.sql')
@@ -15,6 +17,7 @@ const newsListByStoreIdAndCategories = importSQL(
   __dirname,
   'sql/newsListByStoreIdAndCategories.sql'
 )
+const stores = importSQL(__dirname, 'sql/stores.sql')
 
 export const Query: QueryResolvers = {
   news: async (_, { id }, { user }, info) => {
@@ -30,20 +33,28 @@ export const Query: QueryResolvers = {
 
     const { rows } = await poolQuery<News>(format(await newsList, columns))
 
-    const storeIds = rows.map((row) => row.store_id)
+    // if (colu) {
+    //   const storeColumns = selectColumnFromSubField(
+    //     graphqlFields(info).store,
+    //     storeFieldColumnMapping
+    //   )
 
-    console.log(storeIds)
+    //   const storeIds = rows.map((row) => row.store_id)
 
-    return rows.map((row) => ({
-      ...newsORM(row),
-      store: { id: '1', name: 'name', imageUrls: ['https://www.cmd.com'] },
-    }))
+    //   const storesResult = await poolQuery<Store>(format(await stores, storeColumns), [storeIds])
+
+    //   return
+    // }
+
+    // store: { id: '1', name: 'name', imageUrls: ['https://www.cmd.com'] },
+
+    return rows.map((row) => newsORM(row))
   },
 
   news3: async (_, { storeId, categories }, { user }, info) => {
     const columns = selectColumnFromField(info, newsFieldColumnMapping)
 
-    let result
+    let sql, values: unknown[]
 
     if (categories) {
       if (categories.length === 0) throw new UserInputError('Invalid categories value')
@@ -53,15 +64,16 @@ export const Query: QueryResolvers = {
       if (encodedCategories.some((encodeCategory) => encodeCategory === null))
         throw new UserInputError('Invalid categories value')
 
-      result = await poolQuery<News>(format(await newsListByStoreIdAndCategories, columns), [
-        storeId,
-        encodedCategories,
-      ])
+      sql = await newsListByStoreIdAndCategories
+      values = [storeId, encodedCategories]
     } else {
-      result = await poolQuery<News>(format(await newsListByStoreId, columns), [storeId])
+      sql = await newsListByStoreId
+      values = [storeId]
     }
 
-    return result.rows.map((row) => newsORM(row))
+    const { rows } = await poolQuery<News>(format(sql, columns), values)
+
+    return rows.map((row) => newsORM(row))
   },
 
   news4: async (_, __, { user }, info) => {

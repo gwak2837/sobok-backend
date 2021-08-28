@@ -5,6 +5,7 @@ type News {
   title: NonEmptyString!
   contents: [NonEmptyString!]!
   category: NonEmptyString!
+  storeId: ID!
 
   # nullable
   imageUrls: [URL!]
