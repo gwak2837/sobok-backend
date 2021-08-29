@@ -12,7 +12,7 @@ type News {
 
   # from other table
   """
-  로그인한 사용자가 이 메뉴를 좋아하는 여부
+  뉴스 좋아요 여부 (로그인 필요)
   """
   isLiked: Boolean!
   """

@@ -60,27 +60,19 @@ export function newsORM(news: Partial<DatabaseNews>): any {
 }
 
 // Database record -> GraphQL fields
-export function newsORMv2(rows: any[][], tableColumns: string[]): GraphQLNews[] {
+export function newsORMv2(rows: unknown[][], tableColumns: string[]): GraphQLNews[] {
   return rows.map((row) => {
-    const graphQLNews: any = {
-      isLiked: false,
-    }
+    const graphQLNews: any = {}
 
     tableColumns.forEach((tableColumn, i) => {
       if (tableColumn.startsWith('news')) {
         const [, column] = tableColumn.split('.')
         const camelColumn = snakeToCamel(column)
 
-        if (camelColumn === 'category') {
-          graphQLNews[camelColumn] = decodeCategory(row[i])
-        } else {
-          graphQLNews[camelColumn] = row[i]
-        }
-      } else if (tableColumn.startsWith('user_x_liked_news')) {
+        graphQLNews[camelColumn] = row[i]
+      } else if (tableColumn.startsWith('user_x_liked_feed')) {
         if (row[i]) {
           graphQLNews.isLiked = true
-        } else {
-          graphQLNews.isLiked = false
         }
       } else {
         const [table, column] = tableColumn.split('.')
@@ -116,7 +108,7 @@ export function encodeCategory(category: string) {
   }
 }
 
-function decodeCategory(id?: number) {
+export function decodeCategory(id?: number) {
   switch (id) {
     case 0:
       return '오늘의라인업'
