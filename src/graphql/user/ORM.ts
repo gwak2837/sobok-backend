@@ -2,6 +2,7 @@ import type { user } from 'src/database/sobok'
 import type { User } from 'src/graphql/generated/graphql'
 import { Gender, Provider } from '../generated/graphql'
 import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
+import { ApolloError } from 'apollo-server-express'
 
 export function userFieldColumnMapping(userField: keyof User) {
   switch (userField) {
@@ -40,7 +41,6 @@ export function userORM(user: Partial<user>): any {
   return {
     ...snakeKeyToCamelKey(user),
     providers: decodeProviders(user),
-    gender: decodeGender(user),
   }
 }
 
@@ -53,30 +53,4 @@ function decodeProviders(user: Partial<user>) {
   if (providers.length === 0) providers.push(Provider.Sobok)
 
   return providers
-}
-
-export function encodeGender(gender: Gender) {
-  switch (gender) {
-    case Gender.Other:
-      return 0
-    case Gender.Male:
-      return 1
-    case Gender.Female:
-      return 2
-    default:
-      return null
-  }
-}
-
-function decodeGender(user: Partial<user>) {
-  switch (user.gender) {
-    case 0:
-      return Gender.Other
-    case 1:
-      return Gender.Male
-    case 2:
-      return Gender.Female
-    default:
-      return null
-  }
 }

@@ -4,7 +4,6 @@ import { MutationResolvers } from 'src/graphql/generated/graphql'
 import { generateJWT } from '../../utils/jwt'
 import { poolQuery } from '../../database/postgres'
 import { importSQL } from '../../utils/commons'
-import { encodeGender } from './ORM'
 
 const login = importSQL(__dirname, 'sql/login.sql')
 const logout = importSQL(__dirname, 'sql/logout.sql')
@@ -49,7 +48,7 @@ export const Mutation: MutationResolvers = {
       passwordHashWithSalt,
       input.name,
       input.phone,
-      encodeGender(input.gender),
+      input.gender,
       input.bio,
       input.birth,
       input.imageUrl,

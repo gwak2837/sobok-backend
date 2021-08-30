@@ -1,13 +1,13 @@
 import format from 'pg-format'
 import { commentFieldColumnMapping, commentORM } from '../comment/ORM'
 import { feedFieldColumnMapping, feedORM } from '../feed/ORM'
-import { UserResolvers } from '../generated/graphql'
+import { Gender as GraphqlGender, UserResolvers } from '../generated/graphql'
 import { storeFieldColumnMapping, storeORM } from '../store/ORM'
 import { poolQuery } from '../../database/postgres'
 import { importSQL, removeDoubleQuotesAround } from '../../utils/commons'
 import { selectColumnFromField } from '../../utils/ORM'
 import { bucketFieldColumnMapping, bucketORM } from '../bucket/ORM'
-import { AuthenticationError } from 'apollo-server-express'
+import { AuthenticationError, ForbiddenError } from 'apollo-server-express'
 import { menuFieldColumnMapping, menuORM } from '../menu/ORM'
 import { newsFieldColumnMapping, newsORM } from '../news/ORM'
 import { trendFieldColumnMapping, trendORM } from '../trend/ORM'
@@ -26,7 +26,19 @@ const likedTrends = importSQL(__dirname, 'sql/likedTrends.sql')
 const menuBuckets = importSQL(__dirname, 'sql/menuBuckets.sql')
 const storeBuckets = importSQL(__dirname, 'sql/storeBuckets.sql')
 
+export const Gender = {
+  OTHER: 0,
+  MALE: 1,
+  FEMALE: 2,
+}
+
 export const User: UserResolvers = {
+  // providers: ({ id, google_oauth }, __, { user }) => {
+  //   if (id !== user?.id) throw new ForbiddenError('')
+
+  //   return providers
+  // },
+
   comments: async (_, __, { user }, info) => {
     if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
