@@ -31,6 +31,10 @@ export function removeDoubleQuotesAround(words: string[], sentence: string) {
   )
 }
 
+export function removeDoubleQuotes(word: string) {
+  return word[0] === '"' && word[word.length - 1] === '"' ? word.slice(1, -1) : word
+}
+
 export function areAllElementsSame(arr: unknown[]) {
   return arr.every((v) => v === arr[0])
 }
@@ -47,6 +51,19 @@ export function isUniqueArray(arr: string[]) {
   }
 
   return true
+}
+
+export function includeSome(arr: unknown[], arr2: unknown[]) {
+  return arr.some((element) => arr2.includes(element))
+}
+
+export function isThereIntersection(setA: Set<unknown>, setB: Set<unknown>) {
+  for (const elem of setB) {
+    if (setA.has(elem)) {
+      return true
+    }
+  }
+  return false
 }
 
 export function snakeKeyToCamelKey(snakeObject: Record<string, any>) {
