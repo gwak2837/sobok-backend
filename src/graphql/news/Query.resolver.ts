@@ -13,7 +13,7 @@ const joinLikedStore = importSQL(__dirname, 'sql/joinLikedStore.sql')
 
 export const Query: QueryResolvers = {
   news: async (_, { id }, { user }, info) => {
-    let [sql, columns, values] = await buildBasicNewsQuery(user, info)
+    let [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
     sql = `${sql} ${await byId}`
     values.push(id)
@@ -28,7 +28,7 @@ export const Query: QueryResolvers = {
   },
 
   newsByAllStores: async (_, __, { user }, info) => {
-    const [sql, columns, values] = await buildBasicNewsQuery(user, info)
+    const [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
     const { rows } = await poolQuery({
       text: format(serializeSQLParameters(sql), columns),
@@ -51,7 +51,7 @@ export const Query: QueryResolvers = {
         throw new UserInputError('Invalid categories value')
     }
 
-    let [sql, columns, values] = await buildBasicNewsQuery(user, info)
+    let [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
     if (categories) {
       sql = `${sql} ${await byStoreIdAndCategories}`
@@ -73,7 +73,7 @@ export const Query: QueryResolvers = {
   newsByLikedStores: async (_, __, { user }, info) => {
     if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
-    let [sql, columns, values] = await buildBasicNewsQuery(user, info)
+    let [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
     sql = `${sql} ${await joinLikedStore}`
     values.push(user.id)
