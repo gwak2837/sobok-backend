@@ -34,6 +34,7 @@ CREATE TABLE "user" (
   bio varchar(50),
   birth date,
   image_url text,
+  nickname varchar(50),
   --
   google_oauth text UNIQUE,
   naver_oauth text UNIQUE,
@@ -51,7 +52,6 @@ CREATE TABLE store (
   town varchar(20) NOT NULL,
   address varchar(50) NOT NULL,
   categories int [] NOT NULL,
-  takeout boolean NOT NULL DEFAULT FALSE,
   --
   tel varchar(20) UNIQUE,
   registration_number char(10) UNIQUE,
@@ -292,7 +292,6 @@ CREATE TABLE deleted.store (
   town varchar(20) NOT NULL,
   address varchar(50) NOT NULL,
   tel varchar(20) NOT NULL UNIQUE,
-  takeout boolean NOT NULL DEFAULT FALSE,
   --
   description text,
   business_hours text [],
@@ -371,6 +370,7 @@ CREATE FUNCTION create_user (
   bio varchar(50) DEFAULT NULL,
   birth date DEFAULT NULL,
   image_url text DEFAULT NULL,
+  nickname varchar(50) DEFAULT NULL,
   out user_id bigint
 ) LANGUAGE plpgsql AS $$ BEGIN
 INSERT INTO "user" (
@@ -382,6 +382,7 @@ INSERT INTO "user" (
     bio,
     birth,
     image_url,
+    nickname,
     password_hash
   )
 VALUES (
@@ -393,6 +394,7 @@ VALUES (
     bio,
     birth,
     image_url,
+    nickname,
     password_hash
   )
 RETURNING id INTO user_id;
@@ -410,7 +412,6 @@ CREATE FUNCTION create_store (
   town varchar(20),
   address varchar(50),
   categories int [],
-  takeout boolean DEFAULT FALSE,
   tel varchar(20) DEFAULT NULL,
   registration_number char(10) DEFAULT NULL,
   description text DEFAULT NULL,
@@ -420,13 +421,12 @@ CREATE FUNCTION create_store (
   user_id bigint DEFAULT NULL,
   hashtags text [] DEFAULT NULL,
   out store_id bigint
-) LANGUAGE SQL AS $$ WITH inserted_store AS (
+) LANGUAGE SQL AS $$ WITH inserted_store (id) AS (
   INSERT INTO store (
       name,
       town,
       address,
       categories,
-      takeout,
       tel,
       registration_number,
       description,
@@ -440,7 +440,6 @@ CREATE FUNCTION create_store (
       town,
       address,
       categories,
-      takeout,
       tel,
       registration_number,
       description,
@@ -454,12 +453,13 @@ CREATE FUNCTION create_store (
 hashtag_name (name) AS (
   SELECT unnest(hashtags)
 ),
-inserted_hashtag AS (
+new_hashtag_id (id) AS (
   INSERT INTO hashtag (name)
-  SELECT *
+  SELECT name
   FROM hashtag_name ON CONFLICT (name) DO NOTHING
+  RETURNING id
 ),
-hashtag_id (id) AS (
+existing_hashtag_id (id) AS (
   SELECT hashtag.id
   FROM hashtag_name
     JOIN hashtag USING (name)
@@ -467,9 +467,15 @@ hashtag_id (id) AS (
 inserted__store_x_hashtag AS (
   INSERT INTO store_x_hashtag (store_id, hashtag_id)
   SELECT inserted_store.id,
-    hashtag_id.id
+    hashtag_union.id
   FROM inserted_store,
-    hashtag_id
+    (
+      SELECT id
+      FROM existing_hashtag_id
+      UNION
+      SELECT id
+      FROM new_hashtag_id
+    ) AS hashtag_union
 )
 SELECT id
 FROM inserted_store;
@@ -485,7 +491,7 @@ CREATE FUNCTION create_menu (
   store_id bigint,
   hashtags text [] DEFAULT NULL,
   out menu_id bigint
-) LANGUAGE SQL AS $$ WITH inserted_menu AS (
+) LANGUAGE SQL AS $$ WITH inserted_menu (id) AS (
   INSERT INTO menu (
       name,
       price,
@@ -507,12 +513,13 @@ CREATE FUNCTION create_menu (
 hashtag_name (name) AS (
   SELECT unnest(hashtags)
 ),
-inserted_hashtag AS (
+new_hashtag_id (id) AS (
   INSERT INTO hashtag (name)
-  SELECT *
+  SELECT name
   FROM hashtag_name ON CONFLICT (name) DO NOTHING
+  RETURNING id
 ),
-hashtag_id (id) AS (
+existing_hashtag_id (id) AS (
   SELECT hashtag.id
   FROM hashtag_name
     JOIN hashtag USING (name)
@@ -520,9 +527,15 @@ hashtag_id (id) AS (
 inserted__menu_x_hashtag AS (
   INSERT INTO menu_x_hashtag (menu_id, hashtag_id)
   SELECT inserted_menu.id,
-    hashtag_id.id
+    hashtag_union.id
   FROM inserted_menu,
-    hashtag_id
+    (
+      SELECT id
+      FROM existing_hashtag_id
+      UNION
+      SELECT id
+      FROM new_hashtag_id
+    ) AS hashtag_union
 )
 SELECT id
 FROM inserted_menu;
@@ -540,35 +553,26 @@ CREATE FUNCTION create_news (
   nth_images int [] DEFAULT NULL,
   image_urls text [] DEFAULT NULL,
   out news_id bigint
-) LANGUAGE SQL AS $$ WITH inserted_news AS (
+) LANGUAGE SQL AS $$ WITH inserted_news (id) AS (
   INSERT INTO news (title, contents, category, store_id, image_urls)
   VALUES (title, contents, category, store_id, image_urls)
   RETURNING id
 ),
-menu_id (id) AS (
-  SELECT unnest(menu_ids)
-),
-x (x) AS (
-  SELECT unnest(xs)
-),
-y (y) AS (
-  SELECT unnest(ys)
-),
-nth_image (nth_image) AS (
-  SELECT unnest(nth_images)
+tagged_menu (id, x, y, nth) AS (
+  SELECT unnest(menu_ids),
+    unnest(xs),
+    unnest(ys),
+    unnest(nth_images)
 ),
 inserted__news_x_tagged_menu AS (
   INSERT INTO news_x_tagged_menu (news_id, menu_id, x, y, nth_image)
   SELECT inserted_news.id,
-    menu_id.id,
-    x.x,
-    y.y,
-    nth_image.nth_image
+    tagged_menu.id,
+    tagged_menu.x,
+    tagged_menu.y,
+    tagged_menu.nth
   FROM inserted_news,
-    menu_id,
-    x,
-    y,
-    nth_image
+    tagged_menu
 )
 SELECT id
 FROM inserted_news;
@@ -588,7 +592,7 @@ CREATE FUNCTION create_feed (
   nth_images int [] DEFAULT NULL,
   hashtags text [] DEFAULT NULL,
   out feed_id bigint
-) LANGUAGE SQL AS $$ WITH inserted_feed AS (
+) LANGUAGE SQL AS $$ WITH inserted_feed (id) AS (
   INSERT INTO feed (
       rating,
       contents,
@@ -610,12 +614,13 @@ CREATE FUNCTION create_feed (
 hashtag_name (name) AS (
   SELECT unnest(hashtags)
 ),
-inserted_hashtag AS (
+new_hashtag_id (id) AS (
   INSERT INTO hashtag (name)
-  SELECT *
+  SELECT name
   FROM hashtag_name ON CONFLICT (name) DO NOTHING
+  RETURNING id
 ),
-hashtag_id (id) AS (
+existing_hashtag_id (id) AS (
   SELECT hashtag.id
   FROM hashtag_name
     JOIN hashtag USING (name)
@@ -623,34 +628,31 @@ hashtag_id (id) AS (
 inserted__feed_x_hashtag AS (
   INSERT INTO feed_x_hashtag (feed_id, hashtag_id)
   SELECT inserted_feed.id,
-    hashtag_id.id
+    hashtag_union.id
   FROM inserted_feed,
-    hashtag_id
+    (
+      SELECT id
+      FROM existing_hashtag_id
+      UNION
+      SELECT id
+      FROM new_hashtag_id
+    ) AS hashtag_union
 ),
-menu_id (id) AS (
-  SELECT unnest(menu_ids)
-),
-x (x) AS (
-  SELECT unnest(xs)
-),
-y (y) AS (
-  SELECT unnest(ys)
-),
-nth_image (nth_image) AS (
-  SELECT unnest(nth_images)
+tagged_menu (id, x, y, nth) AS (
+  SELECT unnest(menu_ids),
+    unnest(xs),
+    unnest(ys),
+    unnest(nth_images)
 ),
 inserted__feed_x_rated_menu AS (
   INSERT INTO feed_x_rated_menu (feed_id, menu_id, x, y, nth_image)
   SELECT inserted_feed.id,
-    menu_id.id,
-    x.x,
-    y.y,
-    nth_image.nth_image
+    tagged_menu.id,
+    tagged_menu.x,
+    tagged_menu.y,
+    tagged_menu.nth
   FROM inserted_feed,
-    menu_id,
-    x,
-    y,
-    nth_image
+    tagged_menu
 )
 SELECT id
 FROM inserted_feed;
@@ -1036,7 +1038,8 @@ SELECT create_user (
     2,
     '세상의 모든 디저트를 정복할꺼야!',
     '1997-06-10',
-    'https://storage.googleapis.com/sobok/%EA%B9%80%ED%9A%A8%EC%A7%84.webp'
+    'https://storage.googleapis.com/sobok/%EA%B9%80%ED%9A%A8%EC%A7%84.webp',
+    '묘진'
   );
 
 -- 비밀번호: 5678
@@ -1049,7 +1052,8 @@ SELECT create_user (
     1,
     '크로플 같은 남자',
     '1998-04-12',
-    'https://storage.googleapis.com/sobok/%EA%B3%BD%ED%83%9C%EC%9A%B1.webp'
+    'https://storage.googleapis.com/sobok/%EA%B3%BD%ED%83%9C%EC%9A%B1.webp',
+    '크로플홀릭'
   );
 
 SELECT create_user (
@@ -1061,7 +1065,8 @@ SELECT create_user (
     2,
     '대구의 모든 맛집!',
     '1997-05-05',
-    'https://storage.googleapis.com/sobok/%EB%B0%95%EC%88%98%ED%98%84.webp'
+    'https://storage.googleapis.com/sobok/%EB%B0%95%EC%88%98%ED%98%84.webp',
+    '디자이너'
   );
 
 SELECT create_user (
@@ -1073,7 +1078,8 @@ SELECT create_user (
     1,
     '디저트에 빠진 자취남(자아도취남)',
     '1996-09-12',
-    'https://storage.googleapis.com/sobok/%EA%B9%80%EB%AF%BC%ED%98%B8.webp'
+    'https://storage.googleapis.com/sobok/%EA%B9%80%EB%AF%BC%ED%98%B8.webp',
+    '논'
   );
 
 SELECT create_user (
@@ -1085,7 +1091,8 @@ SELECT create_user (
     1,
     '아재입맛, 집 근처만 다닙니다',
     '1995-01-14',
-    'https://storage.googleapis.com/sobok/%EA%B8%B0%EC%9A%B0%ED%98%84.webp'
+    'https://storage.googleapis.com/sobok/%EA%B8%B0%EC%9A%B0%ED%98%84.webp',
+    '문신충'
   );
 
 SELECT create_user (
@@ -1097,7 +1104,8 @@ SELECT create_user (
     2,
     '디저트 조아해요',
     '1997-10-16',
-    'https://storage.googleapis.com/sobok/%EA%B9%80%EC%A7%84%ED%9A%A8.webp'
+    'https://storage.googleapis.com/sobok/%EA%B9%80%EC%A7%84%ED%9A%A8.webp',
+    '지뇨'
   );
 
 SELECT create_user (
@@ -1109,7 +1117,8 @@ SELECT create_user (
     1,
     '유당불내증. 두유 커피가 최고!',
     '1997-10-06',
-    'https://storage.googleapis.com/sobok/%EA%B3%BD%EC%9A%B1%ED%83%9C.webp'
+    'https://storage.googleapis.com/sobok/%EA%B3%BD%EC%9A%B1%ED%83%9C.webp',
+    '욱욱'
   );
 
 SELECT create_user (
@@ -1121,7 +1130,8 @@ SELECT create_user (
     2,
     '그곳에 마카롱이 있다면 어디든!',
     '1998-12-04',
-    'https://storage.googleapis.com/sobok/%EB%B0%95%ED%98%84%EC%88%98.webp'
+    'https://storage.googleapis.com/sobok/%EB%B0%95%ED%98%84%EC%88%98.webp',
+    '강남러'
   );
 
 SELECT create_user (
@@ -1133,7 +1143,8 @@ SELECT create_user (
     1,
     '주호민 아니고 김호민',
     '1997-05-05',
-    'https://storage.googleapis.com/sobok/%EA%B9%80%ED%98%B8%EB%AF%BC.webp'
+    'https://storage.googleapis.com/sobok/%EA%B9%80%ED%98%B8%EB%AF%BC.webp',
+    '주호민'
   );
 
 SELECT create_user (
@@ -1145,7 +1156,8 @@ SELECT create_user (
     1,
     '내마음이 기우는 곳으로.',
     '1996-12-09',
-    'https://storage.googleapis.com/sobok/%EA%B8%B0%ED%98%84%EC%9A%B0.webp'
+    'https://storage.googleapis.com/sobok/%EA%B8%B0%ED%98%84%EC%9A%B0.webp',
+    '직녀'
   );
 
 SELECT create_store (
@@ -1153,7 +1165,6 @@ SELECT create_store (
     '흑석동',
     '서울 동작구 서달로14길 42',
     ARRAY [1, 7],
-    FALSE,
     '0507-1329-4338',
     '0000000000',
     '수제로 만든 정성 가득한 디저트를 판매합니다',
@@ -1168,8 +1179,7 @@ SELECT create_store (
     '뚜스뚜스 흑석역점',
     '흑석동',
     '서울 동작구 현충로 75 원불교기념관 1층',
-    ARRAY [0, 7],
-    FALSE,
+    ARRAY [0, 7, 10],
     '0507-1426-9027',
     '0000000001',
     '브런치도 판매하는 빵 맛집',
@@ -1185,7 +1195,6 @@ SELECT create_store (
     '흑석동',
     '서울 동작구 현충로 96',
     ARRAY [1, 2, 3],
-    FALSE,
     '02-825-5265',
     '0000000002',
     '유기농 밀가루 100%를 사용하며, 방부제를 사용하지 않는 빵집. 냉동 빵이 아니며, 생반죽으로 빵을 구워낸다. 자연 친화적인 발효종을 배양시켜 장시간 발효시키기 때문에, 빵 고유의 맛을 더욱 풍부하게 느낄 수 있다. 빵 안에 단팥과 호두가 가득 들어서, 고소한 레드빈스틱이 인기가 많다.',
@@ -1201,7 +1210,6 @@ SELECT create_store (
     '상도동',
     '서울 동작구 상도로47바길 48 1층',
     ARRAY [1, 3],
-    FALSE,
     '070-8866-4344',
     '0000000003',
     '친절하고 공부하기 좋은 힙한 느낌의 카페',
@@ -1217,7 +1225,6 @@ SELECT create_store (
     '흑석동',
     '서울 동작구 흑석로8길 12 1층',
     ARRAY [3, 4, 5, 6, 7],
-    FALSE,
     '0507-1330-7209',
     '0000000004',
     '친절하고 공부하기 좋은 힙한 느낌의 카페',
@@ -1232,8 +1239,7 @@ SELECT create_store (
     '라임플레쉬카페',
     '흑석동',
     '서울 동작구 흑석동13가길 29',
-    ARRAY [1, 7],
-    FALSE,
+    ARRAY [1, 7, 10],
     '02-6398-6787',
     '0000000005',
     '공부하거나 모임 하기 좋은 장소',
@@ -1249,7 +1255,6 @@ SELECT create_store (
     '흑석동',
     '서울 동작구 서달로 151',
     ARRAY [2, 4],
-    FALSE,
     '02-826-9194',
     '0000000006',
     '제주 감성을 담아낸 이로운 커피',
@@ -1264,8 +1269,7 @@ SELECT create_store (
     '터방내',
     '흑석동',
     '서울 동작구 흑석로 101-7',
-    ARRAY [3],
-    FALSE,
+    ARRAY [3, 10],
     '02-813-4434',
     '0000000007',
     '7080 감성 카페, 옛날 다방 감성',
@@ -1281,7 +1285,6 @@ SELECT create_store (
     '흑석동',
     '서울 동작구 흑석로8길 7',
     ARRAY [3],
-    FALSE,
     '0507-1405-8858',
     '0000000008',
     '토크가 맛있는 카페',
@@ -1296,8 +1299,7 @@ SELECT create_store (
     '흑석커피',
     '흑석동',
     '서울 동작구 서달로 14가길 5 1층',
-    ARRAY [1, 2, 4],
-    FALSE,
+    ARRAY [1, 2, 4, 10],
     '0507-1317-9267',
     '0000000009',
     '조용하고 색다른 메뉴가 있는 카페',
@@ -1874,18 +1876,20 @@ SELECT create_feed (
 
 SELECT create_comment (ARRAY ['신기해용 노란색은 뭔가요? 망고??!'], 1, 1, NULL, NULL);
 
+SELECT create_comment (ARRAY ['망고 맛있겠네용ㅎㅎ'], 2, 1, NULL, NULL);
+
 SELECT create_comment (ARRAY ['저 매주 가서 먹어요ㅠ'], 2, 2, NULL, NULL);
 
-SELECT create_comment (ARRAY ['오이가 얼마나 맛있는데!! ㅋㅋ'], 3, 1, NULL, NULL);
+SELECT create_comment (ARRAY ['오이가 얼마나 맛있는데!! ㅋㅋ'], 3, 3, NULL, NULL);
 
-SELECT create_comment (ARRAY ['미숫가루 맛이 강한게 매력이던데용 ㅎ'], 4, 1, NULL, NULL);
+SELECT create_comment (ARRAY ['미숫가루 맛이 강한게 매력이던데용 ㅎ'], 4, 4, NULL, NULL);
 
 SELECT create_comment (
     ARRAY ['그치만 조금만 더 저렴했으면 좋겠어요ㅠ'],
     5,
-    1,
+    5,
     NULL,
     NULL
   );
 
-SELECT create_comment (ARRAY ['여기 고구마 라떼가 정말 달더라구요'], 6, 1, NULL, NULL);
+SELECT create_comment (ARRAY ['여기 고구마 라떼가 정말 달더라구요'], 6, 6, NULL, NULL);
