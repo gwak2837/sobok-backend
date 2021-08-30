@@ -24,6 +24,5 @@ export const apolloServer = new ApolloServer({
 
     return { user: rows[0] }
   },
-  introspection: true,
   schema,
 })
