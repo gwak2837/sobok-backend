@@ -7,6 +7,8 @@ type Feed {
   imageUrls: [URL!]!
   likeCount: Int!
   commentCount: Int!
+  storeId: ID!
+  userId: ID!
 
   # from other table
   "피드 좋아요 여부 (로그인 필요)"

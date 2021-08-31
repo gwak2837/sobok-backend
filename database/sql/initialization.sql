@@ -100,8 +100,8 @@ CREATE TABLE feed (
   image_urls text [] NOT NULL,
   like_count int NOT NULL DEFAULT 0,
   comment_count int NOT NULL DEFAULT 0,
-  user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE,
-  store_id bigint NOT NULL REFERENCES store ON DELETE CASCADE
+  store_id bigint NOT NULL REFERENCES store ON DELETE CASCADE,
+  user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE
 );
 
 CREATE TABLE trend (
