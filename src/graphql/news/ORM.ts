@@ -1,25 +1,101 @@
-import type { news } from 'src/database/sobok'
-import type { News } from 'src/graphql/generated/graphql'
-import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
+import { GraphQLResolveInfo } from 'graphql'
+import graphqlFields from 'graphql-fields'
+import format from 'pg-format'
+import type { news as DatabaseNews } from 'src/database/sobok'
+import type { News as GraphQLNews } from 'src/graphql/generated/graphql'
+import { selectColumnFromSubField, serializeSQLParameters } from '../../utils/ORM'
+import {
+  camelToSnake,
+  importSQL,
+  removeQuotes,
+  snakeKeyToCamelKey,
+  snakeToCamel,
+  tableColumnRegEx,
+} from '../../utils/commons'
+import { storeFieldColumnMapping } from '../store/ORM'
 
-// All GraphQL fields -> Database columns
-export function newsFieldColumnMapping(newsField: keyof News) {
+const joinLikedNews = importSQL(__dirname, 'sql/joinLikedNews.sql')
+const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
+const newsList = importSQL(__dirname, 'sql/newsList.sql')
+
+// GraphQL fields -> Database columns
+export function newsFieldColumnMapping(newsField: keyof GraphQLNews) {
   switch (newsField) {
     case 'isLiked':
-      return 'id'
+      return ''
     case 'store':
-      return 'store_id'
+      return ''
     default:
-      return camelToSnake(newsField)
+      return `news.${camelToSnake(newsField)}`
   }
 }
 
-// All database columns -> GraphQL fields
-export function newsORM(news: news): any {
-  return {
-    ...snakeKeyToCamelKey(news),
-    category: decodeCategory(news.category),
+// GraphQL fields -> SQL
+export async function buildBasicNewsQuery(
+  info: GraphQLResolveInfo,
+  user: any,
+  selectColumns = true
+) {
+  const newsFields = graphqlFields(info) as Record<string, any>
+  const firstNewsFields = Object.keys(newsFields)
+
+  let sql = await newsList
+  let columns = selectColumns ? selectColumnFromSubField(newsFields, newsFieldColumnMapping) : []
+  const values = []
+
+  if (firstNewsFields.includes('isLiked')) {
+    if (user) {
+      sql = `${sql} ${await joinLikedNews}`
+      columns.push('user_x_liked_news.user_id')
+      values.push(user.id)
+    }
   }
+
+  if (firstNewsFields.includes('store')) {
+    const storeColumns = selectColumnFromSubField(newsFields.store, storeFieldColumnMapping)
+
+    sql = `${sql} ${await joinStore}`
+    columns = [...columns, ...storeColumns]
+  }
+
+  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+}
+
+// Database record -> GraphQL fields
+export function newsORM(rows: unknown[][], selectedColumns: string[]): GraphQLNews[] {
+  return rows.map((row) => {
+    const graphQLNews: any = {}
+
+    selectedColumns.forEach((selectedColumn, i) => {
+      const [_, __] = (selectedColumn.match(tableColumnRegEx) ?? [''])[0].split('.')
+      const tableName = removeQuotes(_)
+      const camelTableName = snakeToCamel(tableName)
+      const camelColumnName = snakeToCamel(removeQuotes(__))
+      const cell = row[i]
+
+      if (tableName === 'news') {
+        graphQLNews[camelColumnName] = cell
+      }
+
+      //
+      else if (tableName === 'user_x_liked_feed') {
+        if (cell) {
+          graphQLNews.isLiked = true
+        }
+      }
+
+      //
+      else {
+        if (!graphQLNews[camelTableName]) {
+          graphQLNews[camelTableName] = {}
+        }
+
+        graphQLNews[camelTableName][camelColumnName] = cell
+      }
+    })
+
+    return graphQLNews
+  })
 }
 
 export function encodeCategory(category: string) {
@@ -39,7 +115,7 @@ export function encodeCategory(category: string) {
   }
 }
 
-function decodeCategory(id: number) {
+export function decodeCategory(id?: number) {
   switch (id) {
     case 0:
       return '오늘의라인업'

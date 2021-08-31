@@ -1,2 +1,2 @@
 SELECT %s
-FROM news
+FROM feed

@@ -1,5 +1,6 @@
 import format from 'pg-format'
-import { QueryResolvers } from 'src/graphql/generated/graphql'
+import type { QueryResolvers } from 'src/graphql/generated/graphql'
+import type { store as Store } from 'src/database/sobok'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
 import { selectColumnFromField } from '../../utils/ORM'
@@ -31,28 +32,23 @@ export const Query: QueryResolvers = {
 
     const columns = selectColumnFromField(info, storeFieldColumnMapping)
 
+    let sql, values: unknown[]
+
     if (town && categories) {
-      const { rows } = await poolQuery(format(await storesByTownAndCategories, columns), [
-        town,
-        encodedCategories,
-      ])
-
-      return rows.map((row) => storeORM(row))
+      sql = await storesByTownAndCategories
+      values = [town, encodedCategories]
+    } else if (town) {
+      sql = await storesByTown
+      values = [town]
+    } else if (categories) {
+      sql = await storesByCategories
+      values = [encodedCategories]
+    } else {
+      sql = await stores
+      values = []
     }
 
-    if (town) {
-      const { rows } = await poolQuery(format(await storesByTown, columns), [town])
-
-      return rows.map((row) => storeORM(row))
-    }
-
-    if (categories) {
-      const { rows } = await poolQuery(format(await storesByCategories, columns), [[1, 2]])
-
-      return rows.map((row) => storeORM(row))
-    }
-
-    const { rows } = await poolQuery(format(await stores, columns))
+    const { rows } = await poolQuery(format(sql, columns), values)
 
     return rows.map((row) => storeORM(row))
   },

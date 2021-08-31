@@ -4,7 +4,6 @@ import { MutationResolvers } from 'src/graphql/generated/graphql'
 import { generateJWT } from '../../utils/jwt'
 import { poolQuery } from '../../database/postgres'
 import { importSQL } from '../../utils/commons'
-import { encodeGender } from './ORM'
 
 const login = importSQL(__dirname, 'sql/login.sql')
 const logout = importSQL(__dirname, 'sql/logout.sql')
@@ -39,6 +38,8 @@ export const Mutation: MutationResolvers = {
   register: async (_, { input }, { user }) => {
     if (user) throw new ForbiddenError('이미 로그인되어 있습니다. 로그아웃 후 시도해주세요.')
 
+    // 경고: uniqueName 를 다른 사람 이메일로 하면 로그인이 될 수 있음 -> 걸러줘야 함
+
     const passwordHashWithSalt = await hash(input.passwordHash, await genSalt())
 
     const registerValues = [
@@ -47,7 +48,7 @@ export const Mutation: MutationResolvers = {
       passwordHashWithSalt,
       input.name,
       input.phone,
-      encodeGender(input.gender),
+      input.gender,
       input.bio,
       input.birth,
       input.imageUrl,

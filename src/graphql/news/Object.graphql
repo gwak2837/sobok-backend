@@ -5,17 +5,14 @@ type News {
   title: NonEmptyString!
   contents: [NonEmptyString!]!
   category: NonEmptyString!
+  storeId: ID!
 
   # nullable
   imageUrls: [URL!]
 
   # from other table
-  """
-  로그인한 사용자가 이 메뉴를 좋아하는 여부
-  """
+  "뉴스 좋아요 여부 (로그인 필요)"
   isLiked: Boolean!
-  """
-  이 소식을 올린 매장
-  """
+  "이 소식을 올린 매장"
   store: Store!
 }

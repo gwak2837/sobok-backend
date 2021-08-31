@@ -1,0 +1,1 @@
+JOIN "user" ON feed.user_id = "user".id

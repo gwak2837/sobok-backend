@@ -5,19 +5,19 @@ import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 export function menuFieldColumnMapping(menuField: keyof Menu) {
   switch (menuField) {
     case 'isInBucket':
-      return 'id'
+      return ''
     case 'isLiked':
-      return 'id'
+      return ''
     case 'store':
-      return 'store_id'
+      return ''
     case 'hashtags':
-      return 'id'
+      return ''
     default:
-      return camelToSnake(menuField)
+      return `menu.${camelToSnake(menuField)}`
   }
 }
 
-export function menuORM(menu: menu): any {
+export function menuORM(menu: Partial<menu>): any {
   return {
     ...snakeKeyToCamelKey(menu),
     category: decodeCategory(menu.category),
@@ -45,7 +45,7 @@ export function encodeCategory(id: string) {
   }
 }
 
-function decodeCategory(id: number) {
+function decodeCategory(id?: number) {
   switch (id) {
     case 0:
       return '음료'

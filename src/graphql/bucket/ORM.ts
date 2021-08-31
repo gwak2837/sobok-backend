@@ -11,7 +11,7 @@ export function bucketFieldColumnMapping(bucketField: keyof Bucket) {
 }
 
 // All database columns -> GraphQL fields
-export function bucketORM(bucket: bucket): any {
+export function bucketORM(bucket: Partial<bucket>): any {
   return {
     ...snakeKeyToCamelKey(bucket),
   }

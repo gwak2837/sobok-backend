@@ -11,7 +11,7 @@ export function trendFieldColumnMapping(trendField: keyof Trend) {
 }
 
 // All database columns -> GraphQL fields
-export function trendORM(trend: trend): any {
+export function trendORM(trend: Partial<trend>): any {
   return {
     ...snakeKeyToCamelKey(trend),
   }

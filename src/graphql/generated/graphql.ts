@@ -56,6 +56,8 @@ export type Feed = {
   imageUrls: Array<Scalars['URL']>
   likeCount: Scalars['Int']
   commentCount: Scalars['Int']
+  /** 피드 좋아요 여부 (로그인 필요) */
+  isLiked: Scalars['Boolean']
   /** 피드에 태그된 매장 */
   store: Store
   /** 피드 작성자 */
@@ -82,6 +84,7 @@ export type Menu = {
   modificationTime: Scalars['DateTime']
   name: Scalars['NonEmptyString']
   price: Scalars['Int']
+  isSoldOut: Scalars['Boolean']
   imageUrls: Array<Scalars['URL']>
   category: Scalars['NonEmptyString']
   storeId: Scalars['ID']
@@ -124,8 +127,9 @@ export type News = {
   title: Scalars['NonEmptyString']
   contents: Array<Scalars['NonEmptyString']>
   category: Scalars['NonEmptyString']
+  storeId: Scalars['ID']
   imageUrls?: Maybe<Array<Scalars['URL']>>
-  /** 로그인한 사용자가 이 메뉴를 좋아하는 여부 */
+  /** 뉴스 좋아요 여부 (로그인 필요) */
   isLiked: Scalars['Boolean']
   /** 이 소식을 올린 매장 */
   store: Store
@@ -144,9 +148,9 @@ export type Query = {
   /** 피드 상세 */
   feed?: Maybe<Feed>
   /** 특정 매장 피드 목록 */
-  feed2?: Maybe<Array<Feed>>
+  feedByOneStore?: Maybe<Array<Feed>>
   /** 특정 동네 피드 목록 */
-  feed3?: Maybe<Array<Feed>>
+  feedByOneTown?: Maybe<Array<Feed>>
   /** 이메일 중복 여부 검사 */
   isEmailUnique: Scalars['Boolean']
   /** 사용자 고유 이름 중복 여부 검사 */
@@ -160,9 +164,11 @@ export type Query = {
   /** 소식 상세 */
   news?: Maybe<News>
   /** 전체 매장 소식 목록 */
-  news2?: Maybe<Array<News>>
+  newsByAllStores?: Maybe<Array<News>>
+  /** 좋아하는 매장 소식 목록 (로그인 필요) */
+  newsByLikedStores?: Maybe<Array<News>>
   /** 특정 매장 소식 목록 */
-  news3?: Maybe<Array<News>>
+  newsByOneStore?: Maybe<Array<News>>
   searchFeed?: Maybe<Array<Menu>>
   searchMenus?: Maybe<Array<Menu>>
   searchStores?: Maybe<Array<Menu>>
@@ -176,11 +182,11 @@ export type QueryFeedArgs = {
   id: Scalars['ID']
 }
 
-export type QueryFeed2Args = {
+export type QueryFeedByOneStoreArgs = {
   storeId: Scalars['ID']
 }
 
-export type QueryFeed3Args = {
+export type QueryFeedByOneTownArgs = {
   town: Scalars['ID']
 }
 
@@ -214,7 +220,7 @@ export type QueryNewsArgs = {
   id: Scalars['ID']
 }
 
-export type QueryNews3Args = {
+export type QueryNewsByOneStoreArgs = {
   storeId: Scalars['ID']
   categories?: Maybe<Array<Scalars['NonEmptyString']>>
 }
@@ -423,10 +429,10 @@ export type ResolversTypes = {
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>
   Feed: ResolverTypeWrapper<Feed>
   Int: ResolverTypeWrapper<Scalars['Int']>
+  Boolean: ResolverTypeWrapper<Scalars['Boolean']>
   Gender: Gender
   JWT: ResolverTypeWrapper<Scalars['JWT']>
   Menu: ResolverTypeWrapper<Menu>
-  Boolean: ResolverTypeWrapper<Scalars['Boolean']>
   Mutation: ResolverTypeWrapper<{}>
   News: ResolverTypeWrapper<News>
   NonEmptyString: ResolverTypeWrapper<Scalars['NonEmptyString']>
@@ -450,9 +456,9 @@ export type ResolversParentTypes = {
   EmailAddress: Scalars['EmailAddress']
   Feed: Feed
   Int: Scalars['Int']
+  Boolean: Scalars['Boolean']
   JWT: Scalars['JWT']
   Menu: Menu
-  Boolean: Scalars['Boolean']
   Mutation: {}
   News: News
   NonEmptyString: Scalars['NonEmptyString']
@@ -518,6 +524,7 @@ export type FeedResolvers<
   imageUrls?: Resolver<Array<ResolversTypes['URL']>, ParentType, ContextType>
   likeCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
   commentCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  isLiked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType>
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
   comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
@@ -539,6 +546,7 @@ export type MenuResolvers<
   modificationTime?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
   name?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   price?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  isSoldOut?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   imageUrls?: Resolver<Array<ResolversTypes['URL']>, ParentType, ContextType>
   category?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   storeId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
@@ -579,6 +587,7 @@ export type NewsResolvers<
   title?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   contents?: Resolver<Array<ResolversTypes['NonEmptyString']>, ParentType, ContextType>
   category?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  storeId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   imageUrls?: Resolver<Maybe<Array<ResolversTypes['URL']>>, ParentType, ContextType>
   isLiked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType>
@@ -600,17 +609,17 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryFeedArgs, 'id'>
   >
-  feed2?: Resolver<
+  feedByOneStore?: Resolver<
     Maybe<Array<ResolversTypes['Feed']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryFeed2Args, 'storeId'>
+    RequireFields<QueryFeedByOneStoreArgs, 'storeId'>
   >
-  feed3?: Resolver<
+  feedByOneTown?: Resolver<
     Maybe<Array<ResolversTypes['Feed']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryFeed3Args, 'town'>
+    RequireFields<QueryFeedByOneTownArgs, 'town'>
   >
   isEmailUnique?: Resolver<
     ResolversTypes['Boolean'],
@@ -655,12 +664,13 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryNewsArgs, 'id'>
   >
-  news2?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
-  news3?: Resolver<
+  newsByAllStores?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
+  newsByLikedStores?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
+  newsByOneStore?: Resolver<
     Maybe<Array<ResolversTypes['News']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryNews3Args, 'storeId'>
+    RequireFields<QueryNewsByOneStoreArgs, 'storeId'>
   >
   searchFeed?: Resolver<
     Maybe<Array<ResolversTypes['Menu']>>,

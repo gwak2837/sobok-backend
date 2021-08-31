@@ -1,16 +1,10 @@
 type Query {
-  """
-  피드 상세
-  """
+  "피드 상세"
   feed(id: ID!): Feed
 
-  """
-  특정 매장 피드 목록
-  """
-  feed2(storeId: ID!): [Feed!]
+  "특정 매장 피드 목록"
+  feedByOneStore(storeId: ID!): [Feed!]
 
-  """
-  특정 동네 피드 목록
-  """
-  feed3(town: ID!): [Feed!]
+  "특정 동네 피드 목록"
+  feedByOneTown(town: ID!): [Feed!]
 }
