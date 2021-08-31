@@ -22,7 +22,7 @@ export function selectColumnFromSubField(
     ...new Set(
       Object.keys(subFields)
         .filter((field) => field !== '__typename')
-        .map((field) => fieldColumnMapping(field))
+        .map(fieldColumnMapping)
         .filter((field) => field !== '')
         .flat()
     ),
@@ -32,4 +32,8 @@ export function selectColumnFromSubField(
 export function serializeSQLParameters(sql: string) {
   let i = 1
   return sql.replace(/\$\d+/g, () => `$${i++}`)
+}
+
+export function removeColumnWithAggregateFunction(column: string) {
+  return column.search(/\w+\([\w."` ]+\)/) === -1
 }

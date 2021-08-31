@@ -5,15 +5,15 @@ import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 export function menuFieldColumnMapping(menuField: keyof Menu) {
   switch (menuField) {
     case 'isInBucket':
-      return 'id'
+      return ''
     case 'isLiked':
-      return 'id'
+      return ''
     case 'store':
-      return 'store_id'
+      return ''
     case 'hashtags':
-      return 'id'
+      return ''
     default:
-      return camelToSnake(menuField)
+      return `menu.${camelToSnake(menuField)}`
   }
 }
 

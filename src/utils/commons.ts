@@ -1,6 +1,5 @@
 import { promises } from 'fs'
 import { join } from 'path'
-import { string } from 'pg-format'
 
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -20,6 +19,11 @@ export function snakeToCamel(str: string) {
     .replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''))
 }
 
+export function endIndexOf(source: string, target: string) {
+  const io = source.indexOf(target)
+  return io === -1 ? -1 : io + target.length
+}
+
 export function returnZeroWhenZeroDivision(numerator: number, denominator: number) {
   return denominator !== 0 ? numerator / denominator : 0
 }
@@ -31,8 +35,11 @@ export function removeDoubleQuotesAround(words: string[], sentence: string) {
   )
 }
 
-export function removeDoubleQuotes(word: string) {
-  return word[0] === '"' && word[word.length - 1] === '"' ? word.slice(1, -1) : word
+export function removeQuotes(word: string) {
+  return (word[0] === '"' && word[word.length - 1] === '"') ||
+    (word[0] === '`' && word[word.length - 1] === '`')
+    ? word.slice(1, -1)
+    : word
 }
 
 export function areAllElementsSame(arr: unknown[]) {
@@ -73,7 +80,11 @@ export function snakeKeyToCamelKey(snakeObject: Record<string, any>) {
 }
 
 export function formatDate(date: Date): string {
-  return `${date.getUTCFullYear()}년 ${
+  return `${date.getUTCFullYear()}. ${
     date.getUTCMonth() + 1
-  }월 ${date.getUTCDate()}일 ${date.getUTCHours()}시 ${date.getUTCMinutes()}분 ${date.getUTCSeconds()}초`
+  }. ${date.getUTCDate()}. ${date.getUTCHours()}:${`0${date.getUTCMinutes()}`.slice(
+    -2
+  )}:${`0${date.getUTCSeconds()}`.slice(-2)} UTC`
 }
+
+export const tableColumnRegEx = /[\w"`]+\.[\w"`]+/
