@@ -27,24 +27,22 @@ const joinMenu = importSQL(__dirname, 'sql/joinMenu.sql')
 const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
 const joinUser = importSQL(__dirname, 'sql/joinUser.sql')
 
+const newsFieldsFromOtherTable = new Set([
+  'isLiked',
+  'store',
+  'user',
+  'comments',
+  'hashtags',
+  'menus',
+])
+
 // GraphQL fields -> Database columns
 export function feedFieldColumnMapping(feedField: keyof GraphQLFeed) {
-  switch (feedField) {
-    case 'isLiked':
-      return ''
-    case 'store':
-      return ''
-    case 'user':
-      return ''
-    case 'comments':
-      return ''
-    case 'hashtags':
-      return ''
-    case 'menus':
-      return ''
-    default:
-      return `feed.${camelToSnake(feedField)}`
+  if (newsFieldsFromOtherTable.has(feedField)) {
+    return ''
   }
+
+  return `feed.${camelToSnake(feedField)}`
 }
 
 // GraphQL fields -> SQL
