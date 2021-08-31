@@ -6,7 +6,7 @@ import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 export function commentFieldColumnMapping(commentField: keyof Comment) {
   switch (commentField) {
     default:
-      return camelToSnake(commentField)
+      return `comment.${camelToSnake(commentField)}`
   }
 }
 

@@ -15,7 +15,7 @@ export function storeFieldColumnMapping(storeField: keyof Store) {
     case 'user':
       return 'user_id'
     default:
-      return camelToSnake(storeField)
+      return `store.${camelToSnake(storeField)}`
   }
 }
 

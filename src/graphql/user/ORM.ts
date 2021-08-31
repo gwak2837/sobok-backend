@@ -1,8 +1,7 @@
 import type { user } from 'src/database/sobok'
 import type { User } from 'src/graphql/generated/graphql'
-import { Gender, Provider } from '../generated/graphql'
+import { Provider } from '../generated/graphql'
 import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
-import { ApolloError } from 'apollo-server-express'
 
 export function userFieldColumnMapping(userField: keyof User) {
   switch (userField) {
@@ -33,7 +32,7 @@ export function userFieldColumnMapping(userField: keyof User) {
     case 'storeBuckets':
       return ''
     default:
-      return camelToSnake(userField)
+      return ['"user".id', `"user".${camelToSnake(userField)}`]
   }
 }
 
