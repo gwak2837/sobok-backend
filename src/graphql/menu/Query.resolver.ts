@@ -21,7 +21,7 @@ export const Query: QueryResolvers = {
 
     const { rows } = await poolQuery(format(await menu, columns), [id])
 
-    return menuORM(rows[0])
+    return menuORM(rows[0], columns)[0]
   },
 
   menu2: async (_, { storeId, name }, { user }, info) => {
@@ -31,7 +31,7 @@ export const Query: QueryResolvers = {
 
     if (rowCount === 0) return null
 
-    return menuORM(rows[0])
+    return menuORM(rows[0], columns)[0]
   },
 
   menus: async (_, { town, category }, { user }, info) => {
@@ -65,7 +65,7 @@ export const Query: QueryResolvers = {
 
     const { rows } = await poolQuery(format(sql, selectedColumes), values)
 
-    return rows.map((row) => menuORM(row))
+    return rows.map((row) => menuORM(row, columns)[0])
   },
 
   menus2: async (_, { storeId }, { user }, info) => {
@@ -73,6 +73,6 @@ export const Query: QueryResolvers = {
 
     const { rows } = await poolQuery(format(await menusByStoreId, columns), [storeId])
 
-    return rows.map((row) => menuORM(row))
+    return rows.map((row) => menuORM(row, columns)[0])
   },
 }

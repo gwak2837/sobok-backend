@@ -56,6 +56,8 @@ export type Feed = {
   imageUrls: Array<Scalars['URL']>
   likeCount: Scalars['Int']
   commentCount: Scalars['Int']
+  storeId: Scalars['ID']
+  userId: Scalars['ID']
   /** 피드 좋아요 여부 (로그인 필요) */
   isLiked: Scalars['Boolean']
   /** 피드에 태그된 매장 */
@@ -267,8 +269,6 @@ export type Store = {
   town: Scalars['NonEmptyString']
   address: Scalars['NonEmptyString']
   categories: Array<Scalars['NonEmptyString']>
-  takeout: Scalars['Boolean']
-  /** nullable */
   tel?: Maybe<Scalars['String']>
   registrationNumber?: Maybe<Scalars['String']>
   description?: Maybe<Scalars['String']>
@@ -276,12 +276,17 @@ export type Store = {
   holidays?: Maybe<Array<Scalars['Date']>>
   imageUrls?: Maybe<Array<Scalars['URL']>>
   userId: Scalars['ID']
-  /** from other table */
+  /** 로그인한 사용자가 이 매장을 버킷에 담은 여부 */
   isInBucket: Scalars['Boolean']
+  /** 로그인한 사용자가 이 매장을 좋아하는 여부 */
   isLiked: Scalars['Boolean']
+  /** 매장에서 판매하는 메뉴 목록 */
   menus: Array<Menu>
-  /** from other table - nullable */
+  /** 매장에 달린 해시태그 */
   hashtags?: Maybe<Array<Scalars['NonEmptyString']>>
+  /** 매장에서 올린 소식 목록 */
+  news?: Maybe<Array<News>>
+  /** 매장을 소유한 사용자 정보 */
   user?: Maybe<User>
 }
 
@@ -311,6 +316,7 @@ export type User = {
   bio?: Maybe<Scalars['String']>
   birth?: Maybe<Scalars['Date']>
   imageUrl?: Maybe<Scalars['URL']>
+  nuckname?: Maybe<Scalars['String']>
   /** 내가 쓴 댓글 */
   comments?: Maybe<Array<Comment>>
   /** 내가 쓴 피드 */
@@ -524,6 +530,8 @@ export type FeedResolvers<
   imageUrls?: Resolver<Array<ResolversTypes['URL']>, ParentType, ContextType>
   likeCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
   commentCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  storeId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   isLiked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType>
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
@@ -715,7 +723,6 @@ export type StoreResolvers<
   town?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   address?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
   categories?: Resolver<Array<ResolversTypes['NonEmptyString']>, ParentType, ContextType>
-  takeout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   tel?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
   registrationNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
@@ -727,6 +734,7 @@ export type StoreResolvers<
   isLiked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   menus?: Resolver<Array<ResolversTypes['Menu']>, ParentType, ContextType>
   hashtags?: Resolver<Maybe<Array<ResolversTypes['NonEmptyString']>>, ParentType, ContextType>
+  news?: Resolver<Maybe<Array<ResolversTypes['News']>>, ParentType, ContextType>
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
@@ -765,6 +773,7 @@ export type UserResolvers<
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
   birth?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>
+  nuckname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
   comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
   feed?: Resolver<Maybe<Array<ResolversTypes['Feed']>>, ParentType, ContextType>
   followings?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>

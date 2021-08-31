@@ -1,0 +1,1 @@
+JOIN store ON menu.store_id = store.id
