@@ -1,1 +1,1 @@
-WHERE feed.id = $1
+WHERE feed.id = $

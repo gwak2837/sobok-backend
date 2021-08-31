@@ -1,6 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
-import type { feed } from 'src/database/sobok'
+import format from 'pg-format'
 import type { Feed as GraphQLFeed } from 'src/graphql/generated/graphql'
 import { commentFieldColumnMapping } from '../comment/ORM'
 import { storeFieldColumnMapping } from '../store/ORM'
@@ -8,20 +8,24 @@ import { userFieldColumnMapping } from '../user/ORM'
 import {
   camelToSnake,
   importSQL,
-  removeDoubleQuotes,
-  snakeKeyToCamelKey,
+  removeQuotes,
   snakeToCamel,
+  tableColumnRegEx,
 } from '../../utils/commons'
-import { selectColumnFromSubField } from '../../utils/ORM'
+import {
+  removeColumnWithAggregateFunction,
+  selectColumnFromSubField,
+  serializeSQLParameters,
+} from '../../utils/ORM'
+import { menuFieldColumnMapping } from '../menu/ORM'
 
 const feedList = importSQL(__dirname, 'sql/feedList.sql')
 const joinComment = importSQL(__dirname, 'sql/joinComment.sql')
 const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
 const joinLikedFeed = importSQL(__dirname, 'sql/joinLikedFeed.sql')
+const joinMenu = importSQL(__dirname, 'sql/joinMenu.sql')
 const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
 const joinUser = importSQL(__dirname, 'sql/joinUser.sql')
-
-const feedFieldsThatNeedGroupBy = new Set(['comments', 'hashtags'])
 
 // GraphQL fields -> Database columns
 export function feedFieldColumnMapping(feedField: keyof GraphQLFeed) {
@@ -39,35 +43,25 @@ export function feedFieldColumnMapping(feedField: keyof GraphQLFeed) {
     case 'menus':
       return ''
     default:
-      return camelToSnake(feedField)
+      return `feed.${camelToSnake(feedField)}`
   }
 }
 
+// GraphQL fields -> SQL
 export async function buildBasicFeedQuery(
   info: GraphQLResolveInfo,
   user: any,
   selectColumns = true
 ) {
   const feedFields = graphqlFields(info) as Record<string, any>
-  const firstFeedFields = Object.keys(feedFields)
+  const firstFeedFields = new Set(Object.keys(feedFields))
 
   let sql = await feedList
-  let columns = selectColumns
-    ? selectColumnFromSubField(feedFields, feedFieldColumnMapping).map((column) => `feed.${column}`)
-    : []
+  let columns = selectColumns ? selectColumnFromSubField(feedFields, feedFieldColumnMapping) : []
   const values = []
   let groupBy = false
 
-  if (firstFeedFields.includes('store')) {
-    const storeColumns = selectColumnFromSubField(feedFields.store, storeFieldColumnMapping).map(
-      (column) => `store.${column}`
-    )
-
-    sql = `${sql} ${await joinStore}`
-    columns = [...columns, ...storeColumns]
-  }
-
-  if (firstFeedFields.includes('isLiked')) {
+  if (firstFeedFields.has('isLiked')) {
     if (user) {
       sql = `${sql} ${await joinLikedFeed}`
       columns.push('user_x_liked_feed.user_id')
@@ -75,71 +69,124 @@ export async function buildBasicFeedQuery(
     }
   }
 
-  if (firstFeedFields.includes('user')) {
-    const userColumns = selectColumnFromSubField(feedFields.user, userFieldColumnMapping).map(
-      (column) => `"user".${column}`
-    )
+  if (firstFeedFields.has('store')) {
+    const storeColumns = selectColumnFromSubField(feedFields.store, storeFieldColumnMapping)
+
+    sql = `${sql} ${await joinStore}`
+    columns = [...columns, ...storeColumns]
+  }
+
+  if (firstFeedFields.has('user')) {
+    const userColumns = selectColumnFromSubField(feedFields.user, userFieldColumnMapping)
 
     sql = `${sql} ${await joinUser}`
     columns = [...columns, ...userColumns]
   }
 
-  if (firstFeedFields.includes('comments')) {
+  if (firstFeedFields.has('comments')) {
     const commentColumns = selectColumnFromSubField(
       feedFields.comments,
       commentFieldColumnMapping
-    ).map((column) => `comment.${column}`)
+    ).map((column) => `array_agg(DISTINCT ${column})`)
 
     sql = `${sql} ${await joinComment}`
     columns = [...columns, ...commentColumns]
     groupBy = true
   }
 
-  if (firstFeedFields.includes('hashtags')) {
+  if (firstFeedFields.has('hashtags')) {
     sql = `${sql} ${await joinHashtag}`
-    columns.push('hashtag.name')
+    columns.push('array_agg(hashtag.name)')
+    groupBy = true
+  }
+
+  if (firstFeedFields.has('menus')) {
+    const menuColumns = selectColumnFromSubField(feedFields.menus, menuFieldColumnMapping).map(
+      (column) => `array_agg(DISTINCT ${column})`
+    )
+
+    sql = `${sql} ${await joinMenu}`
+    columns = [...columns, ...menuColumns]
     groupBy = true
   }
 
   if (groupBy) {
-    sql = `${sql} GROUP BY ${columns.filter((column) => !feedFieldsThatNeedGroupBy.has(column))}`
+    sql = `${sql} GROUP BY ${columns.filter(removeColumnWithAggregateFunction)}`
   }
 
-  return [sql, columns, values] as const
+  return [format(serializeSQLParameters(sql), columns), columns, values] as const
 }
 
-// Database record -> GraphQL fields
-export function feedORM(feed: Partial<feed>): any {
-  return {
-    ...snakeKeyToCamelKey(feed),
-  }
-}
-
-// Database record -> GraphQL fields
-export function feedORMv2(rows: unknown[][], tableColumns: string[]): GraphQLFeed[] {
+// Database records -> GraphQL fields
+export function feedORM(rows: unknown[][], selectedColumns: string[]): GraphQLFeed[] {
   return rows.map((row) => {
     const graphQLNews: any = {}
 
-    tableColumns.forEach((tableColumn, i) => {
-      if (tableColumn.startsWith('feed')) {
-        const [, column] = tableColumn.split('.')
-        const camelColumn = snakeToCamel(column)
+    selectedColumns.forEach((selectedColumn, i) => {
+      const [_, __] = (selectedColumn.match(tableColumnRegEx) ?? [''])[0].split('.')
+      const tableName = removeQuotes(_)
+      const columnName = removeQuotes(__)
+      const camelTableName = snakeToCamel(tableName)
+      const camelColumnName = snakeToCamel(columnName)
+      const cell = row[i]
 
-        graphQLNews[camelColumn] = row[i]
-      } else if (tableColumn.startsWith('user_x_liked_feed')) {
-        if (row[i]) {
+      if (tableName === 'feed') {
+        graphQLNews[camelColumnName] = cell
+      }
+
+      //
+      else if (tableName === 'user_x_liked_feed') {
+        if (cell) {
           graphQLNews.isLiked = true
         }
-      } else {
-        const [table, column] = tableColumn.split('.')
-        const camelTable = removeDoubleQuotes(snakeToCamel(table))
-        const camelColumn = snakeToCamel(column)
+      }
 
-        if (!graphQLNews[camelTable]) {
-          graphQLNews[camelTable] = {}
+      //
+      else if (tableName === 'comment') {
+        if (!graphQLNews.comments) {
+          graphQLNews.comments = []
         }
 
-        graphQLNews[camelTable][camelColumn] = row[i]
+        const comments = cell as unknown[]
+
+        comments.forEach((comment, j) => {
+          if (!graphQLNews.comments[j]) {
+            graphQLNews.comments[j] = {}
+          }
+
+          graphQLNews.comments[j][camelColumnName] = comment
+        })
+      }
+
+      //
+      else if (tableName === 'hashtag') {
+        graphQLNews.hashtags = cell
+      }
+
+      //
+      else if (tableName === 'menu') {
+        if (!graphQLNews.menus) {
+          graphQLNews.menus = []
+        }
+
+        const menus = cell as unknown[]
+
+        menus.forEach((menu, j) => {
+          if (!graphQLNews.menus[j]) {
+            graphQLNews.menus[j] = {}
+          }
+
+          graphQLNews.menus[j][camelColumnName] = menu
+        })
+      }
+
+      //
+      else {
+        if (!graphQLNews[camelTableName]) {
+          graphQLNews[camelTableName] = {}
+        }
+
+        graphQLNews[camelTableName][camelColumnName] = cell
       }
     })
 
