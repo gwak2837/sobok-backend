@@ -2,21 +2,21 @@ import type { store } from 'src/database/sobok'
 import type { Store } from 'src/graphql/generated/graphql'
 import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 
+const storeFieldsFromOtherTable = new Set([
+  'isInBucket',
+  'isLiked',
+  'menus',
+  'hashtags',
+  'news',
+  'user',
+])
+
 export function storeFieldColumnMapping(storeField: keyof Store) {
-  switch (storeField) {
-    case 'isInBucket':
-      return 'id'
-    case 'isLiked':
-      return 'id'
-    case 'menus':
-      return 'id'
-    case 'hashtags':
-      return 'id'
-    case 'user':
-      return 'user_id'
-    default:
-      return `store.${camelToSnake(storeField)}`
+  if (storeFieldsFromOtherTable.has(storeField)) {
+    return ''
   }
+
+  return `store.${camelToSnake(storeField)}`
 }
 
 export function storeORM(store: Partial<store>): any {
@@ -25,15 +25,6 @@ export function storeORM(store: Partial<store>): any {
     categories: decodeCategories(store.categories),
   }
 }
-
-export const storeFieldsFetchedFromOtherTable = new Set([
-  'isInBucket',
-  'isLiked',
-  'menus',
-  'hashtags',
-  'news',
-  'user',
-])
 
 export function encodeCategories(categories?: string[]) {
   return categories?.map((category) => {

@@ -3,6 +3,7 @@ import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
 import { encodeCategory, buildBasicNewsQuery, newsORM } from './ORM'
 import { AuthenticationError, UserInputError } from 'apollo-server-express'
+import { serializeSQLParameters } from '../../utils/ORM'
 
 const byId = importSQL(__dirname, 'sql/byId.sql')
 const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
@@ -16,7 +17,11 @@ export const Query: QueryResolvers = {
     sql = `${sql} ${await byId}`
     values.push(id)
 
-    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+    const { rows } = await poolQuery({
+      text: serializeSQLParameters(sql),
+      values,
+      rowMode: 'array',
+    })
 
     return newsORM(rows, columns)[0]
   },
@@ -24,7 +29,11 @@ export const Query: QueryResolvers = {
   newsByAllStores: async (_, __, { user }, info) => {
     const [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
-    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+    const { rows } = await poolQuery({
+      text: serializeSQLParameters(sql),
+      values,
+      rowMode: 'array',
+    })
 
     return newsORM(rows, columns)
   },
@@ -51,7 +60,11 @@ export const Query: QueryResolvers = {
       values.push(storeId)
     }
 
-    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+    const { rows } = await poolQuery({
+      text: serializeSQLParameters(sql),
+      values,
+      rowMode: 'array',
+    })
 
     return newsORM(rows, columns)
   },
@@ -64,7 +77,11 @@ export const Query: QueryResolvers = {
     sql = `${sql} ${await joinLikedStore}`
     values.push(user.id)
 
-    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+    const { rows } = await poolQuery({
+      text: serializeSQLParameters(sql),
+      values,
+      rowMode: 'array',
+    })
 
     return newsORM(rows, columns)
   },
