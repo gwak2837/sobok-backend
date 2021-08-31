@@ -33,6 +33,38 @@ export const Gender = {
 }
 
 export const User: UserResolvers = {
+  email: async ({ id, email }, __, { user }) => {
+    if (!user) throw new AuthenticationError('개인정보를 확인하려면 로그인 후 시도해주세요.')
+
+    if (user.id !== id) throw new ForbiddenError('다른 사용자의 개인정보는 조회할 수 없습니다.')
+
+    return email
+  },
+
+  name: async ({ id, name }, __, { user }) => {
+    if (!user) throw new AuthenticationError('개인정보를 확인하려면 로그인 후 시도해주세요.')
+
+    if (user.id !== id) throw new ForbiddenError('다른 사용자의 개인정보는 조회할 수 없습니다.')
+
+    return name
+  },
+
+  phone: async ({ id, phone }, __, { user }) => {
+    if (!user) throw new AuthenticationError('개인정보를 확인하려면 로그인 후 시도해주세요.')
+
+    if (user.id !== id) throw new ForbiddenError('다른 사용자의 개인정보는 조회할 수 없습니다.')
+
+    return phone
+  },
+
+  isEmailVerified: async ({ id, isEmailVerified }, __, { user }) => {
+    if (!user) throw new AuthenticationError('개인정보를 확인하려면 로그인 후 시도해주세요.')
+
+    if (user.id !== id) throw new ForbiddenError('다른 사용자의 개인정보는 조회할 수 없습니다.')
+
+    return isEmailVerified
+  },
+
   // providers: ({ id, google_oauth }, __, { user }) => {
   //   if (id !== user?.id) throw new ForbiddenError('')
 
@@ -56,7 +88,7 @@ export const User: UserResolvers = {
 
     const { rows } = await poolQuery(format(await feed, columns), [user.id])
 
-    return rows.map((row) => feedORM(row))
+    return rows.map((row) => feedORM(row, columns)[0]) //
   },
 
   followers: async (_, __, { user }, info) => {
@@ -99,9 +131,7 @@ export const User: UserResolvers = {
   likedFeed: async (_, __, { user }, info) => {
     if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
-    const columns = selectColumnFromField(info, feedFieldColumnMapping).map((column) =>
-      column === 'user_id' ? 'feed.user_id' : column
-    )
+    const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
     const formattedSQL = removeDoubleQuotesAround(
       ['feed.user_id'],
@@ -110,7 +140,7 @@ export const User: UserResolvers = {
 
     const { rows } = await poolQuery(formattedSQL, [user.id])
 
-    return rows.map((row) => feedORM(row))
+    return rows.map((row) => feedORM(row, columns)[0]) //
   },
 
   likedMenus: async (_, __, { user }, info) => {
@@ -139,7 +169,7 @@ export const User: UserResolvers = {
 
     const { rows } = await poolQuery(formattedSQL, [user.id])
 
-    return rows.map((row) => newsORM(row))
+    return rows.map((row) => newsORM(row, columns)[0])
   },
 
   likedStores: async (_, __, { user }, info) => {
