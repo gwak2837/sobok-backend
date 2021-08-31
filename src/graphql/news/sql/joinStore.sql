@@ -1,1 +1,1 @@
-JOIN store ON news.store_id = store.id
+JOIN store ON store.id = news.store_id

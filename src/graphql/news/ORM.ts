@@ -1,14 +1,16 @@
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
+import format from 'pg-format'
 import type { news as DatabaseNews } from 'src/database/sobok'
 import type { News as GraphQLNews } from 'src/graphql/generated/graphql'
-import { selectColumnFromSubField } from '../../utils/ORM'
+import { selectColumnFromSubField, serializeSQLParameters } from '../../utils/ORM'
 import {
   camelToSnake,
   importSQL,
-  removeDoubleQuotes,
+  removeQuotes,
   snakeKeyToCamelKey,
   snakeToCamel,
+  tableColumnRegEx,
 } from '../../utils/commons'
 import { storeFieldColumnMapping } from '../store/ORM'
 
@@ -24,10 +26,11 @@ export function newsFieldColumnMapping(newsField: keyof GraphQLNews) {
     case 'store':
       return ''
     default:
-      return camelToSnake(newsField)
+      return `news.${camelToSnake(newsField)}`
   }
 }
 
+// GraphQL fields -> SQL
 export async function buildBasicNewsQuery(
   info: GraphQLResolveInfo,
   user: any,
@@ -37,19 +40,8 @@ export async function buildBasicNewsQuery(
   const firstNewsFields = Object.keys(newsFields)
 
   let sql = await newsList
-  let columns = selectColumns
-    ? selectColumnFromSubField(newsFields, newsFieldColumnMapping).map((column) => `news.${column}`)
-    : []
+  let columns = selectColumns ? selectColumnFromSubField(newsFields, newsFieldColumnMapping) : []
   const values = []
-
-  if (firstNewsFields.includes('store')) {
-    const storeColumns = selectColumnFromSubField(newsFields.store, storeFieldColumnMapping).map(
-      (column) => `store.${column}`
-    )
-
-    sql = `${sql} ${await joinStore}`
-    columns = [...columns, ...storeColumns]
-  }
 
   if (firstNewsFields.includes('isLiked')) {
     if (user) {
@@ -59,42 +51,46 @@ export async function buildBasicNewsQuery(
     }
   }
 
-  return [sql, columns, values] as const
-}
+  if (firstNewsFields.includes('store')) {
+    const storeColumns = selectColumnFromSubField(newsFields.store, storeFieldColumnMapping)
 
-// Database record -> GraphQL fields
-export function newsORM(news: Partial<DatabaseNews>): any {
-  return {
-    ...snakeKeyToCamelKey(news),
-    category: decodeCategory(news.category),
+    sql = `${sql} ${await joinStore}`
+    columns = [...columns, ...storeColumns]
   }
+
+  return [format(serializeSQLParameters(sql), columns), columns, values] as const
 }
 
 // Database record -> GraphQL fields
-export function newsORMv2(rows: unknown[][], tableColumns: string[]): GraphQLNews[] {
+export function newsORM(rows: unknown[][], selectedColumns: string[]): GraphQLNews[] {
   return rows.map((row) => {
     const graphQLNews: any = {}
 
-    tableColumns.forEach((tableColumn, i) => {
-      if (tableColumn.startsWith('news')) {
-        const [, column] = tableColumn.split('.')
-        const camelColumn = snakeToCamel(column)
+    selectedColumns.forEach((selectedColumn, i) => {
+      const [_, __] = (selectedColumn.match(tableColumnRegEx) ?? [''])[0].split('.')
+      const tableName = removeQuotes(_)
+      const camelTableName = snakeToCamel(tableName)
+      const camelColumnName = snakeToCamel(removeQuotes(__))
+      const cell = row[i]
 
-        graphQLNews[camelColumn] = row[i]
-      } else if (tableColumn.startsWith('user_x_liked_feed')) {
-        if (row[i]) {
+      if (tableName === 'news') {
+        graphQLNews[camelColumnName] = cell
+      }
+
+      //
+      else if (tableName === 'user_x_liked_feed') {
+        if (cell) {
           graphQLNews.isLiked = true
         }
-      } else {
-        const [table, column] = tableColumn.split('.')
-        const camelTable = removeDoubleQuotes(snakeToCamel(table))
-        const camelColumn = snakeToCamel(column)
+      }
 
-        if (!graphQLNews[camelTable]) {
-          graphQLNews[camelTable] = {}
+      //
+      else {
+        if (!graphQLNews[camelTableName]) {
+          graphQLNews[camelTableName] = {}
         }
 
-        graphQLNews[camelTable][camelColumn] = row[i]
+        graphQLNews[camelTableName][camelColumnName] = cell
       }
     })
 

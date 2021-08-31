@@ -1,9 +1,7 @@
-import format from 'pg-format'
 import type { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
-import { serializeSQLParameters } from '../../utils/ORM'
-import { encodeCategory, newsORMv2, buildBasicNewsQuery } from './ORM'
+import { encodeCategory, buildBasicNewsQuery, newsORM } from './ORM'
 import { AuthenticationError, UserInputError } from 'apollo-server-express'
 
 const byId = importSQL(__dirname, 'sql/byId.sql')
@@ -18,25 +16,17 @@ export const Query: QueryResolvers = {
     sql = `${sql} ${await byId}`
     values.push(id)
 
-    const { rows } = await poolQuery({
-      text: format(serializeSQLParameters(sql), columns),
-      values,
-      rowMode: 'array',
-    })
+    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
-    return newsORMv2(rows, columns)[0]
+    return newsORM(rows, columns)[0]
   },
 
   newsByAllStores: async (_, __, { user }, info) => {
     const [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
-    const { rows } = await poolQuery({
-      text: format(serializeSQLParameters(sql), columns),
-      values,
-      rowMode: 'array',
-    })
+    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
-    return newsORMv2(rows, columns)
+    return newsORM(rows, columns)
   },
 
   newsByOneStore: async (_, { storeId, categories }, { user }, info) => {
@@ -61,13 +51,9 @@ export const Query: QueryResolvers = {
       values.push(storeId)
     }
 
-    const { rows } = await poolQuery({
-      text: format(serializeSQLParameters(sql), columns),
-      values,
-      rowMode: 'array',
-    })
+    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
-    return newsORMv2(rows, columns)
+    return newsORM(rows, columns)
   },
 
   newsByLikedStores: async (_, __, { user }, info) => {
@@ -78,12 +64,8 @@ export const Query: QueryResolvers = {
     sql = `${sql} ${await joinLikedStore}`
     values.push(user.id)
 
-    const { rows } = await poolQuery({
-      text: format(serializeSQLParameters(sql), columns),
-      values,
-      rowMode: 'array',
-    })
+    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
-    return newsORMv2(rows, columns)
+    return newsORM(rows, columns)
   },
 }
