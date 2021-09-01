@@ -2,17 +2,23 @@ import type { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
 import { buildBasicFeedQuery, feedORM } from './ORM'
+import type { ApolloContext } from 'src/apollo/server'
 
 const byId = importSQL(__dirname, 'sql/byId.sql')
 
-export const Query: QueryResolvers = {
+export const Query: QueryResolvers<ApolloContext> = {
   feed: async (_, { id }, { user }, info) => {
     let [sql, columns, values] = await buildBasicFeedQuery(info, user)
 
     const i = sql.indexOf('GROUP BY')
     const parameterNumber = (sql.match(/\$/g)?.length ?? 0) + 1
 
-    sql = `${sql.slice(0, i)} ${(await byId) + parameterNumber} ${sql.slice(i)}`
+    if (i !== -1) {
+      sql = `${sql.slice(0, i)} ${await byId}${parameterNumber} ${sql.slice(i)}`
+    } else {
+      sql = `${sql} ${await byId}${parameterNumber}`
+    }
+
     values.push(id)
 
     const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
