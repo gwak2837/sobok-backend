@@ -2,12 +2,13 @@ import format from 'pg-format'
 import type { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
-import { selectColumnFromField } from '../../utils/ORM'
-import { encodeCategory, menuFieldColumnMapping, menuORM } from './ORM'
+import { selectColumnFromField, serializeSQLParameters } from '../../utils/ORM'
+import { buildBasicMenuQuery, encodeCategory, menuFieldColumnMapping, menuORM } from './ORM'
 import { UserInputError } from 'apollo-server-express'
 import type { menu as Menu } from 'src/database/sobok'
+import type { ApolloContext } from 'src/apollo/server'
 
-const menu = importSQL(__dirname, 'sql/menu.sql')
+const byId = importSQL(__dirname, 'sql/byId.sql')
 const menuByName = importSQL(__dirname, 'sql/menuByName.sql')
 const menus = importSQL(__dirname, 'sql/menus.sql')
 const menusByCategory = importSQL(__dirname, 'sql/menusByCategory.sql')
@@ -15,13 +16,28 @@ const menusByStoreId = importSQL(__dirname, 'sql/menusByStoreId.sql')
 const menusByTown = importSQL(__dirname, 'sql/menusByTown.sql')
 const menusByTownAndCategory = importSQL(__dirname, 'sql/menusByTownAndCategory.sql')
 
-export const Query: QueryResolvers = {
+export const Query: QueryResolvers<ApolloContext> = {
   menu: async (_, { id }, { user }, info) => {
-    const columns = selectColumnFromField(info, menuFieldColumnMapping)
+    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
 
-    const { rows } = await poolQuery(format(await menu, columns), [id])
+    const i = sql.indexOf('GROUP BY')
+    const parameterNumber = (sql.match(/\$/g)?.length ?? 0) + 1
 
-    return menuORM(rows[0], columns)[0]
+    if (i !== -1) {
+      sql = `${sql.slice(0, i)} ${await byId}${parameterNumber} ${sql.slice(i)}`
+    } else {
+      sql = `${sql} ${await byId}${parameterNumber}`
+    }
+
+    values.push(id)
+
+    const { rows } = await poolQuery({
+      text: serializeSQLParameters(sql),
+      values,
+      rowMode: 'array',
+    })
+
+    return menuORM(rows, columns)[0]
   },
 
   menu2: async (_, { storeId, name }, { user }, info) => {

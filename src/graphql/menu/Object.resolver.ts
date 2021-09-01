@@ -13,11 +13,19 @@ export const Menu: MenuResolvers = {
     return decodeCategory(category)
   },
 
-  store: async ({ storeId }, __, ___, info) => {
-    const columns = selectColumnFromField(info, storeFieldColumnMapping)
-
-    const { rows } = await poolQuery(format(await store, columns), [storeId])
-
-    return storeORM(rows[0])
+  isInBucket: ({ isInBucket }) => {
+    return !!isInBucket
   },
+
+  isLiked: ({ isLiked }) => {
+    return !!isLiked
+  },
+
+  // store: async ({ storeId }, __, ___, info) => {
+  //   const columns = selectColumnFromField(info, storeFieldColumnMapping)
+
+  //   const { rows } = await poolQuery(format(await store, columns), [storeId])
+
+  //   return storeORM(rows[0])
+  // },
 }

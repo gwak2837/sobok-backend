@@ -1,12 +1,9 @@
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
 import format from 'pg-format'
+import type { ApolloContext } from 'src/apollo/server'
 import type { Menu as GraphQLMenu } from 'src/graphql/generated/graphql'
-import {
-  selectColumnFromSubField,
-  removeColumnWithAggregateFunction,
-  serializeSQLParameters,
-} from '../../utils/ORM'
+import { selectColumnFromSubField, removeColumnWithAggregateFunction } from '../../utils/ORM'
 import {
   camelToSnake,
   importSQL,
@@ -14,11 +11,9 @@ import {
   snakeToCamel,
   tableColumnRegEx,
 } from '../../utils/commons'
-import { commentFieldColumnMapping } from '../comment/ORM'
-import { feedFieldColumnMapping } from '../feed/ORM'
 import { storeFieldColumnMapping } from '../store/ORM'
-import { userFieldColumnMapping } from '../user/ORM'
 
+const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
 const joinLikedMenu = importSQL(__dirname, 'sql/joinLikedMenu.sql')
 const joinMenuBucket = importSQL(__dirname, 'sql/joinMenuBucket.sql')
 const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
@@ -43,7 +38,7 @@ export function menuFieldColumnMapping(menuField: keyof GraphQLMenu) {
 // GraphQL fields -> SQL
 export async function buildBasicMenuQuery(
   info: GraphQLResolveInfo,
-  user: any,
+  user: ApolloContext['user'],
   selectColumns = true
 ) {
   const menuFields = graphqlFields(info) as Record<string, any>
@@ -78,7 +73,7 @@ export async function buildBasicMenuQuery(
   }
 
   if (firstMenuFields.has('hashtags')) {
-    sql = `${sql} ${await ''}`
+    sql = `${sql} ${await joinHashtag}`
     columns.push('array_agg(hashtag.name)')
     groupBy = true
   }
