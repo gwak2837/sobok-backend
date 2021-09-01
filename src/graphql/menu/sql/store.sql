@@ -1,3 +1,3 @@
 SELECT %I
-FROM feed
+FROM store
 WHERE id = $1;

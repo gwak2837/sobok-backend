@@ -5,10 +5,7 @@ const test = importSQL(__dirname, 'sql/test.sql')
 
 ;(async () => {
   await connectDatabase()
-  const a = await poolQuery(await test, [
-    [1, 2, 3, 4],
-    [5, 6, 7, 8],
-  ])
+  const { rows } = await poolQuery(await test, [null, 1])
 
-  console.log(a.rows)
+  console.log(rows)
 })()

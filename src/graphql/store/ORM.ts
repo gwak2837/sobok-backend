@@ -15,16 +15,25 @@ export function storeFieldColumnMapping(storeField: keyof Store) {
     case 'user':
       return 'user_id'
     default:
-      return camelToSnake(storeField)
+      return `store.${camelToSnake(storeField)}`
   }
 }
 
-export function storeORM(store: store): any {
+export function storeORM(store: Partial<store>): any {
   return {
     ...snakeKeyToCamelKey(store),
     categories: decodeCategories(store.categories),
   }
 }
+
+export const storeFieldsFetchedFromOtherTable = new Set([
+  'isInBucket',
+  'isLiked',
+  'menus',
+  'hashtags',
+  'news',
+  'user',
+])
 
 export function encodeCategories(categories?: string[]) {
   return categories?.map((category) => {
@@ -49,6 +58,8 @@ export function encodeCategories(categories?: string[]) {
         return 8
       case '야외석':
         return 9
+      case '포장 전용':
+        return 10
       default:
         return null
     }
@@ -78,6 +89,8 @@ function decodeCategories(ids?: number[]) {
         return '루프탑'
       case 9:
         return '야외석'
+      case 10:
+        return '포장 전용'
       default:
         return ''
     }

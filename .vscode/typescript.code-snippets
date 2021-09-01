@@ -15,7 +15,7 @@
       "}",
       "",
       "// All database columns -> GraphQL fields",
-      "export function ${TM_DIRECTORY/.*\\/(.*)$/$1/g}ORM(${TM_DIRECTORY/.*\\/(.*)$/$1/g}: ${TM_DIRECTORY/.*\\/(.*)$/${1}/g}): any {",
+      "export function ${TM_DIRECTORY/.*\\/(.*)$/$1/g}ORM(${TM_DIRECTORY/.*\\/(.*)$/$1/g}: Partial<${TM_DIRECTORY/.*\\/(.*)$/${1}/g}>): any {",
       "  return {",
       "    ...snakeKeyToCamelKey(${TM_DIRECTORY/.*\\/(.*)$/$1/g}),",
       "  }",
@@ -29,6 +29,7 @@
     "body": [
       "import format from 'pg-format'",
       "import type { QueryResolvers } from 'src/graphql/generated/graphql'",
+      "import type { $1 as $2 } from 'src/graphql/generated/graphql'",
       "import { importSQL } from '../../utils/commons'",
       "import { poolQuery } from '../../database/postgres'",
       "import { selectColumnFromField } from '../../utils/ORM'",

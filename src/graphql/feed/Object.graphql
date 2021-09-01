@@ -7,22 +7,22 @@ type Feed {
   imageUrls: [URL!]!
   likeCount: Int!
   commentCount: Int!
+  storeId: ID!
+  userId: ID!
 
-  """
-  from other table
-  """
-  # 피드 작성자
+  # from other table
+  "피드 좋아요 여부 (로그인 필요)"
+  isLiked: Boolean!
+  "피드에 태그된 매장"
+  store: Store!
+  "피드 작성자"
   user: User!
 
-  """
-  from other table - nullable
-  """
-  # 피드에 달린 댓글
+  # from other table - nullable
+  "피드에 달린 댓글"
   comments: [Comment!]
-  # 피드에 달린 해시태그
+  "피드에 달린 해시태그"
   hashtags: [NonEmptyString!]
-  # 피드에 태그된 메뉴 목록
+  "피드에 태그된 메뉴 목록"
   menus: [Menu!]
-  # 피드에 태그된 매장
-  store: Store
 }

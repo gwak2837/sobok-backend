@@ -6,11 +6,8 @@ type Store {
   town: NonEmptyString!
   address: NonEmptyString!
   categories: [NonEmptyString!]!
-  takeout: Boolean!
 
-  """
-  nullable
-  """
+  # nullable
   tel: String
   registrationNumber: String
   description: String
@@ -19,21 +16,19 @@ type Store {
   imageUrls: [URL!]
   userId: ID!
 
-  """
-  from other table
-  """
-  # 로그인한 사용자가 이 매장을 버킷에 담은 여부
+  # from other table
+  "로그인한 사용자가 이 매장을 버킷에 담은 여부"
   isInBucket: Boolean!
-  # 로그인한 사용자가 이 매장을 좋아하는 여부
+  "로그인한 사용자가 이 매장을 좋아하는 여부"
   isLiked: Boolean!
-  # 매장에서 판매하는 메뉴 목록
+  "매장에서 판매하는 메뉴 목록"
   menus: [Menu!]!
 
-  """
-  from other table - nullable
-  """
-  # 매장에 달린 해시태그
+  # from other table - nullable
+  "매장에 달린 해시태그"
   hashtags: [NonEmptyString!]
-  # 매장을 소유한 사용자 정보
+  "매장에서 올린 소식 목록"
+  news: [News!]
+  "매장을 소유한 사용자 정보"
   user: User
 }

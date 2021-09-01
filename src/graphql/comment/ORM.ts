@@ -6,12 +6,12 @@ import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 export function commentFieldColumnMapping(commentField: keyof Comment) {
   switch (commentField) {
     default:
-      return camelToSnake(commentField)
+      return `comment.${camelToSnake(commentField)}`
   }
 }
 
 // All database columns -> GraphQL fields
-export function commentORM(comment: comment): any {
+export function commentORM(comment: Partial<comment>): any {
   return {
     ...snakeKeyToCamelKey(comment),
   }

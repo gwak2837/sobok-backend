@@ -5,6 +5,7 @@ import { poolQuery } from '../../database/postgres'
 import { selectColumnFromField } from '../../utils/ORM'
 import { encodeCategory, menuFieldColumnMapping, menuORM } from './ORM'
 import { UserInputError } from 'apollo-server-express'
+import type { menu as Menu } from 'src/database/sobok'
 
 const menu = importSQL(__dirname, 'sql/menu.sql')
 const menuByName = importSQL(__dirname, 'sql/menuByName.sql')
@@ -28,7 +29,7 @@ export const Query: QueryResolvers = {
 
     const { rowCount, rows } = await poolQuery(format(await menuByName, columns), [storeId, name])
 
-    if (rowCount === 0) throw new UserInputError('Invalid value of storeId, name pair')
+    if (rowCount === 0) return null
 
     return menuORM(rows[0])
   },
@@ -42,28 +43,27 @@ export const Query: QueryResolvers = {
 
     if (encodedCategory === null) throw new UserInputError('Invalid category value')
 
+    let selectedColumes, sql, values: unknown[]
+
     if (town && category) {
-      const { rows } = await poolQuery(format(await menusByTownAndCategory, columnsWithTable), [
-        town,
-        encodedCategory,
-      ])
-
-      return rows.map((row) => menuORM(row))
+      selectedColumes = columnsWithTable
+      sql = await menusByTownAndCategory
+      values = [town, encodedCategory]
+    } else if (town) {
+      selectedColumes = columnsWithTable
+      sql = await menusByTown
+      values = [town]
+    } else if (category) {
+      selectedColumes = columns
+      sql = await menusByCategory
+      values = [encodedCategory]
+    } else {
+      selectedColumes = columns
+      sql = await menus
+      values = []
     }
 
-    if (town) {
-      const { rows } = await poolQuery(format(await menusByTown, columnsWithTable), [town])
-
-      return rows.map((row) => menuORM(row))
-    }
-
-    if (category) {
-      const { rows } = await poolQuery(format(await menusByCategory, columns), [encodedCategory])
-
-      return rows.map((row) => menuORM(row))
-    }
-
-    const { rows } = await poolQuery(format(await menus, columns))
+    const { rows } = await poolQuery(format(sql, selectedColumes), values)
 
     return rows.map((row) => menuORM(row))
   },

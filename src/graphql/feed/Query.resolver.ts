@@ -1,38 +1,40 @@
-import format from 'pg-format'
 import type { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
-import { selectColumnFromField } from '../../utils/ORM'
-import { feedFieldColumnMapping, feedORM } from './ORM'
+import { buildBasicFeedQuery, feedORM } from './ORM'
 
-const feed = importSQL(__dirname, 'sql/feed.sql')
-const feedListByStoreId = importSQL(__dirname, 'sql/feedListByStoreId.sql')
-const feedListByTown = importSQL(__dirname, 'sql/feedListByTown.sql')
+const byId = importSQL(__dirname, 'sql/byId.sql')
 
 export const Query: QueryResolvers = {
   feed: async (_, { id }, { user }, info) => {
-    const columns = selectColumnFromField(info, feedFieldColumnMapping)
+    let [sql, columns, values] = await buildBasicFeedQuery(info, user)
 
-    const { rows } = await poolQuery(format(await feed, columns), [id])
+    const i = sql.indexOf('GROUP BY')
+    const parameterNumber = (sql.match(/\$/g)?.length ?? 0) + 1
 
-    return feedORM(rows[0])
+    sql = `${sql.slice(0, i)} ${(await byId) + parameterNumber} ${sql.slice(i)}`
+    values.push(id)
+
+    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    return feedORM(rows, columns)[0]
   },
 
-  feedList: async (_, { storeId }, { user }, info) => {
-    const columns = selectColumnFromField(info, feedFieldColumnMapping)
+  // feedByOneStore: async (_, { storeId }, { user }, info) => {
+  //   const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await feedListByStoreId, columns), [storeId])
+  //   const { rows } = await poolQuery(format(await feedListByStoreId, columns), [storeId])
 
-    return rows.map((row) => feedORM(row))
-  },
+  //   return rows.map((row) => feedORM(row))
+  // },
 
-  feedList2: async (_, { town }, { user }, info) => {
-    const columns = selectColumnFromField(info, feedFieldColumnMapping)
+  // feedByOneTown: async (_, { town }, { user }, info) => {
+  //   const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
-    const columnsWithTable = columns.map((column) => `feed.${column}`)
+  //   const columnsWithTable = columns.map((column) => `feed.${column}`)
 
-    const { rows } = await poolQuery(format(await feedListByTown, columnsWithTable), [town])
+  //   const { rows } = await poolQuery(format(await feedListByTown, columnsWithTable), [town])
 
-    return rows.map((row) => feedORM(row))
-  },
+  //   return rows.map((row) => feedORM(row))
+  // },
 }

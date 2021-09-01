@@ -1,0 +1,2 @@
+SELECT %s
+FROM feed

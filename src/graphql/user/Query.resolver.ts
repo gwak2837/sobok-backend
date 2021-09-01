@@ -5,6 +5,7 @@ import { selectColumnFromField } from '../../utils/ORM'
 import { poolQuery } from '../../database/postgres'
 import { importSQL } from '../../utils/commons'
 import { userFieldColumnMapping, userORM } from './ORM'
+import type { user as User } from 'src/database/sobok'
 
 const me = importSQL(__dirname, 'sql/me.sql')
 const isEmailUnique = importSQL(__dirname, 'sql/isEmailUnique.sql')

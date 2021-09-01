@@ -1,0 +1,1 @@
+JOIN store ON feed.store_id = store.id

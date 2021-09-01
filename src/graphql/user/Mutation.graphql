@@ -14,22 +14,22 @@ input RegisterInput {
 
 type Mutation {
   """
-  회원가입에 필요한 정보를 주면 성공했을 때 인증 토큰을 반환한다.
+  고유 이름 또는 이메일과 1번 해싱한 비밀번호를 전송하면 인증 토큰을 반환한다.
   """
-  register(input: RegisterInput!): JWT!
-
-  """
-  회원탈퇴 시 사용자 정보가 모두 초기화된다.
-  """
-  unregister: Boolean!
-
-  """
-  이메일과 1번 해싱한 비밀번호를 전송하면 인증 토큰을 반환한다.
-  """
-  login(email: EmailAddress!, passwordHash: NonEmptyString!): JWT!
+  login(uniqueNameOrEmail: NonEmptyString!, passwordHash: NonEmptyString!): JWT
 
   """
   인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환한다.
   """
   logout: Boolean!
+
+  """
+  회원가입에 필요한 정보를 주면 성공했을 때 인증 토큰을 반환한다.
+  """
+  register(input: RegisterInput!): JWT
+
+  """
+  회원탈퇴 시 사용자 정보가 모두 초기화된다.
+  """
+  unregister: Boolean!
 }

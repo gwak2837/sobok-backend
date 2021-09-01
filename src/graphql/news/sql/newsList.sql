@@ -1,2 +1,2 @@
-SELECT %I
-FROM news;
+SELECT %s
+FROM news
