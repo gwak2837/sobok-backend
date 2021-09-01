@@ -1,3 +1,4 @@
+import type { ApolloContext } from 'src/apollo/server'
 import type { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
@@ -10,7 +11,7 @@ const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
 const byStoreIdAndCategories = importSQL(__dirname, 'sql/byStoreIdAndCategories.sql')
 const joinLikedStore = importSQL(__dirname, 'sql/joinLikedStore.sql')
 
-export const Query: QueryResolvers = {
+export const Query: QueryResolvers<ApolloContext> = {
   news: async (_, { id }, { user }, info) => {
     let [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
@@ -29,11 +30,7 @@ export const Query: QueryResolvers = {
   newsByAllStores: async (_, __, { user }, info) => {
     const [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
-    const { rows } = await poolQuery({
-      text: serializeSQLParameters(sql),
-      values,
-      rowMode: 'array',
-    })
+    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
     return newsORM(rows, columns)
   },

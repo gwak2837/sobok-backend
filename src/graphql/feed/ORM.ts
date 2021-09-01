@@ -18,6 +18,7 @@ import {
   serializeSQLParameters,
 } from '../../utils/ORM'
 import { menuFieldColumnMapping } from '../menu/ORM'
+import type { ApolloContext } from 'src/apollo/server'
 
 const feedList = importSQL(__dirname, 'sql/feedList.sql')
 const joinComment = importSQL(__dirname, 'sql/joinComment.sql')
@@ -48,7 +49,7 @@ export function feedFieldColumnMapping(feedField: keyof GraphQLFeed) {
 // GraphQL fields -> SQL
 export async function buildBasicFeedQuery(
   info: GraphQLResolveInfo,
-  user: any,
+  user: ApolloContext['user'],
   selectColumns = true
 ) {
   const feedFields = graphqlFields(info) as Record<string, any>

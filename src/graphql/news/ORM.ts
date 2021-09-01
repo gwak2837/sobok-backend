@@ -11,6 +11,7 @@ import {
   tableColumnRegEx,
 } from '../../utils/commons'
 import { storeFieldColumnMapping } from '../store/ORM'
+import type { ApolloContext } from 'src/apollo/server'
 
 const joinLikedNews = importSQL(__dirname, 'sql/joinLikedNews.sql')
 const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
@@ -30,7 +31,7 @@ export function newsFieldColumnMapping(newsField: keyof GraphQLNews) {
 // GraphQL fields -> SQL
 export async function buildBasicNewsQuery(
   info: GraphQLResolveInfo,
-  user: any,
+  user: ApolloContext['user'],
   selectColumns = true
 ) {
   const newsFields = graphqlFields(info) as Record<string, any>
@@ -38,7 +39,7 @@ export async function buildBasicNewsQuery(
 
   let sql = await newsList
   let columns = selectColumns ? selectColumnFromSubField(newsFields, newsFieldColumnMapping) : []
-  const values = []
+  const values: unknown[] = []
 
   if (firstNewsFields.includes('isLiked')) {
     if (user) {
