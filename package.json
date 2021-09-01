@@ -12,7 +12,7 @@
   },
   "scripts": {
     "dev": "NODE_ENV=development nodemon -r dotenv/config src/index.ts dotenv_config_path=.env.development --trace-warnings",
-    "build": "rm -rf dist && tsc && copyfiles --up 1 src/**/*.{graphql,sql} dist/",
+    "build": "rm -rf dist && tsc && copyfiles --up 1 src/**/*.sql src/graphql/generated/schema.graphql dist/",
     "start": "NODE_ENV=production node -r dotenv/config dist/index.js",
     "test": "NODE_ENV=test nodemon -r dotenv/config test/index.ts dotenv_config_path=.env.test --trace-warnings --watch test",
     "format": "prettier . --write --ignore-path .gitignore",
@@ -46,6 +46,7 @@
   "devDependencies": {
     "@graphql-codegen/add": "^3.0.0",
     "@graphql-codegen/cli": "2.0.1",
+    "@graphql-codegen/schema-ast": "^2.1.0",
     "@graphql-codegen/typescript": "2.0.0",
     "@graphql-codegen/typescript-resolvers": "2.0.0",
     "@types/bcryptjs": "^2.4.2",

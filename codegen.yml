@@ -7,6 +7,9 @@ generates:
           content: '/* eslint-disable */'
       - 'typescript'
       - 'typescript-resolvers'
+  src/graphql/generated/schema.graphql:
+    plugins:
+      - schema-ast
 hooks:
   afterAllFileWrite:
     - prettier --write
