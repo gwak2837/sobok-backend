@@ -19,7 +19,7 @@
     "lint": "eslint . --fix --ignore-path .gitignore",
     "type": "tsc --pretty --noEmit",
     "pre-push": "yarn format && yarn lint && yarn type",
-    "generate": "graphql-codegen --config codegen.yml",
+    "generate": "rm -rf src/graphql/generated && graphql-codegen --config codegen.yml",
     "generate-db": "schemats postgres postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB} -o src/database/sobok.ts && prettier src/database/sobok.ts --write",
     "postinstall": "[ -d '.husky' ] && husky install || true"
   },
