@@ -4,7 +4,6 @@ import { poolQuery } from 'src/database/postgres'
 import type { NewsResolvers } from 'src/graphql/generated/graphql'
 import { serializeSQLParameters } from 'src/utils/ORM'
 import { isThereIntersection } from '../../utils/commons'
-import { storeFieldsFetchedFromOtherTable } from '../store/ORM'
 import { decodeCategory } from './ORM'
 
 export const News: NewsResolvers = {

@@ -4,6 +4,10 @@ import { poolQuery } from '../database/postgres'
 import { verifyJWT } from '../utils/jwt'
 import { importSQL } from '../utils/commons'
 
+export type ApolloContext = {
+  user: { id: string }
+}
+
 const user = importSQL(__dirname, 'sql/user.sql')
 
 export const apolloServer = new ApolloServer({
@@ -22,7 +26,7 @@ export const apolloServer = new ApolloServer({
     // 로그아웃 등으로 인해 JWT가 유효하지 않을 때
     if (!rowCount) return { user: null }
 
-    return { user: rows[0] }
+    return { user: rows[0] } as ApolloContext
   },
   schema,
 })

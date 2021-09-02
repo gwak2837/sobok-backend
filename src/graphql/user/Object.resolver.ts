@@ -152,7 +152,7 @@ export const User: UserResolvers = {
 
     const { rows } = await poolQuery(format(await likedMenus, columns), [user.id])
 
-    return rows.map((row) => menuORM(row))
+    return rows.map((row) => menuORM(row, columns)[0])
   },
 
   likedNews: async (_, __, { user }, info) => {

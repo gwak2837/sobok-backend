@@ -1,26 +1,30 @@
+import type { ApolloContext } from 'src/apollo/server'
 import type { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
 import { buildBasicFeedQuery, feedORM } from './ORM'
+import { spliceSQL } from '../../utils/ORM'
 
 const byId = importSQL(__dirname, 'sql/byId.sql')
 
-export const Query: QueryResolvers = {
+export const Query: QueryResolvers<ApolloContext> = {
   feed: async (_, { id }, { user }, info) => {
     let [sql, columns, values] = await buildBasicFeedQuery(info, user)
 
     const i = sql.indexOf('GROUP BY')
-    const parameterNumber = (sql.match(/\$/g)?.length ?? 0) + 1
+    const groupbyIndex = i !== -1 ? i : null
 
-    sql = `${sql.slice(0, i)} ${(await byId) + parameterNumber} ${sql.slice(i)}`
+    sql = spliceSQL(sql, await byId, groupbyIndex ?? sql.length)
     values.push(id)
 
-    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
 
     return feedORM(rows, columns)[0]
   },
 
-  // feedByOneStore: async (_, { storeId }, { user }, info) => {
+  // feedByStore: async (_, { storeId }, { user }, info) => {
   //   const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
   //   const { rows } = await poolQuery(format(await feedListByStoreId, columns), [storeId])
@@ -28,7 +32,7 @@ export const Query: QueryResolvers = {
   //   return rows.map((row) => feedORM(row))
   // },
 
-  // feedByOneTown: async (_, { town }, { user }, info) => {
+  // feedByTown: async (_, { town }, { user }, info) => {
   //   const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
   //   const columnsWithTable = columns.map((column) => `feed.${column}`)

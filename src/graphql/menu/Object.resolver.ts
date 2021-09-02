@@ -4,31 +4,28 @@ import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
 import { selectColumnFromField } from '../../utils/ORM'
 import { storeFieldColumnMapping, storeORM } from '../store/ORM'
+import { decodeCategory } from './ORM'
 
-const hashtags = importSQL(__dirname, 'sql/hashtags.sql')
-const isLiked = importSQL(__dirname, 'sql/isLiked.sql')
 const store = importSQL(__dirname, 'sql/store.sql')
 
 export const Menu: MenuResolvers = {
-  hashtags: async ({ id }, __) => {
-    const { rows } = await poolQuery(await hashtags, [id])
-
-    return rows.map((row) => row.name)
+  category: async ({ category }, __) => {
+    return decodeCategory(category)
   },
 
-  isLiked: async ({ id }, __, { user }) => {
-    if (user === null) return false
-
-    const { rowCount } = await poolQuery(await isLiked, [user.id, id])
-
-    return rowCount === 1
+  isInBucket: ({ isInBucket }) => {
+    return !!isInBucket
   },
 
-  store: async ({ storeId }, __, ___, info) => {
-    const columns = selectColumnFromField(info, storeFieldColumnMapping)
-
-    const { rows } = await poolQuery(format(await store, columns), [storeId])
-
-    return storeORM(rows[0])
+  isLiked: ({ isLiked }) => {
+    return !!isLiked
   },
+
+  // store: async ({ storeId }, __, ___, info) => {
+  //   const columns = selectColumnFromField(info, storeFieldColumnMapping)
+
+  //   const { rows } = await poolQuery(format(await store, columns), [storeId])
+
+  //   return storeORM(rows[0])
+  // },
 }

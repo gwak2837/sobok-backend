@@ -1,8 +1,30 @@
-import type { menu } from 'src/database/sobok'
-import type { Menu } from 'src/graphql/generated/graphql'
-import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
+import { GraphQLResolveInfo } from 'graphql'
+import graphqlFields from 'graphql-fields'
+import format from 'pg-format'
+import type { ApolloContext } from 'src/apollo/server'
+import type { Menu as GraphQLMenu } from 'src/graphql/generated/graphql'
+import {
+  selectColumnFromSubField,
+  removeColumnWithAggregateFunction,
+  serializeSQLParameters,
+} from '../../utils/ORM'
+import {
+  camelToSnake,
+  importSQL,
+  removeQuotes,
+  snakeToCamel,
+  tableColumnRegEx,
+} from '../../utils/commons'
+import { storeFieldColumnMapping } from '../store/ORM'
 
-export function menuFieldColumnMapping(menuField: keyof Menu) {
+const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
+const joinLikedMenu = importSQL(__dirname, 'sql/joinLikedMenu.sql')
+const joinMenuBucket = importSQL(__dirname, 'sql/joinMenuBucket.sql')
+const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
+const menus = importSQL(__dirname, 'sql/menus.sql')
+
+// GraphQL fields -> Database columns
+export function menuFieldColumnMapping(menuField: keyof GraphQLMenu) {
   switch (menuField) {
     case 'isInBucket':
       return ''
@@ -17,11 +39,104 @@ export function menuFieldColumnMapping(menuField: keyof Menu) {
   }
 }
 
-export function menuORM(menu: Partial<menu>): any {
-  return {
-    ...snakeKeyToCamelKey(menu),
-    category: decodeCategory(menu.category),
+// GraphQL fields -> SQL
+export async function buildBasicMenuQuery(
+  info: GraphQLResolveInfo,
+  user: ApolloContext['user'],
+  selectColumns = true
+) {
+  const menuFields = graphqlFields(info) as Record<string, any>
+  const firstMenuFields = new Set(Object.keys(menuFields))
+
+  let sql = await menus
+  let columns = selectColumns ? selectColumnFromSubField(menuFields, menuFieldColumnMapping) : []
+  const values: unknown[] = []
+  let groupBy = false
+
+  if (firstMenuFields.has('isInBucket')) {
+    if (user) {
+      sql = `${sql} ${await joinMenuBucket}`
+      columns.push('bucket.id')
+      values.push(user.id)
+    }
   }
+
+  if (firstMenuFields.has('isLiked')) {
+    if (user) {
+      sql = `${sql} ${await joinLikedMenu}`
+      columns.push('user_x_liked_menu.user_id')
+      values.push(user.id)
+    }
+  }
+
+  if (firstMenuFields.has('store')) {
+    const storeColumns = selectColumnFromSubField(menuFields.store, storeFieldColumnMapping)
+
+    sql = `${sql} ${await joinStore}`
+    columns = [...columns, ...storeColumns]
+  }
+
+  if (firstMenuFields.has('hashtags')) {
+    sql = `${sql} ${await joinHashtag}`
+    columns.push('array_agg(hashtag.name)')
+    groupBy = true
+  }
+
+  if (groupBy) {
+    sql = `${sql} GROUP BY ${columns.filter(removeColumnWithAggregateFunction)}`
+  }
+
+  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+}
+
+// Database records -> GraphQL fields
+export function menuORM(rows: unknown[][], selectedColumns: string[]): GraphQLMenu[] {
+  return rows.map((row) => {
+    const graphQLMenu: any = {}
+
+    selectedColumns.forEach((selectedColumn, i) => {
+      const [_, __] = (selectedColumn.match(tableColumnRegEx) ?? [''])[0].split('.')
+      const tableName = removeQuotes(_)
+      const columnName = removeQuotes(__)
+      const camelTableName = snakeToCamel(tableName)
+      const camelColumnName = snakeToCamel(columnName)
+      const cell = row[i]
+
+      if (tableName === 'menu') {
+        graphQLMenu[camelColumnName] = cell
+      }
+
+      //
+      else if (tableName === 'user_x_liked_menu') {
+        if (cell) {
+          graphQLMenu.isLiked = true
+        }
+      }
+
+      //
+      else if (tableName === 'isInBuckeet') {
+        if (cell) {
+          graphQLMenu.isLiked = true
+        }
+      }
+
+      //
+      else if (tableName === 'hashtag') {
+        graphQLMenu.hashtags = cell
+      }
+
+      //
+      else {
+        if (!graphQLMenu[camelTableName]) {
+          graphQLMenu[camelTableName] = {}
+        }
+
+        graphQLMenu[camelTableName][camelColumnName] = cell
+      }
+    })
+
+    return graphQLMenu
+  })
 }
 
 export function encodeCategory(id: string) {
@@ -45,7 +160,7 @@ export function encodeCategory(id: string) {
   }
 }
 
-function decodeCategory(id?: number) {
+export function decodeCategory(id?: number) {
   switch (id) {
     case 0:
       return '음료'

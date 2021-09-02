@@ -18,6 +18,7 @@ import {
   serializeSQLParameters,
 } from '../../utils/ORM'
 import { menuFieldColumnMapping } from '../menu/ORM'
+import type { ApolloContext } from 'src/apollo/server'
 
 const feedList = importSQL(__dirname, 'sql/feedList.sql')
 const joinComment = importSQL(__dirname, 'sql/joinComment.sql')
@@ -27,30 +28,28 @@ const joinMenu = importSQL(__dirname, 'sql/joinMenu.sql')
 const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
 const joinUser = importSQL(__dirname, 'sql/joinUser.sql')
 
+const newsFieldsFromOtherTable = new Set([
+  'isLiked',
+  'store',
+  'user',
+  'comments',
+  'hashtags',
+  'menus',
+])
+
 // GraphQL fields -> Database columns
 export function feedFieldColumnMapping(feedField: keyof GraphQLFeed) {
-  switch (feedField) {
-    case 'isLiked':
-      return ''
-    case 'store':
-      return ''
-    case 'user':
-      return ''
-    case 'comments':
-      return ''
-    case 'hashtags':
-      return ''
-    case 'menus':
-      return ''
-    default:
-      return `feed.${camelToSnake(feedField)}`
+  if (newsFieldsFromOtherTable.has(feedField)) {
+    return ''
   }
+
+  return `feed.${camelToSnake(feedField)}`
 }
 
 // GraphQL fields -> SQL
 export async function buildBasicFeedQuery(
   info: GraphQLResolveInfo,
-  user: any,
+  user: ApolloContext['user'],
   selectColumns = true
 ) {
   const feedFields = graphqlFields(info) as Record<string, any>

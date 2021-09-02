@@ -1,10 +1,20 @@
+"기본값: ALL_USER"
+enum FeedOptions {
+  STAR_USER
+
+  "로그인 필요"
+  FOLLOWING_USER
+
+  ALL_USER
+}
+
 type Query {
   "피드 상세"
   feed(id: ID!): Feed
 
   "특정 매장 피드 목록"
-  feedByOneStore(storeId: ID!): [Feed!]
+  feedListByStore(storeId: ID!): [Feed!]
 
   "특정 동네 피드 목록"
-  feedByOneTown(town: ID!): [Feed!]
+  feedListByTown(town: NonEmptyString, option: FeedOptions): [Feed!]
 }
