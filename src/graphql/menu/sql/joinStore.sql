@@ -1,1 +1,1 @@
-JOIN store ON menu.store_id = store.id
+JOIN store ON store.id = menu.store_id

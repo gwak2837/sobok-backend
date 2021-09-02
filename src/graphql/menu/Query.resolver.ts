@@ -12,6 +12,8 @@ const byName = importSQL(__dirname, 'sql/byName.sql')
 const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
 const joinStoreOnTown = importSQL(__dirname, 'sql/joinStoreOnTown.sql')
 const joinStoreOnTownAndCategory = importSQL(__dirname, 'sql/joinStoreOnTownAndCategory.sql')
+const onTown = importSQL(__dirname, 'sql/onTown.sql')
+const onTownAndCategory = importSQL(__dirname, 'sql/onTownAndCategory.sql')
 
 export const Query: QueryResolvers<ApolloContext> = {
   menu: async (_, { id }, { user }, info) => {
@@ -48,12 +50,31 @@ export const Query: QueryResolvers<ApolloContext> = {
     let [sql, columns, values] = await buildBasicMenuQuery(info, user)
 
     if (town && category) {
-      sql = spliceSQL(sql, await joinStoreOnTownAndCategory, 'WHERE')
+      if (sql.includes('JOIN store')) {
+        sql = spliceSQL(
+          sql,
+          await onTownAndCategory,
+          'JOIN store ON store.id = menu.store_id',
+          true
+        )
+      } else {
+        sql = spliceSQL(sql, await joinStoreOnTownAndCategory, 'JOIN')
+      }
+
       values.push(town, encodedCategory)
-    } else if (town) {
-      sql = spliceSQL(sql, await joinStoreOnTown, 'WHERE')
+    }
+    //
+    else if (town) {
+      if (sql.includes('JOIN store')) {
+        sql = spliceSQL(sql, await onTown, 'JOIN store ON store.id = menu.store_id', true)
+      } else {
+        sql = spliceSQL(sql, await joinStoreOnTown, 'JOIN')
+      }
+
       values.push(town)
-    } else if (category) {
+    }
+    //
+    else if (category) {
       sql = spliceSQL(sql, await byCategory, 'GROUP BY')
       values.push(encodedCategory)
     }

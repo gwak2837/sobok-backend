@@ -1,0 +1,1 @@
+AND store.town = $1
