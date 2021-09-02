@@ -1,0 +1,1 @@
+WHERE "user".is_star_user = TRUE

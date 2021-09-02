@@ -132,14 +132,12 @@ export function feedORM(rows: unknown[][], selectedColumns: string[]): GraphQLFe
       if (tableName === 'feed') {
         graphQLNews[camelColumnName] = cell
       }
-
       //
       else if (tableName === 'user_x_liked_feed') {
         if (cell) {
           graphQLNews.isLiked = true
         }
       }
-
       //
       else if (tableName === 'comment') {
         if (!graphQLNews.comments) {
@@ -156,12 +154,10 @@ export function feedORM(rows: unknown[][], selectedColumns: string[]): GraphQLFe
           graphQLNews.comments[j][camelColumnName] = comment
         })
       }
-
       //
       else if (tableName === 'hashtag') {
         graphQLNews.hashtags = cell
       }
-
       //
       else if (tableName === 'menu') {
         if (!graphQLNews.menus) {
@@ -178,7 +174,6 @@ export function feedORM(rows: unknown[][], selectedColumns: string[]): GraphQLFe
           graphQLNews.menus[j][camelColumnName] = menu
         })
       }
-
       //
       else {
         if (!graphQLNews[camelTableName]) {
