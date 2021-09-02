@@ -1,7 +1,7 @@
 import type { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
-import { serializeSQLParameters, spliceSQL } from '../../utils/ORM'
+import { spliceSQL } from '../../utils/ORM'
 import { buildBasicMenuQuery, encodeCategory, menuORM } from './ORM'
 import { UserInputError } from 'apollo-server-express'
 import type { ApolloContext } from 'src/apollo/server'
@@ -17,10 +17,7 @@ export const Query: QueryResolvers<ApolloContext> = {
   menu: async (_, { id }, { user }, info) => {
     let [sql, columns, values] = await buildBasicMenuQuery(info, user)
 
-    const i = sql.indexOf('GROUP BY')
-    const groupbyIndex = i !== -1 ? i : null
-
-    sql = spliceSQL(sql, await byId, groupbyIndex ?? sql.length)
+    sql = spliceSQL(sql, await byId, 'GROUP BY')
     values.push(id)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
@@ -33,17 +30,10 @@ export const Query: QueryResolvers<ApolloContext> = {
   menuByName: async (_, { storeId, name }, { user }, info) => {
     let [sql, columns, values] = await buildBasicMenuQuery(info, user)
 
-    const i = sql.indexOf('GROUP BY')
-    const groupbyIndex = i !== -1 ? i : null
-
-    sql = spliceSQL(sql, await byName, groupbyIndex ?? sql.length)
+    sql = spliceSQL(sql, await byName, 'GROUP BY')
     values.push(storeId, name)
 
-    const { rowCount, rows } = await poolQuery({
-      text: serializeSQLParameters(sql),
-      values,
-      rowMode: 'array',
-    })
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
     if (rowCount === 0) return null
 
@@ -57,19 +47,14 @@ export const Query: QueryResolvers<ApolloContext> = {
 
     let [sql, columns, values] = await buildBasicMenuQuery(info, user)
 
-    const i = sql.indexOf('WHERE')
-    const j = sql.indexOf('GROUP BY')
-    const whereIndex = i !== -1 ? i : null
-    const groupbyIndex = j !== -1 ? j : null
-
     if (town && category) {
-      sql = spliceSQL(sql, await joinStoreOnTownAndCategory, whereIndex ?? sql.length)
+      sql = spliceSQL(sql, await joinStoreOnTownAndCategory, 'WHERE')
       values.push(town, encodedCategory)
     } else if (town) {
-      sql = spliceSQL(sql, await joinStoreOnTown, whereIndex ?? sql.length)
+      sql = spliceSQL(sql, await joinStoreOnTown, 'WHERE')
       values.push(town)
     } else if (category) {
-      sql = spliceSQL(sql, await byCategory, groupbyIndex ?? sql.length)
+      sql = spliceSQL(sql, await byCategory, 'GROUP BY')
       values.push(encodedCategory)
     }
 
@@ -83,10 +68,7 @@ export const Query: QueryResolvers<ApolloContext> = {
   menusByStore: async (_, { storeId }, { user }, info) => {
     let [sql, columns, values] = await buildBasicMenuQuery(info, user)
 
-    const i = sql.indexOf('GROUP BY')
-    const whereIndex = i !== -1 ? i : null
-
-    sql = spliceSQL(sql, await byStoreId, whereIndex ?? sql.length)
+    sql = spliceSQL(sql, await byStoreId, 'GROUP BY')
     values.push(storeId)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })

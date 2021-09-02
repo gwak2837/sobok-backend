@@ -105,26 +105,22 @@ export function menuORM(rows: unknown[][], selectedColumns: string[]): GraphQLMe
       if (tableName === 'menu') {
         graphQLMenu[camelColumnName] = cell
       }
-
       //
       else if (tableName === 'user_x_liked_menu') {
         if (cell) {
           graphQLMenu.isLiked = true
         }
       }
-
       //
       else if (tableName === 'isInBuckeet') {
         if (cell) {
           graphQLMenu.isLiked = true
         }
       }
-
       //
       else if (tableName === 'hashtag') {
         graphQLMenu.hashtags = cell
       }
-
       //
       else {
         if (!graphQLMenu[camelTableName]) {

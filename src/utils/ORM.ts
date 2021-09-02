@@ -38,9 +38,13 @@ export function removeColumnWithAggregateFunction(column: string) {
   return column.search(/\w+\([\w."` ]+\)/) === -1
 }
 
-export function spliceSQL(sql: string, sql2: string, i: number) {
+export function spliceSQL(sql: string, sql2: string, str: string, endIndex = false) {
+  const found = sql.indexOf(str)
+
+  const foundIndex = found !== -1 ? (endIndex ? found + str.length : found) : sql.length
+
   let parameterStartNumber = (sql.match(/\$\d+/g)?.length ?? 0) + 1
   const formattedSQL = sql2.replace(/\$\d+/g, () => `$${parameterStartNumber++}`)
 
-  return `${sql.slice(0, i)} ${formattedSQL} ${sql.slice(i)}`
+  return `${sql.slice(0, foundIndex)} ${formattedSQL} ${sql.slice(foundIndex)}`
 }

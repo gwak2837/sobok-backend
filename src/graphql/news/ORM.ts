@@ -74,14 +74,12 @@ export function newsORM(rows: unknown[][], selectedColumns: string[]): GraphQLNe
       if (tableName === 'news') {
         graphQLNews[camelColumnName] = cell
       }
-
       //
       else if (tableName === 'user_x_liked_feed') {
         if (cell) {
           graphQLNews.isLiked = true
         }
       }
-
       //
       else {
         if (!graphQLNews[camelTableName]) {

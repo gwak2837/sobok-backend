@@ -16,10 +16,7 @@ export const Query: QueryResolvers<ApolloContext> = {
   news: async (_, { id }, { user }, info) => {
     let [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
-    const i = sql.indexOf('GROUP BY')
-    const groupbyIndex = i !== -1 ? i : null
-
-    sql = spliceSQL(sql, await byId, groupbyIndex ?? sql.length)
+    sql = spliceSQL(sql, await byId, 'GROUP BY')
     values.push(id)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
@@ -43,14 +40,11 @@ export const Query: QueryResolvers<ApolloContext> = {
 
     let [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
-    const i = sql.indexOf('GROUP BY')
-    const groupbyIndex = i !== -1 ? i : null
-
     if (categories) {
-      sql = spliceSQL(sql, await byStoreIdAndCategories, groupbyIndex ?? sql.length)
+      sql = spliceSQL(sql, await byStoreIdAndCategories, 'GROUP BY')
       values.push(storeId, encodedCategories)
     } else {
-      sql = spliceSQL(sql, await byStoreId, groupbyIndex ?? sql.length)
+      sql = spliceSQL(sql, await byStoreId, 'GROUP BY')
       values.push(storeId)
     }
 
@@ -64,18 +58,15 @@ export const Query: QueryResolvers<ApolloContext> = {
   newsListByTown: async (_, { town, option }, { user }, info) => {
     let [sql, columns, values] = await buildBasicNewsQuery(info, user)
 
-    const i = sql.indexOf('WHERE')
-    const whereIndex = i !== -1 ? i : null
-
     if (town) {
-      sql = spliceSQL(sql, await joinStoreOnTown, whereIndex ?? sql.length)
+      sql = spliceSQL(sql, await joinStoreOnTown, 'WHERE')
       values.push(town)
     }
 
     if (option === NewsOptions.LikedStore) {
       if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
-      sql = spliceSQL(sql, await joinLikedStore, whereIndex ?? sql.length)
+      sql = spliceSQL(sql, await joinLikedStore, 'WHERE')
       values.push(user.id)
     }
 
