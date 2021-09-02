@@ -37,3 +37,10 @@ export function serializeSQLParameters(sql: string) {
 export function removeColumnWithAggregateFunction(column: string) {
   return column.search(/\w+\([\w."` ]+\)/) === -1
 }
+
+export function spliceSQL(sql: string, sql2: string, i: number) {
+  let parameterStartNumber = (sql.match(/\$\d+/g)?.length ?? 0) + 1
+  const formattedSQL = sql2.replace(/\$\d+/g, () => `$${parameterStartNumber++}`)
+
+  return `${sql.slice(0, i)} ${formattedSQL} ${sql.slice(i)}`
+}
