@@ -1,9 +1,13 @@
 type Query {
+  "메뉴 상세"
   menu(id: ID!): Menu
 
-  menu2(storeId: ID!, name: NonEmptyString!): Menu
+  "메뉴 상세"
+  menuByName(storeId: ID!, name: NonEmptyString!): Menu
 
-  menus(town: NonEmptyString, category: NonEmptyString): [Menu!]
+  "특정 동네 및 특정 카테고리 피드 목록"
+  menusByTownAndCategory(town: NonEmptyString, category: NonEmptyString): [Menu!]
 
-  menus2(storeId: ID): [Menu!]
+  "특정 매장 메뉴 목록"
+  menusByStore(storeId: ID!): [Menu!]
 }

@@ -1,94 +1,98 @@
-import format from 'pg-format'
 import type { QueryResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
-import { selectColumnFromField, serializeSQLParameters } from '../../utils/ORM'
-import { buildBasicMenuQuery, encodeCategory, menuFieldColumnMapping, menuORM } from './ORM'
+import { serializeSQLParameters, spliceSQL } from '../../utils/ORM'
+import { buildBasicMenuQuery, encodeCategory, menuORM } from './ORM'
 import { UserInputError } from 'apollo-server-express'
-import type { menu as Menu } from 'src/database/sobok'
 import type { ApolloContext } from 'src/apollo/server'
 
+const byCategory = importSQL(__dirname, 'sql/byCategory.sql')
 const byId = importSQL(__dirname, 'sql/byId.sql')
-const menuByName = importSQL(__dirname, 'sql/menuByName.sql')
-const menus = importSQL(__dirname, 'sql/menus.sql')
-const menusByCategory = importSQL(__dirname, 'sql/menusByCategory.sql')
-const menusByStoreId = importSQL(__dirname, 'sql/menusByStoreId.sql')
-const menusByTown = importSQL(__dirname, 'sql/menusByTown.sql')
-const menusByTownAndCategory = importSQL(__dirname, 'sql/menusByTownAndCategory.sql')
+const byName = importSQL(__dirname, 'sql/byName.sql')
+const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
+const joinStoreOnTown = importSQL(__dirname, 'sql/joinStoreOnTown.sql')
+const joinStoreOnTownAndCategory = importSQL(__dirname, 'sql/joinStoreOnTownAndCategory.sql')
 
 export const Query: QueryResolvers<ApolloContext> = {
   menu: async (_, { id }, { user }, info) => {
     let [sql, columns, values] = await buildBasicMenuQuery(info, user)
 
     const i = sql.indexOf('GROUP BY')
-    const parameterNumber = (sql.match(/\$/g)?.length ?? 0) + 1
+    const groupbyIndex = i !== -1 ? i : null
 
-    if (i !== -1) {
-      sql = `${sql.slice(0, i)} ${await byId}${parameterNumber} ${sql.slice(i)}`
-    } else {
-      sql = `${sql} ${await byId}${parameterNumber}`
-    }
-
+    sql = spliceSQL(sql, await byId, groupbyIndex ?? sql.length)
     values.push(id)
 
-    const { rows } = await poolQuery({
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
+
+    return menuORM(rows, columns)[0]
+  },
+
+  menuByName: async (_, { storeId, name }, { user }, info) => {
+    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
+
+    const i = sql.indexOf('GROUP BY')
+    const groupbyIndex = i !== -1 ? i : null
+
+    sql = spliceSQL(sql, await byName, groupbyIndex ?? sql.length)
+    values.push(storeId, name)
+
+    const { rowCount, rows } = await poolQuery({
       text: serializeSQLParameters(sql),
       values,
       rowMode: 'array',
     })
 
+    if (rowCount === 0) return null
+
     return menuORM(rows, columns)[0]
   },
 
-  menu2: async (_, { storeId, name }, { user }, info) => {
-    const columns = selectColumnFromField(info, menuFieldColumnMapping)
-
-    const { rowCount, rows } = await poolQuery(format(await menuByName, columns), [storeId, name])
-
-    if (rowCount === 0) return null
-
-    return menuORM(rows[0], columns)[0]
-  },
-
-  menus: async (_, { town, category }, { user }, info) => {
-    const columns = selectColumnFromField(info, menuFieldColumnMapping)
-
-    const columnsWithTable = columns.map((column) => `menu.${column}`)
-
+  menusByTownAndCategory: async (_, { town, category }, { user }, info) => {
     const encodedCategory = encodeCategory(category)
 
     if (encodedCategory === null) throw new UserInputError('Invalid category value')
 
-    let selectedColumes, sql, values: unknown[]
+    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
+
+    const i = sql.indexOf('WHERE')
+    const j = sql.indexOf('GROUP BY')
+    const whereIndex = i !== -1 ? i : null
+    const groupbyIndex = j !== -1 ? j : null
 
     if (town && category) {
-      selectedColumes = columnsWithTable
-      sql = await menusByTownAndCategory
-      values = [town, encodedCategory]
+      sql = spliceSQL(sql, await joinStoreOnTownAndCategory, whereIndex ?? sql.length)
+      values.push(town, encodedCategory)
     } else if (town) {
-      selectedColumes = columnsWithTable
-      sql = await menusByTown
-      values = [town]
+      sql = spliceSQL(sql, await joinStoreOnTown, whereIndex ?? sql.length)
+      values.push(town)
     } else if (category) {
-      selectedColumes = columns
-      sql = await menusByCategory
-      values = [encodedCategory]
-    } else {
-      selectedColumes = columns
-      sql = await menus
-      values = []
+      sql = spliceSQL(sql, await byCategory, groupbyIndex ?? sql.length)
+      values.push(encodedCategory)
     }
 
-    const { rows } = await poolQuery(format(sql, selectedColumes), values)
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
-    return rows.map((row) => menuORM(row, columns)[0])
+    if (rowCount === 0) return null
+
+    return menuORM(rows, columns)
   },
 
-  menus2: async (_, { storeId }, { user }, info) => {
-    const columns = selectColumnFromField(info, menuFieldColumnMapping)
+  menusByStore: async (_, { storeId }, { user }, info) => {
+    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
 
-    const { rows } = await poolQuery(format(await menusByStoreId, columns), [storeId])
+    const i = sql.indexOf('GROUP BY')
+    const whereIndex = i !== -1 ? i : null
 
-    return rows.map((row) => menuORM(row, columns)[0])
+    sql = spliceSQL(sql, await byStoreId, whereIndex ?? sql.length)
+    values.push(storeId)
+
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
+
+    return menuORM(rows, columns)
   },
 }

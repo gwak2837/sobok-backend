@@ -3,7 +3,11 @@ import graphqlFields from 'graphql-fields'
 import format from 'pg-format'
 import type { ApolloContext } from 'src/apollo/server'
 import type { Menu as GraphQLMenu } from 'src/graphql/generated/graphql'
-import { selectColumnFromSubField, removeColumnWithAggregateFunction } from '../../utils/ORM'
+import {
+  selectColumnFromSubField,
+  removeColumnWithAggregateFunction,
+  serializeSQLParameters,
+} from '../../utils/ORM'
 import {
   camelToSnake,
   importSQL,
@@ -46,7 +50,7 @@ export async function buildBasicMenuQuery(
 
   let sql = await menus
   let columns = selectColumns ? selectColumnFromSubField(menuFields, menuFieldColumnMapping) : []
-  const values = []
+  const values: unknown[] = []
   let groupBy = false
 
   if (firstMenuFields.has('isInBucket')) {
@@ -82,7 +86,7 @@ export async function buildBasicMenuQuery(
     sql = `${sql} GROUP BY ${columns.filter(removeColumnWithAggregateFunction)}`
   }
 
-  return [format(sql, columns), columns, values] as const
+  return [format(serializeSQLParameters(sql), columns), columns, values] as const
 }
 
 // Database records -> GraphQL fields

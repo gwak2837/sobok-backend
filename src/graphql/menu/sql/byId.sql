@@ -1,1 +1,1 @@
-WHERE menu.id = $
+WHERE menu.id = $1
