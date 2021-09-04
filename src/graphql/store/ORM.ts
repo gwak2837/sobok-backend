@@ -2,7 +2,6 @@ import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
 import format from 'pg-format'
 import { ApolloContext } from 'src/apollo/server'
-import type { store } from 'src/database/sobok'
 import type { Store as GraphQLStore } from 'src/graphql/generated/graphql'
 import {
   removeColumnWithAggregateFunction,
@@ -167,7 +166,7 @@ export function storeORM(rows: unknown[][], selectedColumns: string[]): GraphQLS
 }
 
 export function encodeCategories(categories: string[]) {
-  return categories?.map((category) => {
+  return categories.map((category) => {
     switch (category) {
       case '콘센트':
         return 0
@@ -198,10 +197,10 @@ export function encodeCategories(categories: string[]) {
 }
 
 export function decodeCategories(ids: number[]) {
-  return ids?.map((id) => {
+  return ids.map((id) => {
     switch (id) {
       case 0:
-        return '콘센트'
+        return '콘센트'
       case 1:
         return '넓은테이블'
       case 2:
