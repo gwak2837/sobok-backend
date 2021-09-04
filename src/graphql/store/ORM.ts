@@ -16,11 +16,15 @@ import {
   tableColumnRegEx,
 } from '../../utils/commons'
 import { menuFieldColumnMapping } from '../menu/ORM'
+import { newsFieldColumnMapping } from '../news/ORM'
+import { userFieldColumnMapping } from '../user/ORM'
 
 const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
 const joinLikedStore = importSQL(__dirname, 'sql/joinLikedStore.sql')
 const joinMenu = importSQL(__dirname, 'sql/joinMenu.sql')
+const joinNews = importSQL(__dirname, 'sql/joinNews.sql')
 const joinStoreBucket = importSQL(__dirname, 'sql/joinStoreBucket.sql')
+const joinUser = importSQL(__dirname, 'sql/joinUser.sql')
 const stores = importSQL(__dirname, 'sql/stores.sql')
 
 const storeFieldsFromOtherTable = new Set([
@@ -87,11 +91,20 @@ export async function buildBasicStoreQuery(
   }
 
   if (firstMenuFields.has('news')) {
-    //
+    const newsColumns = selectColumnFromSubField(storeFields.news, newsFieldColumnMapping).map(
+      (column) => `array_agg(${column})`
+    )
+
+    sql = `${sql} ${await joinNews}`
+    columns = [...columns, ...newsColumns]
+    groupBy = true
   }
 
   if (firstMenuFields.has('user')) {
-    //
+    const userColumns = selectColumnFromSubField(storeFields.user, userFieldColumnMapping)
+
+    sql = `${sql} ${await joinUser}`
+    columns = [...columns, ...userColumns]
   }
 
   const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
