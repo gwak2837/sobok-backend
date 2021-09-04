@@ -194,7 +194,7 @@ export type Query = {
   /** 특정 매장 정보 */
   store?: Maybe<Store>
   /** 동네 및 카테고리별 매장 목록 */
-  stores: Array<Store>
+  storesByTownAndCategory?: Maybe<Array<Store>>
 }
 
 export type QueryFeedArgs = {
@@ -266,7 +266,7 @@ export type QueryStoreArgs = {
   id: Scalars['ID']
 }
 
-export type QueryStoresArgs = {
+export type QueryStoresByTownAndCategoryArgs = {
   town?: Maybe<Scalars['NonEmptyString']>
   categories?: Maybe<Array<Scalars['NonEmptyString']>>
 }
@@ -339,7 +339,7 @@ export type User = {
   bio?: Maybe<Scalars['String']>
   birth?: Maybe<Scalars['Date']>
   imageUrl?: Maybe<Scalars['URL']>
-  nuckname?: Maybe<Scalars['String']>
+  nickname?: Maybe<Scalars['String']>
   /** 내가 쓴 댓글 */
   comments?: Maybe<Array<Comment>>
   /** 내가 쓴 피드 */
@@ -733,11 +733,11 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryStoreArgs, 'id'>
   >
-  stores?: Resolver<
-    Array<ResolversTypes['Store']>,
+  storesByTownAndCategory?: Resolver<
+    Maybe<Array<ResolversTypes['Store']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryStoresArgs, never>
+    RequireFields<QueryStoresByTownAndCategoryArgs, never>
   >
 }
 
@@ -802,7 +802,7 @@ export type UserResolvers<
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
   birth?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>
-  nuckname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  nickname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
   comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>
   feed?: Resolver<Maybe<Array<ResolversTypes['Feed']>>, ParentType, ContextType>
   followings?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>

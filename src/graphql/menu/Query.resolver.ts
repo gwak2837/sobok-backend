@@ -43,9 +43,13 @@ export const Query: QueryResolvers<ApolloContext> = {
   },
 
   menusByTownAndCategory: async (_, { town, category }, { user }, info) => {
-    const encodedCategory = encodeCategory(category)
+    let encodedCategory
 
-    if (encodedCategory === null) throw new UserInputError('Invalid category value')
+    if (category) {
+      encodedCategory = encodeCategory(category)
+
+      if (encodedCategory === null) throw new UserInputError('Invalid category value')
+    }
 
     let [sql, columns, values] = await buildBasicMenuQuery(info, user)
 

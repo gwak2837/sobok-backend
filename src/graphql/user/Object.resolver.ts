@@ -188,7 +188,7 @@ export const User: UserResolvers = {
 
     const { rows } = await poolQuery(formattedSQL, [user.id])
 
-    return rows.map((row) => storeORM(row))
+    return storeORM(rows, columns)
   },
 
   likedTrends: async (_, __, { user }, info) => {

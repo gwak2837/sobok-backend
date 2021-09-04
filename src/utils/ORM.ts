@@ -38,10 +38,13 @@ export function removeColumnWithAggregateFunction(column: string) {
   return column.search(/\w+\([\w."` ]+\)/) === -1
 }
 
-export function spliceSQL(sql: string, sql2: string, str: string, endIndex = false) {
-  const found = sql.indexOf(str)
+/**
+ * `sql`의 `targetString` 시작 (또는 끝) 지점에 `sql2`를 끼워 넣는다.
+ */
+export function spliceSQL(sql: string, sql2: string, targetString: string, endIndex = false) {
+  const found = sql.indexOf(targetString)
 
-  const foundIndex = found !== -1 ? (endIndex ? found + str.length : found) : sql.length
+  const foundIndex = found !== -1 ? (endIndex ? found + targetString.length : found) : sql.length
 
   let parameterStartNumber = (sql.match(/\$\d+/g)?.length ?? 0) + 1
   const formattedSQL = sql2.replace(/\$\d+/g, () => `$${parameterStartNumber++}`)
