@@ -28,7 +28,7 @@ const joinMenu = importSQL(__dirname, 'sql/joinMenu.sql')
 const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
 const joinUser = importSQL(__dirname, 'sql/joinUser.sql')
 
-const newsFieldsFromOtherTable = new Set([
+const feedFieldsFromOtherTable = new Set([
   'isLiked',
   'store',
   'user',
@@ -39,8 +39,8 @@ const newsFieldsFromOtherTable = new Set([
 
 // GraphQL fields -> Database columns
 export function feedFieldColumnMapping(feedField: keyof GraphQLFeed) {
-  if (newsFieldsFromOtherTable.has(feedField)) {
-    return ''
+  if (feedFieldsFromOtherTable.has(feedField)) {
+    return 'feed.id'
   }
 
   return `feed.${camelToSnake(feedField)}`
@@ -86,7 +86,7 @@ export async function buildBasicFeedQuery(
     const commentColumns = selectColumnFromSubField(
       feedFields.comments,
       commentFieldColumnMapping
-    ).map((column) => `array_agg(DISTINCT ${column})`)
+    ).map((column) => `array_agg(${column})`)
 
     sql = `${sql} ${await joinComment}`
     columns = [...columns, ...commentColumns]
@@ -101,7 +101,7 @@ export async function buildBasicFeedQuery(
 
   if (firstFeedFields.has('menus')) {
     const menuColumns = selectColumnFromSubField(feedFields.menus, menuFieldColumnMapping).map(
-      (column) => `array_agg(DISTINCT ${column})`
+      (column) => `array_agg(${column})`
     )
 
     sql = `${sql} ${await joinMenu}`
