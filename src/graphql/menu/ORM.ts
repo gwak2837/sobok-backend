@@ -23,20 +23,15 @@ const joinMenuBucket = importSQL(__dirname, 'sql/joinMenuBucket.sql')
 const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
 const menus = importSQL(__dirname, 'sql/menus.sql')
 
+const menuFieldsFromOtherTable = new Set(['isInBucket', 'isLiked', 'store', 'hashtags'])
+
 // GraphQL fields -> Database columns
 export function menuFieldColumnMapping(menuField: keyof GraphQLMenu) {
-  switch (menuField) {
-    case 'isInBucket':
-      return ''
-    case 'isLiked':
-      return ''
-    case 'store':
-      return ''
-    case 'hashtags':
-      return ''
-    default:
-      return `menu.${camelToSnake(menuField)}`
+  if (menuFieldsFromOtherTable.has(menuField)) {
+    return 'menu.id'
   }
+
+  return `menu.${camelToSnake(menuField)}`
 }
 
 // GraphQL fields -> SQL
@@ -82,8 +77,10 @@ export async function buildBasicMenuQuery(
     groupBy = true
   }
 
-  if (groupBy) {
-    sql = `${sql} GROUP BY ${columns.filter(removeColumnWithAggregateFunction)}`
+  const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
+
+  if (groupBy && filteredColumns.length > 0) {
+    sql = `${sql} GROUP BY ${filteredColumns}`
   }
 
   return [format(serializeSQLParameters(sql), columns), columns, values] as const
@@ -106,13 +103,13 @@ export function menuORM(rows: unknown[][], selectedColumns: string[]): GraphQLMe
         graphQLMenu[camelColumnName] = cell
       }
       //
-      else if (tableName === 'user_x_liked_menu') {
+      else if (tableName === 'isInBuckeet') {
         if (cell) {
-          graphQLMenu.isLiked = true
+          graphQLMenu.isInBucket = true
         }
       }
       //
-      else if (tableName === 'isInBuckeet') {
+      else if (tableName === 'user_x_liked_menu') {
         if (cell) {
           graphQLMenu.isLiked = true
         }

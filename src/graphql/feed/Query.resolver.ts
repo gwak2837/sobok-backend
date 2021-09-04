@@ -42,6 +42,10 @@ export const Query: QueryResolvers<ApolloContext> = {
   },
 
   feedListByTown: async (_, { town, option }, { user }, info) => {
+    if (option === FeedOptions.FollowingUser || option === FeedOptions.StarUser) {
+      if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+    }
+
     let [sql, columns, values] = await buildBasicFeedQuery(info, user)
 
     if (town) {
@@ -55,15 +59,11 @@ export const Query: QueryResolvers<ApolloContext> = {
     }
 
     if (option === FeedOptions.FollowingUser) {
-      if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
-
       sql = spliceSQL(sql, await joinFollowingUser, 'WHERE')
       values.push(user.id)
     }
     //
     else if (option === FeedOptions.StarUser) {
-      if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
-
       if (sql.includes('JOIN "user"')) {
         sql = spliceSQL(sql, await byStarUser, 'GROUP BY')
       } else {

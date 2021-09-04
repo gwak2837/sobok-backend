@@ -30,7 +30,7 @@ type User {
   bio: String
   birth: Date
   imageUrl: URL
-  nuckname: String
+  nickname: String
 
   # from other table
   "내가 쓴 댓글"

@@ -3,7 +3,7 @@ import type { MenuResolvers } from 'src/graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
 import { selectColumnFromField } from '../../utils/ORM'
-import { storeFieldColumnMapping, storeORM } from '../store/ORM'
+import { storeFieldColumnMapping } from '../store/ORM'
 import { decodeCategory } from './ORM'
 
 const store = importSQL(__dirname, 'sql/store.sql')

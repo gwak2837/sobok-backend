@@ -22,7 +22,7 @@ const newsFieldsFromOtherTable = new Set(['isLiked', 'store'])
 // GraphQL fields -> Database columns
 export function newsFieldColumnMapping(newsField: keyof GraphQLNews) {
   if (newsFieldsFromOtherTable.has(newsField)) {
-    return ''
+    return 'news.id'
   }
 
   return `news.${camelToSnake(newsField)}`

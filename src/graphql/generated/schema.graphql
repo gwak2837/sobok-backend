@@ -281,7 +281,7 @@ type Query {
   """
   동네 및 카테고리별 매장 목록
   """
-  stores(town: NonEmptyString, categories: [NonEmptyString!]): [Store!]!
+  storesByTownAndCategory(town: NonEmptyString, categories: [NonEmptyString!]): [Store!]
 }
 
 input RegisterInput {
@@ -372,7 +372,7 @@ type User {
   bio: String
   birth: Date
   imageUrl: URL
-  nuckname: String
+  nickname: String
 
   """
   내가 쓴 댓글

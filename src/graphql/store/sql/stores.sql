@@ -1,2 +1,2 @@
-SELECT %I
-FROM store;
+SELECT %s
+FROM store
