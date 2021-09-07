@@ -18,6 +18,7 @@ import {
   serializeSQLParameters,
 } from '../../utils/ORM'
 import { menuFieldColumnMapping } from '../menu/ORM'
+import type { ApolloContext } from 'src/apollo/server'
 
 const feedList = importSQL(__dirname, 'sql/feedList.sql')
 const joinComment = importSQL(__dirname, 'sql/joinComment.sql')
@@ -27,30 +28,28 @@ const joinMenu = importSQL(__dirname, 'sql/joinMenu.sql')
 const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
 const joinUser = importSQL(__dirname, 'sql/joinUser.sql')
 
+const feedFieldsFromOtherTable = new Set([
+  'isLiked',
+  'store',
+  'user',
+  'comments',
+  'hashtags',
+  'menus',
+])
+
 // GraphQL fields -> Database columns
 export function feedFieldColumnMapping(feedField: keyof GraphQLFeed) {
-  switch (feedField) {
-    case 'isLiked':
-      return ''
-    case 'store':
-      return ''
-    case 'user':
-      return ''
-    case 'comments':
-      return ''
-    case 'hashtags':
-      return ''
-    case 'menus':
-      return ''
-    default:
-      return `feed.${camelToSnake(feedField)}`
+  if (feedFieldsFromOtherTable.has(feedField)) {
+    return 'feed.id'
   }
+
+  return `feed.${camelToSnake(feedField)}`
 }
 
 // GraphQL fields -> SQL
 export async function buildBasicFeedQuery(
   info: GraphQLResolveInfo,
-  user: any,
+  user: ApolloContext['user'],
   selectColumns = true
 ) {
   const feedFields = graphqlFields(info) as Record<string, any>
@@ -87,7 +86,7 @@ export async function buildBasicFeedQuery(
     const commentColumns = selectColumnFromSubField(
       feedFields.comments,
       commentFieldColumnMapping
-    ).map((column) => `array_agg(DISTINCT ${column})`)
+    ).map((column) => `array_agg(${column})`)
 
     sql = `${sql} ${await joinComment}`
     columns = [...columns, ...commentColumns]
@@ -102,7 +101,7 @@ export async function buildBasicFeedQuery(
 
   if (firstFeedFields.has('menus')) {
     const menuColumns = selectColumnFromSubField(feedFields.menus, menuFieldColumnMapping).map(
-      (column) => `array_agg(DISTINCT ${column})`
+      (column) => `array_agg(${column})`
     )
 
     sql = `${sql} ${await joinMenu}`
@@ -133,14 +132,12 @@ export function feedORM(rows: unknown[][], selectedColumns: string[]): GraphQLFe
       if (tableName === 'feed') {
         graphQLNews[camelColumnName] = cell
       }
-
       //
       else if (tableName === 'user_x_liked_feed') {
         if (cell) {
           graphQLNews.isLiked = true
         }
       }
-
       //
       else if (tableName === 'comment') {
         if (!graphQLNews.comments) {
@@ -157,12 +154,10 @@ export function feedORM(rows: unknown[][], selectedColumns: string[]): GraphQLFe
           graphQLNews.comments[j][camelColumnName] = comment
         })
       }
-
       //
       else if (tableName === 'hashtag') {
         graphQLNews.hashtags = cell
       }
-
       //
       else if (tableName === 'menu') {
         if (!graphQLNews.menus) {
@@ -179,7 +174,6 @@ export function feedORM(rows: unknown[][], selectedColumns: string[]): GraphQLFe
           graphQLNews.menus[j][camelColumnName] = menu
         })
       }
-
       //
       else {
         if (!graphQLNews[camelTableName]) {

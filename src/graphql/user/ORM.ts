@@ -1,49 +1,57 @@
-import type { user } from 'src/database/sobok'
+import type { user as DatabaseUser } from 'src/database/sobok'
 import type { User } from 'src/graphql/generated/graphql'
 import { Provider } from '../generated/graphql'
 import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
 
+const userFieldsFromOtherTable = new Set([
+  'comments',
+  'feed',
+  'followings',
+  'followers',
+  'likedComments',
+  'likedFeed',
+  'likedMenus',
+  'likedNews',
+  'likedStores',
+  'likedTrends',
+  'menuBuckets',
+  'storeBuckets',
+])
+
+const privateUserField = new Set([
+  'creationTime',
+  'modificationTime',
+  'email',
+  'name',
+  'phone',
+  'isEmailVerified',
+  'providers',
+])
+
 export function userFieldColumnMapping(userField: keyof User) {
-  switch (userField) {
-    case 'providers':
-      return ['google_oauth', 'naver_oauth', 'kakao_oauth']
-    case 'comments':
-      return ''
-    case 'feed':
-      return ''
-    case 'followings':
-      return ''
-    case 'followers':
-      return ''
-    case 'likedComments':
-      return ''
-    case 'likedFeed':
-      return ''
-    case 'likedMenus':
-      return ''
-    case 'likedNews':
-      return ''
-    case 'likedStores':
-      return ''
-    case 'likedTrends':
-      return ''
-    case 'menuBuckets':
-      return ''
-    case 'storeBuckets':
-      return ''
-    default:
-      return ['"user".id', `"user".${camelToSnake(userField)}`]
+  if (userField === 'providers') {
+    return ['"user".id', '"user".google_oauth', '"user".naver_oauth', '"user".kakao_oauth']
   }
+  //
+  else if (userFieldsFromOtherTable.has(userField)) {
+    return '"user".id'
+  }
+  //
+  else if (privateUserField.has(userField)) {
+    return ['"user".id', `"user".${camelToSnake(userField)}`]
+  }
+
+  return `"user".${camelToSnake(userField)}`
 }
 
-export function userORM(user: Partial<user>): any {
+export function userORM(user: Partial<DatabaseUser>): any {
   return {
     ...snakeKeyToCamelKey(user),
     providers: decodeProviders(user),
   }
 }
 
-function decodeProviders(user: Partial<user>) {
+export function decodeProviders(user: Partial<DatabaseUser>) {
   const providers = []
 
   if (user.google_oauth) providers.push(Provider.Google)

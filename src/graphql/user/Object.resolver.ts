@@ -1,7 +1,8 @@
 import format from 'pg-format'
+import type { ApolloContext } from 'src/apollo/server'
 import { commentFieldColumnMapping, commentORM } from '../comment/ORM'
 import { feedFieldColumnMapping, feedORM } from '../feed/ORM'
-import { Gender as GraphqlGender, UserResolvers } from '../generated/graphql'
+import { UserResolvers } from '../generated/graphql'
 import { storeFieldColumnMapping, storeORM } from '../store/ORM'
 import { poolQuery } from '../../database/postgres'
 import { importSQL, removeDoubleQuotesAround } from '../../utils/commons'
@@ -11,7 +12,7 @@ import { AuthenticationError, ForbiddenError } from 'apollo-server-express'
 import { menuFieldColumnMapping, menuORM } from '../menu/ORM'
 import { newsFieldColumnMapping, newsORM } from '../news/ORM'
 import { trendFieldColumnMapping, trendORM } from '../trend/ORM'
-import { userFieldColumnMapping, userORM } from './ORM'
+import { decodeProviders, userFieldColumnMapping, userORM } from './ORM'
 
 const comments = importSQL(__dirname, 'sql/comments.sql')
 const feed = importSQL(__dirname, 'sql/feed.sql')
@@ -32,44 +33,48 @@ export const Gender = {
   FEMALE: 2,
 }
 
-export const User: UserResolvers = {
+function authenticateUser(loginedUser: ApolloContext['user'], targetUserId: string) {
+  if (!loginedUser) throw new AuthenticationError('개인정보를 확인하려면 로그인 후 시도해주세요.')
+
+  if (loginedUser.id !== targetUserId)
+    throw new ForbiddenError('다른 사용자의 개인정보는 조회할 수 없습니다.')
+}
+
+export const User: UserResolvers<ApolloContext> = {
+  creationTime: async ({ id, creationTime }, __, { user }) => {
+    authenticateUser(user, id)
+    return creationTime
+  },
+
+  modificationTime: async ({ id, modificationTime }, __, { user }) => {
+    authenticateUser(user, id)
+    return modificationTime
+  },
+
   email: async ({ id, email }, __, { user }) => {
-    if (!user) throw new AuthenticationError('개인정보를 확인하려면 로그인 후 시도해주세요.')
-
-    if (user.id !== id) throw new ForbiddenError('다른 사용자의 개인정보는 조회할 수 없습니다.')
-
+    authenticateUser(user, id)
     return email
   },
 
   name: async ({ id, name }, __, { user }) => {
-    if (!user) throw new AuthenticationError('개인정보를 확인하려면 로그인 후 시도해주세요.')
-
-    if (user.id !== id) throw new ForbiddenError('다른 사용자의 개인정보는 조회할 수 없습니다.')
-
+    authenticateUser(user, id)
     return name
   },
 
   phone: async ({ id, phone }, __, { user }) => {
-    if (!user) throw new AuthenticationError('개인정보를 확인하려면 로그인 후 시도해주세요.')
-
-    if (user.id !== id) throw new ForbiddenError('다른 사용자의 개인정보는 조회할 수 없습니다.')
-
+    authenticateUser(user, id)
     return phone
   },
 
   isEmailVerified: async ({ id, isEmailVerified }, __, { user }) => {
-    if (!user) throw new AuthenticationError('개인정보를 확인하려면 로그인 후 시도해주세요.')
-
-    if (user.id !== id) throw new ForbiddenError('다른 사용자의 개인정보는 조회할 수 없습니다.')
-
+    authenticateUser(user, id)
     return isEmailVerified
   },
 
-  // providers: ({ id, google_oauth }, __, { user }) => {
-  //   if (id !== user?.id) throw new ForbiddenError('')
-
-  //   return providers
-  // },
+  providers: (parent, __, { user }) => {
+    authenticateUser(user, parent.id)
+    return decodeProviders(parent as any)
+  },
 
   comments: async (_, __, { user }, info) => {
     if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
@@ -152,7 +157,7 @@ export const User: UserResolvers = {
 
     const { rows } = await poolQuery(format(await likedMenus, columns), [user.id])
 
-    return rows.map((row) => menuORM(row))
+    return rows.map((row) => menuORM(row, columns)[0])
   },
 
   likedNews: async (_, __, { user }, info) => {
@@ -188,7 +193,7 @@ export const User: UserResolvers = {
 
     const { rows } = await poolQuery(formattedSQL, [user.id])
 
-    return rows.map((row) => storeORM(row))
+    return storeORM(rows, columns)
   },
 
   likedTrends: async (_, __, { user }, info) => {

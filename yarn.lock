@@ -938,6 +938,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graphql-codegen/plugin-helpers@npm:^2.1.0":
+  version: 2.1.1
+  resolution: "@graphql-codegen/plugin-helpers@npm:2.1.1"
+  dependencies:
+    "@graphql-tools/utils": ^8.1.1
+    change-case-all: 1.0.14
+    common-tags: 1.8.0
+    import-from: 4.0.0
+    lodash: ~4.17.0
+    tslib: ~2.3.0
+  peerDependencies:
+    graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
+  checksum: fb7921a901ac8326e80af5fd7f9c6b511c278b7df23a229f09a46d9650164cfcc31a81372f9fd601b1bbda1b884efae3f339368a1bb2f0070b7495dc88375a2a
+  languageName: node
+  linkType: hard
+
+"@graphql-codegen/schema-ast@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@graphql-codegen/schema-ast@npm:2.1.0"
+  dependencies:
+    "@graphql-codegen/plugin-helpers": ^2.1.0
+    "@graphql-tools/utils": ^8.1.1
+    tslib: ~2.3.0
+  peerDependencies:
+    graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
+  checksum: 72fd3cbc568548a3d6513fa7aa09192696d433152b004e3c613b82c2a1fbd1ed15fb406920423a7d10c6f8f1cbadf9609141b3f3253addbe5161ff205bd5c42b
+  languageName: node
+  linkType: hard
+
 "@graphql-codegen/typescript-resolvers@npm:2.0.0":
   version: 2.0.0
   resolution: "@graphql-codegen/typescript-resolvers@npm:2.0.0"
@@ -1317,6 +1346,17 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0
   checksum: fabae21ba46280e593dbfb3ca4566d0f2da66a3d078fb09e8c7e8af426aa192a65ed2858e520e2de1c6eb0ca31404b17285e69f9c446971e4abe9d475ce1a8b0
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/utils@npm:^8.1.1":
+  version: 8.2.1
+  resolution: "@graphql-tools/utils@npm:8.2.1"
+  dependencies:
+    tslib: ~2.3.0
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
+  checksum: 9fe29564b0655e3a397ecfe09898abcbd93795237b17fed67584e408a96d031b03cb4ce00f9a83faf6f4c4789035e29d835b4873bbad17467dadf4edd1983e2e
   languageName: node
   linkType: hard
 
@@ -8895,6 +8935,7 @@ __metadata:
   dependencies:
     "@graphql-codegen/add": ^3.0.0
     "@graphql-codegen/cli": 2.0.1
+    "@graphql-codegen/schema-ast": ^2.1.0
     "@graphql-codegen/typescript": 2.0.0
     "@graphql-codegen/typescript-resolvers": 2.0.0
     "@graphql-tools/load-files": ^6.3.2

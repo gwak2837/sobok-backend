@@ -1,2 +1,2 @@
-SELECT %I
-FROM menu;
+SELECT %s
+FROM menu

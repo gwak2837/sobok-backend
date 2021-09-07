@@ -1,39 +1,37 @@
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
 import format from 'pg-format'
-import type { news as DatabaseNews } from 'src/database/sobok'
 import type { News as GraphQLNews } from 'src/graphql/generated/graphql'
 import { selectColumnFromSubField, serializeSQLParameters } from '../../utils/ORM'
 import {
   camelToSnake,
   importSQL,
   removeQuotes,
-  snakeKeyToCamelKey,
   snakeToCamel,
   tableColumnRegEx,
 } from '../../utils/commons'
 import { storeFieldColumnMapping } from '../store/ORM'
+import type { ApolloContext } from 'src/apollo/server'
 
 const joinLikedNews = importSQL(__dirname, 'sql/joinLikedNews.sql')
 const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
 const newsList = importSQL(__dirname, 'sql/newsList.sql')
 
+const newsFieldsFromOtherTable = new Set(['isLiked', 'store'])
+
 // GraphQL fields -> Database columns
 export function newsFieldColumnMapping(newsField: keyof GraphQLNews) {
-  switch (newsField) {
-    case 'isLiked':
-      return ''
-    case 'store':
-      return ''
-    default:
-      return `news.${camelToSnake(newsField)}`
+  if (newsFieldsFromOtherTable.has(newsField)) {
+    return 'news.id'
   }
+
+  return `news.${camelToSnake(newsField)}`
 }
 
 // GraphQL fields -> SQL
 export async function buildBasicNewsQuery(
   info: GraphQLResolveInfo,
-  user: any,
+  user: ApolloContext['user'],
   selectColumns = true
 ) {
   const newsFields = graphqlFields(info) as Record<string, any>
@@ -41,7 +39,7 @@ export async function buildBasicNewsQuery(
 
   let sql = await newsList
   let columns = selectColumns ? selectColumnFromSubField(newsFields, newsFieldColumnMapping) : []
-  const values = []
+  const values: unknown[] = []
 
   if (firstNewsFields.includes('isLiked')) {
     if (user) {
@@ -76,14 +74,12 @@ export function newsORM(rows: unknown[][], selectedColumns: string[]): GraphQLNe
       if (tableName === 'news') {
         graphQLNews[camelColumnName] = cell
       }
-
       //
       else if (tableName === 'user_x_liked_feed') {
         if (cell) {
           graphQLNews.isLiked = true
         }
       }
-
       //
       else {
         if (!graphQLNews[camelTableName]) {

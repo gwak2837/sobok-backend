@@ -1,0 +1,436 @@
+type Bucket {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+  name: NonEmptyString!
+
+  """
+  from other table
+  """
+  user: User!
+}
+
+type Comment {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+  contents: [NonEmptyString!]!
+
+  """
+  nullable
+  """
+  imageUrl: URL
+
+  """
+  from other table
+  """
+  feed: Feed!
+  user: User!
+
+  """
+  from other table - nullable
+  """
+  comment: Comment
+}
+
+scalar Date
+
+scalar DateTime
+
+scalar EmailAddress
+
+type Feed {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+  rating: NonEmptyString!
+  contents: [NonEmptyString!]!
+  imageUrls: [URL!]!
+  likeCount: Int!
+  commentCount: Int!
+  storeId: ID!
+  userId: ID!
+
+  """
+  피드 좋아요 여부 (로그인 필요)
+  """
+  isLiked: Boolean!
+
+  """
+  피드에 태그된 매장
+  """
+  store: Store!
+
+  """
+  피드 작성자
+  """
+  user: User!
+
+  """
+  피드에 달린 댓글
+  """
+  comments: [Comment!]
+
+  """
+  피드에 달린 해시태그
+  """
+  hashtags: [NonEmptyString!]
+
+  """
+  피드에 태그된 메뉴 목록
+  """
+  menus: [Menu!]
+}
+
+"""
+기본값: ALL_USER
+"""
+enum FeedOptions {
+  STAR_USER
+
+  """
+  로그인 필요
+  """
+  FOLLOWING_USER
+  ALL_USER
+}
+
+"""
+성별
+"""
+enum Gender {
+  OTHER
+  MALE
+  FEMALE
+}
+
+scalar JWT
+
+type Menu {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+  name: NonEmptyString!
+  price: Int!
+  isSoldOut: Boolean!
+  imageUrls: [URL!]!
+  category: NonEmptyString!
+  storeId: ID!
+
+  """
+  로그인한 사용자가 이 메뉴를 버킷에 담은 여부
+  """
+  isInBucket: Boolean!
+
+  """
+  로그인한 사용자가 이 메뉴를 좋아하는 여부
+  """
+  isLiked: Boolean!
+
+  """
+  이 메뉴를 판매하는 매장
+  """
+  store: Store!
+
+  """
+  메뉴에 달린 해시태그
+  """
+  hashtags: [NonEmptyString!]
+}
+
+type Mutation {
+  """
+  고유 이름 또는 이메일과 비밀번호를 전송하면 JWT 인증 토큰을 반환함
+  """
+  login(uniqueNameOrEmail: NonEmptyString!, passwordHash: NonEmptyString!): JWT
+
+  """
+  JWT 인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환함
+  """
+  logout: Boolean!
+
+  """
+  회원가입에 필요한 정보를 주면 성공했을 때 인증 토큰을 반환함
+  """
+  register(input: RegisterInput!): JWT
+
+  """
+  회원탈퇴 시 사용자 정보가 모두 초기화됩
+  """
+  unregister: Boolean!
+}
+
+type News {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+  title: NonEmptyString!
+  contents: [NonEmptyString!]!
+  category: NonEmptyString!
+  storeId: ID!
+  imageUrls: [URL!]
+
+  """
+  뉴스 좋아요 여부 (로그인 필요)
+  """
+  isLiked: Boolean!
+
+  """
+  이 소식을 올린 매장
+  """
+  store: Store!
+}
+
+"""
+기본값: ALL_STORE
+"""
+enum NewsOptions {
+  """
+  로그인 필요
+  """
+  LIKED_STORE
+  ALL_STORE
+}
+
+scalar NonEmptyString
+
+"""
+OAuth 공급자
+"""
+enum Provider {
+  SOBOK
+  GOOGLE
+  NAVER
+  KAKAO
+}
+
+type Query {
+  """
+  피드 상세
+  """
+  feed(id: ID!): Feed
+
+  """
+  특정 매장 피드 목록
+  """
+  feedListByStore(storeId: ID!): [Feed!]
+
+  """
+  특정 동네 피드 목록
+  """
+  feedListByTown(town: NonEmptyString, option: FeedOptions): [Feed!]
+
+  """
+  이메일 중복 여부 검사
+  """
+  isEmailUnique(email: EmailAddress!): Boolean!
+
+  """
+  사용자 고유 이름 중복 여부 검사
+  """
+  isUniqueNameUnique(uniqueName: NonEmptyString!): Boolean!
+
+  """
+  인증 토큰과 같이 요청하면 사용자 정보를 반환
+  """
+  me: User!
+
+  """
+  메뉴 상세
+  """
+  menu(id: ID!): Menu
+
+  """
+  메뉴 상세
+  """
+  menuByName(storeId: ID!, name: NonEmptyString!): Menu
+
+  """
+  특정 매장 메뉴 목록
+  """
+  menusByStore(storeId: ID!): [Menu!]
+
+  """
+  특정 동네 및 특정 카테고리 피드 목록
+  """
+  menusByTownAndCategory(town: NonEmptyString, category: NonEmptyString): [Menu!]
+
+  """
+  소식 상세
+  """
+  news(id: ID!): News
+
+  """
+  특정 매장 소식 목록
+  """
+  newsListByStore(storeId: ID!, categories: [NonEmptyString!]): [News!]
+
+  """
+  옵션별 여러 매장 소식 목록
+  """
+  newsListByTown(town: NonEmptyString, option: NewsOptions): [News!]
+  searchFeed(hashtags: [NonEmptyString!]!): [Menu!]
+  searchMenus(hashtags: [NonEmptyString!]!): [Menu!]
+  searchStores(hashtags: [NonEmptyString!]!): [Menu!]
+
+  """
+  특정 매장 정보
+  """
+  store(id: ID!): Store
+
+  """
+  동네 및 카테고리별 매장 목록
+  """
+  storesByTownAndCategory(town: NonEmptyString, categories: [NonEmptyString!]): [Store!]
+}
+
+input RegisterInput {
+  uniqueName: NonEmptyString!
+  email: EmailAddress!
+  passwordHash: NonEmptyString!
+  name: NonEmptyString!
+  phone: NonEmptyString!
+  gender: Gender!
+  bio: String
+  birth: Date
+  imageUrl: URL
+}
+
+type Store {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+  name: NonEmptyString!
+  town: NonEmptyString!
+  address: NonEmptyString!
+  categories: [NonEmptyString!]!
+  tel: String
+  registrationNumber: String
+  description: String
+  businessHours: [NonEmptyString!]
+  holidays: [Date!]
+  imageUrls: [URL!]
+  userId: ID!
+
+  """
+  로그인한 사용자가 이 매장을 버킷에 담은 여부
+  """
+  isInBucket: Boolean!
+
+  """
+  로그인한 사용자가 이 매장을 좋아하는 여부
+  """
+  isLiked: Boolean!
+
+  """
+  매장에서 판매하는 메뉴 목록
+  """
+  menus: [Menu!]!
+
+  """
+  매장에 달린 해시태그
+  """
+  hashtags: [NonEmptyString!]
+
+  """
+  매장에서 올린 소식 목록
+  """
+  news: [News!]
+
+  """
+  매장을 소유한 사용자 정보
+  """
+  user: User
+}
+
+type Trend {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+  contents: [NonEmptyString!]!
+
+  """
+  from other table
+  """
+  user: User!
+}
+
+scalar URL
+
+type User {
+  id: ID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+  uniqueName: NonEmptyString!
+  email: EmailAddress!
+  name: NonEmptyString!
+  phone: NonEmptyString!
+  gender: Gender!
+  isEmailVerified: Boolean!
+  isStarUser: Boolean!
+  providers: [Provider!]!
+  bio: String
+  birth: Date
+  imageUrl: URL
+  nickname: String
+
+  """
+  내가 쓴 댓글
+  """
+  comments: [Comment!]
+
+  """
+  내가 쓴 피드
+  """
+  feed: [Feed!]
+
+  """
+  사용자가 따르고 있는 다른 사용자
+  """
+  followings: [User!]
+
+  """
+  사용자를 따르는 다른 사용자
+  """
+  followers: [User!]
+
+  """
+  좋아요 누른 댓글
+  """
+  likedComments: [Comment!]
+
+  """
+  좋아요 누른 피드
+  """
+  likedFeed: [Feed!]
+
+  """
+  좋아요 누른 메뉴
+  """
+  likedMenus: [Menu!]
+
+  """
+  좋아요 누른 소식
+  """
+  likedNews: [News!]
+
+  """
+  좋아요 누른 매장
+  """
+  likedStores: [Store!]
+
+  """
+  좋아요 누른 트렌드
+  """
+  likedTrends: [Trend!]
+
+  """
+  내 메뉴 버킷 리스트
+  """
+  menuBuckets: [Bucket!]
+
+  """
+  내 매장 버킷 리스트
+  """
+  storeBuckets: [Bucket!]
+}

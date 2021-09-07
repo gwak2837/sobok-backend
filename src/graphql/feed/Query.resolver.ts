@@ -1,40 +1,82 @@
-import type { QueryResolvers } from 'src/graphql/generated/graphql'
+import type { ApolloContext } from 'src/apollo/server'
+import { FeedOptions, QueryResolvers } from '../../graphql/generated/graphql'
 import { importSQL } from '../../utils/commons'
 import { poolQuery } from '../../database/postgres'
 import { buildBasicFeedQuery, feedORM } from './ORM'
+import { spliceSQL } from '../../utils/ORM'
+import { AuthenticationError } from 'apollo-server-express'
 
 const byId = importSQL(__dirname, 'sql/byId.sql')
+const byStarUser = importSQL(__dirname, 'sql/byStarUser.sql')
+const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
+const joinFollowingUser = importSQL(__dirname, 'sql/joinFollowingUser.sql')
+const joinStoreOnTown = importSQL(__dirname, 'sql/joinStoreOnTown.sql')
+const joinStarUser = importSQL(__dirname, 'sql/joinStarUser.sql')
+const onTown = importSQL(__dirname, 'sql/onTown.sql')
 
-export const Query: QueryResolvers = {
+export const Query: QueryResolvers<ApolloContext> = {
   feed: async (_, { id }, { user }, info) => {
     let [sql, columns, values] = await buildBasicFeedQuery(info, user)
 
-    const i = sql.indexOf('GROUP BY')
-    const parameterNumber = (sql.match(/\$/g)?.length ?? 0) + 1
-
-    sql = `${sql.slice(0, i)} ${(await byId) + parameterNumber} ${sql.slice(i)}`
+    sql = spliceSQL(sql, await byId, 'GROUP BY')
     values.push(id)
 
-    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
 
     return feedORM(rows, columns)[0]
   },
 
-  // feedByOneStore: async (_, { storeId }, { user }, info) => {
-  //   const columns = selectColumnFromField(info, feedFieldColumnMapping)
+  feedListByStore: async (_, { storeId }, { user }, info) => {
+    let [sql, columns, values] = await buildBasicFeedQuery(info, user)
 
-  //   const { rows } = await poolQuery(format(await feedListByStoreId, columns), [storeId])
+    sql = spliceSQL(sql, await byStoreId, 'GROUP BY')
+    values.push(storeId)
 
-  //   return rows.map((row) => feedORM(row))
-  // },
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
-  // feedByOneTown: async (_, { town }, { user }, info) => {
-  //   const columns = selectColumnFromField(info, feedFieldColumnMapping)
+    if (rowCount === 0) return null
 
-  //   const columnsWithTable = columns.map((column) => `feed.${column}`)
+    return feedORM(rows, columns)
+  },
 
-  //   const { rows } = await poolQuery(format(await feedListByTown, columnsWithTable), [town])
+  feedListByTown: async (_, { town, option }, { user }, info) => {
+    if (option === FeedOptions.FollowingUser || option === FeedOptions.StarUser) {
+      if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+    }
 
-  //   return rows.map((row) => feedORM(row))
-  // },
+    let [sql, columns, values] = await buildBasicFeedQuery(info, user)
+
+    if (town) {
+      if (sql.includes('JOIN store')) {
+        sql = spliceSQL(sql, await onTown, 'JOIN store ON store.id = feed.store_id', true)
+      } else {
+        sql = spliceSQL(sql, await joinStoreOnTown, 'JOIN')
+      }
+
+      values.push(town)
+    }
+
+    if (option === FeedOptions.FollowingUser) {
+      sql = spliceSQL(sql, await joinFollowingUser, 'WHERE')
+      values.push(user.id)
+    }
+    //
+    else if (option === FeedOptions.StarUser) {
+      if (sql.includes('JOIN "user"')) {
+        sql = spliceSQL(sql, await byStarUser, 'GROUP BY')
+      } else {
+        sql = spliceSQL(sql, await joinStarUser, 'WHERE')
+      }
+
+      values.push(user.id)
+    }
+
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
+
+    return feedORM(rows, columns)
+  },
 }
