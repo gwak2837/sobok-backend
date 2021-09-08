@@ -1,0 +1,1 @@
+JOIN "user" ON "user".id = bucket.user_id
