@@ -912,15 +912,15 @@ CREATE PROCEDURE toggle_menu_bucket_list (
   _bucket_id bigint DEFAULT NULL,
   INOUT result text DEFAULT NULL
 ) LANGUAGE plpgsql AS $$
-DECLARE selected_bucket_id bucket.id % TYPE;
+DECLARE selected_bucket_ids bigint [];
 
 BEGIN
-SELECT id INTO selected_bucket_id
+SELECT array_agg(id) INTO selected_bucket_ids
 FROM bucket
 WHERE user_id = _user_id;
 
 IF NOT found
-OR selected_bucket_id != _bucket_id THEN result = '사용자가 해당 버켓을 소유하고 있지 않습니다.';
+OR _bucket_id != ALL(selected_bucket_ids) THEN result = '사용자가 해당 버켓을 소유하고 있지 않습니다.';
 
 RETURN;
 
@@ -958,15 +958,15 @@ CREATE PROCEDURE toggle_store_bucket_list (
   _bucket_id bigint DEFAULT NULL,
   INOUT result text DEFAULT NULL
 ) LANGUAGE plpgsql AS $$
-DECLARE selected_bucket_id bucket.id % TYPE;
+DECLARE selected_bucket_ids bigint [];
 
 BEGIN
-SELECT id INTO selected_bucket_id
+SELECT array_agg(id) INTO selected_bucket_ids
 FROM bucket
 WHERE user_id = _user_id;
 
 IF NOT found
-OR selected_bucket_id != _bucket_id THEN result = '사용자가 해당 버켓을 소유하고 있지 않습니다.';
+OR _bucket_id != ALL(selected_bucket_ids) THEN result = '사용자가 해당 버켓을 소유하고 있지 않습니다.';
 
 RETURN;
 
