@@ -1,16 +1,10 @@
 type Query {
-  """
-  인증 토큰과 같이 요청하면 사용자 정보를 반환
-  """
+  "인증 토큰과 같이 요청하면 사용자 정보를 반환"
   me: User!
 
-  """
-  이메일 중복 여부 검사
-  """
+  "이메일 중복 여부 검사"
   isEmailUnique(email: EmailAddress!): Boolean!
 
-  """
-  사용자 고유 이름 중복 여부 검사
-  """
+  "사용자 고유 이름 중복 여부 검사"
   isUniqueNameUnique(uniqueName: NonEmptyString!): Boolean!
 }

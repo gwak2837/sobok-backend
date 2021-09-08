@@ -77,8 +77,6 @@ export const User: UserResolvers<ApolloContext> = {
   },
 
   comments: async (_, __, { user }, info) => {
-    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
-
     const columns = selectColumnFromField(info, commentFieldColumnMapping)
 
     const { rows } = await poolQuery(format(await comments, columns), [user.id])
@@ -87,8 +85,6 @@ export const User: UserResolvers<ApolloContext> = {
   },
 
   feed: async (_, __, { user }, info) => {
-    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
-
     const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
     const { rows } = await poolQuery(format(await feed, columns), [user.id])
@@ -96,25 +92,25 @@ export const User: UserResolvers<ApolloContext> = {
     return rows.map((row) => feedORM(row, columns)[0]) //
   },
 
-  followers: async (_, __, { user }, info) => {
-    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+  // followers: async (_, __, { user }, info) => {
+  //   if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
-    const columns = selectColumnFromField(info, userFieldColumnMapping)
+  //   const columns = selectColumnFromField(info, userFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await followers, columns), [user.id])
+  //   const { rows } = await poolQuery(format(await followers, columns), [user.id])
 
-    return rows.map((row) => userORM(row))
-  },
+  //   return rows.map((row) => userORM(row))
+  // },
 
-  followings: async (_, __, { user }, info) => {
-    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+  // followings: async (_, __, { user }, info) => {
+  //   if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
-    const columns = selectColumnFromField(info, userFieldColumnMapping)
+  //   const columns = selectColumnFromField(info, userFieldColumnMapping)
 
-    const { rows } = await poolQuery(format(await followings, columns), [user.id])
+  //   const { rows } = await poolQuery(format(await followings, columns), [user.id])
 
-    return rows.map((row) => userORM(row))
-  },
+  //   return rows.map((row) => userORM(row))
+  // },
 
   likedComments: async (_, __, { user }, info) => {
     if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
@@ -211,25 +207,5 @@ export const User: UserResolvers<ApolloContext> = {
     const { rows } = await poolQuery(formattedSQL, [user.id])
 
     return rows.map((row) => trendORM(row))
-  },
-
-  menuBuckets: async (_, __, { user }, info) => {
-    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
-
-    const columns = selectColumnFromField(info, bucketFieldColumnMapping)
-
-    const { rows } = await poolQuery(format(await menuBuckets, columns), [user.id])
-
-    return rows.map((row) => bucketORM(row))
-  },
-
-  storeBuckets: async (_, __, { user }, info) => {
-    if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
-
-    const columns = selectColumnFromField(info, bucketFieldColumnMapping)
-
-    const { rows } = await poolQuery(format(await storeBuckets, columns), [user.id])
-
-    return rows.map((row) => bucketORM(row))
   },
 }
