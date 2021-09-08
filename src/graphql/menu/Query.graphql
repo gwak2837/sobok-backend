@@ -10,4 +10,7 @@ type Query {
 
   "특정 매장 메뉴 목록"
   menusByStore(storeId: ID!): [Menu!]
+
+  "메뉴 버킷에만 해당"
+  menusInBucket(bucketId: ID!): [Menu!]
 }
