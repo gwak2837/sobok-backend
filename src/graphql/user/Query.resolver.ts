@@ -21,7 +21,7 @@ export const Query: QueryResolvers = {
 
     const { rows } = await poolQuery(format(await me, columns), [user.id])
 
-    return userORM(rows[0])
+    return userORM(rows, columns)[0]
   },
 
   isEmailUnique: async (_, { email }) => {

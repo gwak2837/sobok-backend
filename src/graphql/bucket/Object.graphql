@@ -1,12 +1,17 @@
+enum BucketType {
+  STORE
+  MENU
+}
+
 type Bucket {
   id: ID!
   creationTime: DateTime!
   modificationTime: DateTime!
   name: NonEmptyString!
+  type: BucketType!
+  userId: ID!
 
-  """
-  from other table
-  """
-  # 버킷 소유자
+  # from other table
+  "버킷 소유자"
   user: User!
 }

@@ -8,8 +8,10 @@ import type { ApolloContext } from 'src/apollo/server'
 
 const byCategory = importSQL(__dirname, 'sql/byCategory.sql')
 const byId = importSQL(__dirname, 'sql/byId.sql')
+const byMenuBucketId = importSQL(__dirname, 'sql/byMenuBucketId.sql')
 const byName = importSQL(__dirname, 'sql/byName.sql')
 const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
+const joinMenuBucketOnMenuBucketId = importSQL(__dirname, 'sql/joinMenuBucketOnMenuBucketId.sql')
 const joinStoreOnTown = importSQL(__dirname, 'sql/joinStoreOnTown.sql')
 const joinStoreOnTownAndCategory = importSQL(__dirname, 'sql/joinStoreOnTownAndCategory.sql')
 const onTown = importSQL(__dirname, 'sql/onTown.sql')
@@ -95,6 +97,24 @@ export const Query: QueryResolvers<ApolloContext> = {
 
     sql = spliceSQL(sql, await byStoreId, 'GROUP BY')
     values.push(storeId)
+
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
+
+    return menuORM(rows, columns)
+  },
+
+  menusInBucket: async (_, { bucketId }, { user }, info) => {
+    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
+
+    if (sql.includes('LEFT JOIN bucket')) {
+      sql = spliceSQL(sql, await byMenuBucketId, 'GROUP BY')
+      values.push(bucketId)
+    } else {
+      sql = spliceSQL(sql, await joinMenuBucketOnMenuBucketId, 'GROUP BY')
+      values.push(bucketId, user.id)
+    }
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 

@@ -4,4 +4,7 @@ type Query {
 
   "동네 및 카테고리별 매장 목록"
   storesByTownAndCategory(town: NonEmptyString, categories: [NonEmptyString!]): [Store!]
+
+  "매장 버킷에만 해당"
+  storesInBucket(bucketId: ID!): [Store!]
 }

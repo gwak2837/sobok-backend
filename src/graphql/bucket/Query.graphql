@@ -1,0 +1,10 @@
+type Query {
+  "버켓 상세 정보"
+  bucket(id: ID!): Bucket
+
+  "메뉴 버킷 리스트를 반환"
+  menuBuckets(userId: ID!): [Bucket!]
+
+  "매장 버킷 리스트를 반환"
+  storeBuckets(userId: ID!): [Bucket!]
+}

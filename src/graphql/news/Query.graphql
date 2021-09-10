@@ -14,5 +14,5 @@ type Query {
   newsListByStore(storeId: ID!, categories: [NonEmptyString!]): [News!]
 
   "옵션별 여러 매장 소식 목록"
-  newsListByTown(town: NonEmptyString, option: NewsOptions): [News!]
+  newsListByTown(town: NonEmptyString, option: NewsOptions, categories: [NonEmptyString!]): [News!]
 }

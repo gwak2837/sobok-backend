@@ -6,8 +6,6 @@ import { selectColumnFromField } from '../../utils/ORM'
 import { storeFieldColumnMapping } from '../store/ORM'
 import { decodeCategory } from './ORM'
 
-const store = importSQL(__dirname, 'sql/store.sql')
-
 export const Menu: MenuResolvers = {
   category: async ({ category }, __) => {
     return decodeCategory(category)

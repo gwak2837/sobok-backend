@@ -4,8 +4,7 @@ type Trend {
   modificationTime: DateTime!
   contents: [NonEmptyString!]!
 
-  """
-  from other table
-  """
+  # from other table
+  "트렌드 작성자"
   user: User!
 }
