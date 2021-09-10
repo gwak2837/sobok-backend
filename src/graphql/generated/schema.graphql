@@ -218,6 +218,11 @@ type Query {
   bucket(id: ID!): Bucket
 
   """
+  메뉴 또는 매장 버킷 리스트를 반환, 로그인 상태 또는 userId를 입력해야 함
+  """
+  buckets(type: BucketType!, userUniqueName: NonEmptyString): [Bucket!]
+
+  """
   피드 상세
   """
   feed(id: ID!): Feed
@@ -251,11 +256,6 @@ type Query {
   메뉴 상세
   """
   menu(id: ID!): Menu
-
-  """
-  메뉴 버킷 리스트를 반환
-  """
-  menuBuckets(userId: ID!): [Bucket!]
 
   """
   메뉴 상세
@@ -299,11 +299,6 @@ type Query {
   특정 매장 정보
   """
   store(id: ID!): Store
-
-  """
-  매장 버킷 리스트를 반환
-  """
-  storeBuckets(userId: ID!): [Bucket!]
 
   """
   동네 및 카테고리별 매장 목록

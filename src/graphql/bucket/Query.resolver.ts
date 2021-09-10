@@ -1,17 +1,19 @@
-import { AuthenticationError } from 'apollo-server-express'
-import format from 'pg-format'
-import { QueryResolvers } from 'src/graphql/generated/graphql'
-import { selectColumnFromField, spliceSQL } from '../../utils/ORM'
+import { UserInputError } from 'apollo-server-express'
+import type { QueryResolvers } from 'src/graphql/generated/graphql'
+import { bucketORM, buildBasicBucketQuery } from './ORM'
+import { spliceSQL } from '../../utils/ORM'
 import { poolQuery } from '../../database/postgres'
 import { importSQL } from '../../utils/commons'
 
-import type { user as User } from 'src/database/sobok'
-import { bucketORM, buildBasicBucketQuery } from './ORM'
-import { buildBasicMenuQuery } from '../menu/ORM'
-
 const byId = importSQL(__dirname, 'sql/byId.sql')
-const byUserIdAndMenuBucket = importSQL(__dirname, 'sql/byUserIdAndMenuBucket.sql')
-const byUserIdAndStoreBucket = importSQL(__dirname, 'sql/byUserIdAndStoreBucket.sql')
+const byUserIdAndBucketType = importSQL(__dirname, 'sql/byUserIdAndBucketType.sql')
+const joinUserOnUniqueNameAndBucketType = importSQL(
+  __dirname,
+  'sql/joinUserOnUniqueNameAndBucketType.sql'
+)
+const onUniqueNameAndBucketType = importSQL(__dirname, 'sql/onUniqueNameAndBucketType.sql')
+
+const joinUserOnUserId = 'JOIN "user" ON "user".id = bucket.user_id'
 
 export const Query: QueryResolvers = {
   bucket: async (_, { id }, { user }, info) => {
@@ -27,24 +29,23 @@ export const Query: QueryResolvers = {
     return bucketORM(rows, columns)[0]
   },
 
-  menuBuckets: async (_, __, { user }, info) => {
+  buckets: async (_, { userUniqueName, type }, { user }, info) => {
+    if (!user && !userUniqueName) throw new UserInputError('로그인 하거나 사용자 ID를 입력해주세요')
+
     let [sql, columns, values] = await buildBasicBucketQuery(info, user)
 
-    sql = spliceSQL(sql, await byUserIdAndStoreBucket, 'GROUP BY')
-    values.push(user.id)
-
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
-    if (rowCount === 0) return null
-
-    return bucketORM(rows, columns)
-  },
-
-  storeBuckets: async (_, __, { user }, info) => {
-    let [sql, columns, values] = await buildBasicBucketQuery(info, user)
-
-    sql = spliceSQL(sql, await byUserIdAndMenuBucket, 'GROUP BY')
-    values.push(user.id)
+    if (user) {
+      sql = spliceSQL(sql, await byUserIdAndBucketType, 'GROUP BY')
+      values.push(user.id, type)
+    } else {
+      if (sql.includes('JOIN "user"')) {
+        sql = spliceSQL(sql, await onUniqueNameAndBucketType, joinUserOnUserId, true)
+        values.push(userUniqueName, type)
+      } else {
+        sql = spliceSQL(sql, await joinUserOnUniqueNameAndBucketType, 'WHERE')
+        values.push(userUniqueName, type)
+      }
+    }
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
