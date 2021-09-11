@@ -12,5 +12,5 @@ type Query {
   menusByStore(storeId: ID!): [Menu!]
 
   "메뉴 버킷에만 해당"
-  menusInBucket(bucketId: ID!): [Menu!]
+  menusInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Menu!]
 }

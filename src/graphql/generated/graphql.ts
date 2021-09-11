@@ -171,6 +171,8 @@ export type Query = {
   __typename?: 'Query'
   /** 버켓 상세 정보 */
   bucket?: Maybe<Bucket>
+  /** 메뉴 또는 매장 버킷 리스트를 반환, 로그인 상태 또는 userId를 입력해야 함 */
+  buckets?: Maybe<Array<Bucket>>
   /** 피드 상세 */
   feed?: Maybe<Feed>
   /** 특정 매장 피드 목록 */
@@ -185,8 +187,6 @@ export type Query = {
   me: User
   /** 메뉴 상세 */
   menu?: Maybe<Menu>
-  /** 메뉴 버킷 리스트를 반환 */
-  menuBuckets?: Maybe<Array<Bucket>>
   /** 메뉴 상세 */
   menuByName?: Maybe<Menu>
   /** 특정 매장 메뉴 목록 */
@@ -206,8 +206,6 @@ export type Query = {
   searchStores?: Maybe<Array<Menu>>
   /** 특정 매장 정보 */
   store?: Maybe<Store>
-  /** 매장 버킷 리스트를 반환 */
-  storeBuckets?: Maybe<Array<Bucket>>
   /** 동네 및 카테고리별 매장 목록 */
   storesByTownAndCategory?: Maybe<Array<Store>>
   /** 매장 버킷에만 해당 */
@@ -216,6 +214,11 @@ export type Query = {
 
 export type QueryBucketArgs = {
   id: Scalars['ID']
+}
+
+export type QueryBucketsArgs = {
+  type: BucketType
+  userUniqueName?: Maybe<Scalars['NonEmptyString']>
 }
 
 export type QueryFeedArgs = {
@@ -243,10 +246,6 @@ export type QueryMenuArgs = {
   id: Scalars['ID']
 }
 
-export type QueryMenuBucketsArgs = {
-  userId: Scalars['ID']
-}
-
 export type QueryMenuByNameArgs = {
   storeId: Scalars['ID']
   name: Scalars['NonEmptyString']
@@ -263,6 +262,7 @@ export type QueryMenusByTownAndCategoryArgs = {
 
 export type QueryMenusInBucketArgs = {
   bucketId: Scalars['ID']
+  userUniqueName: Scalars['NonEmptyString']
 }
 
 export type QueryNewsArgs = {
@@ -296,10 +296,6 @@ export type QueryStoreArgs = {
   id: Scalars['ID']
 }
 
-export type QueryStoreBucketsArgs = {
-  userId: Scalars['ID']
-}
-
 export type QueryStoresByTownAndCategoryArgs = {
   town?: Maybe<Scalars['NonEmptyString']>
   categories?: Maybe<Array<Scalars['NonEmptyString']>>
@@ -307,6 +303,7 @@ export type QueryStoresByTownAndCategoryArgs = {
 
 export type QueryStoresInBucketArgs = {
   bucketId: Scalars['ID']
+  userUniqueName: Scalars['NonEmptyString']
 }
 
 export type RegisterInput = {
@@ -685,6 +682,12 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryBucketArgs, 'id'>
   >
+  buckets?: Resolver<
+    Maybe<Array<ResolversTypes['Bucket']>>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryBucketsArgs, 'type'>
+  >
   feed?: Resolver<
     Maybe<ResolversTypes['Feed']>,
     ParentType,
@@ -722,12 +725,6 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryMenuArgs, 'id'>
   >
-  menuBuckets?: Resolver<
-    Maybe<Array<ResolversTypes['Bucket']>>,
-    ParentType,
-    ContextType,
-    RequireFields<QueryMenuBucketsArgs, 'userId'>
-  >
   menuByName?: Resolver<
     Maybe<ResolversTypes['Menu']>,
     ParentType,
@@ -750,7 +747,7 @@ export type QueryResolvers<
     Maybe<Array<ResolversTypes['Menu']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryMenusInBucketArgs, 'bucketId'>
+    RequireFields<QueryMenusInBucketArgs, 'bucketId' | 'userUniqueName'>
   >
   news?: Resolver<
     Maybe<ResolversTypes['News']>,
@@ -794,12 +791,6 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryStoreArgs, 'id'>
   >
-  storeBuckets?: Resolver<
-    Maybe<Array<ResolversTypes['Bucket']>>,
-    ParentType,
-    ContextType,
-    RequireFields<QueryStoreBucketsArgs, 'userId'>
-  >
   storesByTownAndCategory?: Resolver<
     Maybe<Array<ResolversTypes['Store']>>,
     ParentType,
@@ -810,7 +801,7 @@ export type QueryResolvers<
     Maybe<Array<ResolversTypes['Store']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryStoresInBucketArgs, 'bucketId'>
+    RequireFields<QueryStoresInBucketArgs, 'bucketId' | 'userUniqueName'>
   >
 }
 

@@ -6,5 +6,5 @@ type Query {
   storesByTownAndCategory(town: NonEmptyString, categories: [NonEmptyString!]): [Store!]
 
   "매장 버킷에만 해당"
-  storesInBucket(bucketId: ID!): [Store!]
+  storesInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Store!]
 }
