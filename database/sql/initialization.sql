@@ -372,7 +372,20 @@ CREATE FUNCTION create_user (
   image_url text DEFAULT NULL,
   nickname varchar(50) DEFAULT NULL,
   out user_id bigint
-) LANGUAGE plpgsql AS $$ BEGIN
+) LANGUAGE plpgsql AS $$
+DECLARE identifier text [] := ARRAY [unique_name, email];
+
+BEGIN PERFORM
+FROM "user"
+WHERE "user".email = ANY(identifier)
+  OR "user".unique_name = ANY(identifier);
+
+IF found THEN user_id := 0;
+
+RETURN;
+
+END IF;
+
 INSERT INTO "user" (
     unique_name,
     email,
@@ -1034,31 +1047,25 @@ CREATE FUNCTION verify_user_bucket(
   user_unique_name varchar(50),
   _user_id bigint DEFAULT NULL
 ) RETURNS bigint LANGUAGE plpgsql STABLE AS $$
-DECLARE selected_bucket_user_id bucket.user_id %type;
-
-selected_bucket_type bucket."type" %type;
-
-selected_user_unique_name "user".unique_name %type;
+DECLARE selected_bucket_user record;
 
 BEGIN
 SELECT bucket.user_id,
   bucket."type",
-  "user".unique_name INTO selected_bucket_user_id,
-  selected_bucket_type,
-  selected_user_unique_name
+  "user".unique_name
 FROM bucket
-  JOIN "user" ON "user".id = bucket.user_id
+  JOIN "user" ON "user".id = bucket.user_id INTO selected_bucket_user
 WHERE bucket.id = bucket_id;
 
 IF NOT FOUND THEN RETURN 1;
 
 END IF;
 
-IF selected_bucket_type != bucket_type THEN RETURN 2;
+IF selected_bucket_user.type != bucket_type THEN RETURN 2;
 
 END IF;
 
-IF selected_user_unique_name != user_unique_name THEN RETURN 3;
+IF selected_bucket_user.unique_name != user_unique_name THEN RETURN 3;
 
 END IF;
 
@@ -1066,7 +1073,7 @@ IF _user_id IS NULL THEN RETURN 4;
 
 END IF;
 
-IF selected_bucket_user_id != _user_id THEN RETURN 4;
+IF selected_bucket_user.user_id != _user_id THEN RETURN 4;
 
 END IF;
 
