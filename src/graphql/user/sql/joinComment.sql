@@ -1,0 +1,1 @@
+JOIN "comment" ON "comment".user_id = "user".id

@@ -5,7 +5,7 @@ import { verifyJWT } from '../utils/jwt'
 import { importSQL } from '../utils/commons'
 
 export type ApolloContext = {
-  user: { id: string }
+  user?: { id: string }
 }
 
 const user = importSQL(__dirname, 'sql/user.sql')

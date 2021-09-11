@@ -3,11 +3,18 @@ type Bucket {
   creationTime: DateTime!
   modificationTime: DateTime!
   name: NonEmptyString!
+  type: BucketType!
+  userId: ID!
 
   """
-  from other table
+  버킷 소유자
   """
   user: User!
+}
+
+enum BucketType {
+  STORE
+  MENU
 }
 
 type Comment {
@@ -206,6 +213,16 @@ enum Provider {
 
 type Query {
   """
+  버켓 상세 정보
+  """
+  bucket(id: ID!): Bucket
+
+  """
+  메뉴 또는 매장 버킷 리스트를 반환, 로그인 상태 또는 userId를 입력해야 함
+  """
+  buckets(type: BucketType!, userUniqueName: NonEmptyString): [Bucket!]
+
+  """
   피드 상세
   """
   feed(id: ID!): Feed
@@ -256,6 +273,11 @@ type Query {
   menusByTownAndCategory(town: NonEmptyString, category: NonEmptyString): [Menu!]
 
   """
+  메뉴 버킷에만 해당
+  """
+  menusInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Menu!]
+
+  """
   소식 상세
   """
   news(id: ID!): News
@@ -268,7 +290,7 @@ type Query {
   """
   옵션별 여러 매장 소식 목록
   """
-  newsListByTown(town: NonEmptyString, option: NewsOptions): [News!]
+  newsListByTown(town: NonEmptyString, option: NewsOptions, categories: [NonEmptyString!]): [News!]
   searchFeed(hashtags: [NonEmptyString!]!): [Menu!]
   searchMenus(hashtags: [NonEmptyString!]!): [Menu!]
   searchStores(hashtags: [NonEmptyString!]!): [Menu!]
@@ -282,6 +304,11 @@ type Query {
   동네 및 카테고리별 매장 목록
   """
   storesByTownAndCategory(town: NonEmptyString, categories: [NonEmptyString!]): [Store!]
+
+  """
+  매장 버킷에만 해당
+  """
+  storesInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Store!]
 }
 
 input RegisterInput {
@@ -350,7 +377,7 @@ type Trend {
   contents: [NonEmptyString!]!
 
   """
-  from other table
+  트렌드 작성자
   """
   user: User!
 }
@@ -383,6 +410,11 @@ type User {
   내가 쓴 피드
   """
   feed: [Feed!]
+
+  """
+  내가 소유한 매장
+  """
+  stores: [Store!]
 
   """
   사용자가 따르고 있는 다른 사용자

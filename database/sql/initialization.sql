@@ -912,15 +912,15 @@ CREATE PROCEDURE toggle_menu_bucket_list (
   _bucket_id bigint DEFAULT NULL,
   INOUT result text DEFAULT NULL
 ) LANGUAGE plpgsql AS $$
-DECLARE selected_bucket_id bucket.id % TYPE;
+DECLARE selected_bucket_ids bigint [];
 
 BEGIN
-SELECT id INTO selected_bucket_id
+SELECT array_agg(id) INTO selected_bucket_ids
 FROM bucket
 WHERE user_id = _user_id;
 
 IF NOT found
-OR selected_bucket_id != _bucket_id THEN result = '사용자가 해당 버켓을 소유하고 있지 않습니다.';
+OR _bucket_id != ALL(selected_bucket_ids) THEN result = '사용자가 해당 버켓을 소유하고 있지 않습니다.';
 
 RETURN;
 
@@ -958,15 +958,15 @@ CREATE PROCEDURE toggle_store_bucket_list (
   _bucket_id bigint DEFAULT NULL,
   INOUT result text DEFAULT NULL
 ) LANGUAGE plpgsql AS $$
-DECLARE selected_bucket_id bucket.id % TYPE;
+DECLARE selected_bucket_ids bigint [];
 
 BEGIN
-SELECT id INTO selected_bucket_id
+SELECT array_agg(id) INTO selected_bucket_ids
 FROM bucket
 WHERE user_id = _user_id;
 
 IF NOT found
-OR selected_bucket_id != _bucket_id THEN result = '사용자가 해당 버켓을 소유하고 있지 않습니다.';
+OR _bucket_id != ALL(selected_bucket_ids) THEN result = '사용자가 해당 버켓을 소유하고 있지 않습니다.';
 
 RETURN;
 
@@ -1025,6 +1025,52 @@ COMMIT;
 result = 'T';
 
 END IF;
+
+END $$;
+
+CREATE FUNCTION verify_user_bucket(
+  bucket_id bigint,
+  bucket_type int,
+  user_unique_name varchar(50),
+  _user_id bigint DEFAULT NULL
+) RETURNS bigint LANGUAGE plpgsql STABLE AS $$
+DECLARE selected_bucket_user_id bucket.user_id %type;
+
+selected_bucket_type bucket."type" %type;
+
+selected_user_unique_name "user".unique_name %type;
+
+BEGIN
+SELECT bucket.user_id,
+  bucket."type",
+  "user".unique_name INTO selected_bucket_user_id,
+  selected_bucket_type,
+  selected_user_unique_name
+FROM bucket
+  JOIN "user" ON "user".id = bucket.user_id
+WHERE bucket.id = bucket_id;
+
+IF NOT FOUND THEN RETURN 1;
+
+END IF;
+
+IF selected_bucket_type != bucket_type THEN RETURN 2;
+
+END IF;
+
+IF selected_user_unique_name != user_unique_name THEN RETURN 3;
+
+END IF;
+
+IF _user_id IS NULL THEN RETURN 4;
+
+END IF;
+
+IF selected_bucket_user_id != _user_id THEN RETURN 4;
+
+END IF;
+
+RETURN 0;
 
 END $$;
 

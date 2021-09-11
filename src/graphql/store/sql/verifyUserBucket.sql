@@ -1,0 +1,1 @@
+SELECT verify_user_bucket($1, 0, $2, $3);

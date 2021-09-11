@@ -109,8 +109,10 @@ export async function buildBasicFeedQuery(
     groupBy = true
   }
 
-  if (groupBy) {
-    sql = `${sql} GROUP BY ${columns.filter(removeColumnWithAggregateFunction)}`
+  const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
+
+  if (groupBy && filteredColumns.length > 0) {
+    sql = `${sql} GROUP BY ${filteredColumns}`
   }
 
   return [format(serializeSQLParameters(sql), columns), columns, values] as const

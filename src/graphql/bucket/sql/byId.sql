@@ -1,0 +1,1 @@
+WHERE bucket.id = $1

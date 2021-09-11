@@ -39,6 +39,9 @@ type User {
   "내가 쓴 피드"
   feed: [Feed!]
 
+  "내가 소유한 매장"
+  stores: [Store!]
+
   "사용자가 따르고 있는 다른 사용자"
   followings: [User!]
 
