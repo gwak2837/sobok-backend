@@ -262,6 +262,7 @@ export type QueryMenusByTownAndCategoryArgs = {
 
 export type QueryMenusInBucketArgs = {
   bucketId: Scalars['ID']
+  userUniqueName: Scalars['NonEmptyString']
 }
 
 export type QueryNewsArgs = {
@@ -302,6 +303,7 @@ export type QueryStoresByTownAndCategoryArgs = {
 
 export type QueryStoresInBucketArgs = {
   bucketId: Scalars['ID']
+  userUniqueName: Scalars['NonEmptyString']
 }
 
 export type RegisterInput = {
@@ -745,7 +747,7 @@ export type QueryResolvers<
     Maybe<Array<ResolversTypes['Menu']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryMenusInBucketArgs, 'bucketId'>
+    RequireFields<QueryMenusInBucketArgs, 'bucketId' | 'userUniqueName'>
   >
   news?: Resolver<
     Maybe<ResolversTypes['News']>,
@@ -799,7 +801,7 @@ export type QueryResolvers<
     Maybe<Array<ResolversTypes['Store']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryStoresInBucketArgs, 'bucketId'>
+    RequireFields<QueryStoresInBucketArgs, 'bucketId' | 'userUniqueName'>
   >
 }
 

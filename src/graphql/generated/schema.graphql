@@ -275,7 +275,7 @@ type Query {
   """
   메뉴 버킷에만 해당
   """
-  menusInBucket(bucketId: ID!): [Menu!]
+  menusInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Menu!]
 
   """
   소식 상세
@@ -308,7 +308,7 @@ type Query {
   """
   매장 버킷에만 해당
   """
-  storesInBucket(bucketId: ID!): [Store!]
+  storesInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Store!]
 }
 
 input RegisterInput {

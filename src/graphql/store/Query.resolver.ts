@@ -66,15 +66,17 @@ export const Query: QueryResolvers = {
     return storeORM(rows, columns)
   },
 
-  storesInBucket: async (_, { bucketId }, { user }, info) => {
-    const response = await poolQuery(await verifyUserBucket, [bucketId, user?.id])
+  storesInBucket: async (_, { bucketId, userUniqueName }, { user }, info) => {
+    const response = await poolQuery(await verifyUserBucket, [bucketId, userUniqueName, user?.id])
 
     const result = response.rows[0].verify_user_bucket
 
     if (result === '1') throw new UserInputError('입력한 버킷 ID가 존재하지 않습니다.')
     if (result === '2') throw new UserInputError('입력한 버킷이 메뉴 버킷이 아닙니다.')
+    if (result === '3')
+      throw new UserInputError('해당 사용자가 해당 버킷을 소유하고 있지 않습니다.')
 
-    const publicBucketOnly = result === '3' // TODO: 공개/비공개 버킷을 적절히 구분해서 응답
+    const publicBucketOnly = result === '4' // TODO: 공개/비공개 버킷을 적절히 구분해서 응답
 
     let [sql, columns, values] = await buildBasicStoreQuery(info, user)
 
