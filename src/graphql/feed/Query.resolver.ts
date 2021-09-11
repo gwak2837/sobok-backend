@@ -60,7 +60,7 @@ export const Query: QueryResolvers<ApolloContext> = {
 
     if (option === FeedOptions.FollowingUser) {
       sql = spliceSQL(sql, await joinFollowingUser, 'WHERE')
-      values.push(user.id)
+      values.push(user!.id)
     }
     //
     else if (option === FeedOptions.StarUser) {
@@ -70,7 +70,7 @@ export const Query: QueryResolvers<ApolloContext> = {
         sql = spliceSQL(sql, await joinStarUser, 'WHERE')
       }
 
-      values.push(user.id)
+      values.push(user!.id)
     }
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })

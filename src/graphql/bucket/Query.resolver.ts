@@ -30,7 +30,8 @@ export const Query: QueryResolvers = {
   },
 
   buckets: async (_, { userUniqueName, type }, { user }, info) => {
-    if (!user && !userUniqueName) throw new UserInputError('로그인 하거나 사용자 ID를 입력해주세요')
+    if (!user && !userUniqueName)
+      throw new UserInputError('로그인 하거나 사용자 고유 이름을 입력해주세요')
 
     let [sql, columns, values] = await buildBasicBucketQuery(info, user)
 
