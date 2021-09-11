@@ -1028,6 +1028,42 @@ END IF;
 
 END $$;
 
+CREATE FUNCTION verify_user_bucket(
+  bucket_id bigint,
+  bucket_type int,
+  _user_id bigint DEFAULT NULL
+) RETURNS bigint LANGUAGE plpgsql STABLE AS $$
+DECLARE selected_bucket_user_id bucket.user_id %type;
+
+selected_bucket_type bucket."type" %type;
+
+BEGIN
+SELECT user_id,
+  "type" INTO selected_bucket_user_id,
+  selected_bucket_type
+FROM bucket
+WHERE id = bucket_id;
+
+IF NOT FOUND THEN RETURN 1;
+
+END IF;
+
+IF selected_bucket_type != bucket_type THEN RETURN 2;
+
+END IF;
+
+IF _user_id IS NULL THEN RETURN 3;
+
+END IF;
+
+IF selected_bucket_user_id != _user_id THEN RETURN 3;
+
+END IF;
+
+RETURN 0;
+
+END $$;
+
 -- 비밀번호: 1234
 SELECT create_user (
     'bok',

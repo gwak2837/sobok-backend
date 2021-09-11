@@ -14,6 +14,7 @@ const joinStoreBucketOnStoreBucketId = importSQL(
   __dirname,
   'sql/joinStoreBucketOnStoreBucketId.sql'
 )
+const verifyUserBucket = importSQL(__dirname, 'sql/verifyUserBucket.sql')
 
 export const Query: QueryResolvers = {
   store: async (_, { id }, { user }, info) => {
@@ -66,15 +67,24 @@ export const Query: QueryResolvers = {
   },
 
   storesInBucket: async (_, { bucketId }, { user }, info) => {
+    const response = await poolQuery(await verifyUserBucket, [bucketId, user?.id])
+
+    const result = response.rows[0].verify_user_bucket
+
+    if (result === '1') throw new UserInputError('입력한 버킷 ID가 존재하지 않습니다.')
+    if (result === '2') throw new UserInputError('입력한 버킷이 메뉴 버킷이 아닙니다.')
+
+    const publicBucketOnly = result === '3' // TODO: 공개/비공개 버킷을 적절히 구분해서 응답
+
     let [sql, columns, values] = await buildBasicStoreQuery(info, user)
 
     if (sql.includes('LEFT JOIN bucket')) {
       sql = spliceSQL(sql, await byStoreBucketId, 'GROUP BY')
-      values.push(bucketId)
     } else {
       sql = spliceSQL(sql, await joinStoreBucketOnStoreBucketId, 'GROUP BY')
-      values.push(bucketId, user.id)
     }
+
+    values.push(bucketId)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
