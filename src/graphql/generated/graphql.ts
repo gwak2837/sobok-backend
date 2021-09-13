@@ -119,11 +119,11 @@ export type Menu = {
 export type Mutation = {
   __typename?: 'Mutation'
   /** 고유 이름 또는 이메일과 비밀번호를 전송하면 JWT 인증 토큰을 반환함 */
-  login?: Maybe<Scalars['JWT']>
+  login?: Maybe<UserAuthentication>
   /** JWT 인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환함 */
   logout: Scalars['Boolean']
   /** 회원가입에 필요한 정보를 주면 성공했을 때 인증 토큰을 반환함 */
-  register?: Maybe<Scalars['JWT']>
+  register?: Maybe<UserAuthentication>
   /** 회원탈퇴 시 사용자 정보가 모두 초기화됩 */
   unregister: Scalars['Boolean']
 }
@@ -185,7 +185,7 @@ export type Query = {
   /** 사용자 고유 이름 중복 여부 검사 */
   isUniqueNameUnique: Scalars['Boolean']
   /** 인증 토큰과 같이 요청하면 사용자 정보를 반환 */
-  me: User
+  me?: Maybe<User>
   /** 메뉴 상세 */
   menu?: Maybe<Menu>
   /** 메뉴 상세 */
@@ -404,6 +404,12 @@ export type User = {
   storeBuckets?: Maybe<Array<Bucket>>
 }
 
+export type UserAuthentication = {
+  __typename?: 'UserAuthentication'
+  userUniqueName: Scalars['NonEmptyString']
+  jwt: Scalars['JWT']
+}
+
 export type ResolverTypeWrapper<T> = Promise<T> | T
 
 export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
@@ -514,6 +520,7 @@ export type ResolversTypes = {
   Trend: ResolverTypeWrapper<Trend>
   URL: ResolverTypeWrapper<Scalars['URL']>
   User: ResolverTypeWrapper<User>
+  UserAuthentication: ResolverTypeWrapper<UserAuthentication>
 }
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -539,6 +546,7 @@ export type ResolversParentTypes = {
   Trend: Trend
   URL: Scalars['URL']
   User: User
+  UserAuthentication: UserAuthentication
 }
 
 export type BucketResolvers<
@@ -636,14 +644,14 @@ export type MutationResolvers<
   ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']
 > = {
   login?: Resolver<
-    Maybe<ResolversTypes['JWT']>,
+    Maybe<ResolversTypes['UserAuthentication']>,
     ParentType,
     ContextType,
     RequireFields<MutationLoginArgs, 'uniqueNameOrEmail' | 'passwordHash'>
   >
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   register?: Resolver<
-    Maybe<ResolversTypes['JWT']>,
+    Maybe<ResolversTypes['UserAuthentication']>,
     ParentType,
     ContextType,
     RequireFields<MutationRegisterArgs, 'input'>
@@ -719,7 +727,7 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryIsUniqueNameUniqueArgs, 'uniqueName'>
   >
-  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>
+  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>
   menu?: Resolver<
     Maybe<ResolversTypes['Menu']>,
     ParentType,
@@ -884,6 +892,15 @@ export type UserResolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
+export type UserAuthenticationResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['UserAuthentication'] = ResolversParentTypes['UserAuthentication']
+> = {
+  userUniqueName?: Resolver<ResolversTypes['NonEmptyString'], ParentType, ContextType>
+  jwt?: Resolver<ResolversTypes['JWT'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
 export type Resolvers<ContextType = any> = {
   Bucket?: BucketResolvers<ContextType>
   Comment?: CommentResolvers<ContextType>
@@ -901,4 +918,5 @@ export type Resolvers<ContextType = any> = {
   Trend?: TrendResolvers<ContextType>
   URL?: GraphQLScalarType
   User?: UserResolvers<ContextType>
+  UserAuthentication?: UserAuthenticationResolvers<ContextType>
 }
