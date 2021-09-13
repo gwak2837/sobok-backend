@@ -28,6 +28,7 @@
     "prefix": "query",
     "body": [
       "import format from 'pg-format'",
+      "import type { ApolloContext } from 'src/apollo/server'",
       "import type { QueryResolvers } from 'src/graphql/generated/graphql'",
       "import type { $1 as $2 } from 'src/graphql/generated/graphql'",
       "import { importSQL } from '../../utils/commons'",
@@ -36,7 +37,7 @@
       "",
       "const $1 = importSQL(__dirname, 'sql/$1.sql')",
       "",
-      "export const Query: QueryResolvers = {",
+      "export const Query: QueryResolvers<ApolloContext> = {",
       "  $1: async (_, __, { user }, info) => {",
       "    const columns = selectColumnFromField(info, $1FieldColumnMapping)",
       "",

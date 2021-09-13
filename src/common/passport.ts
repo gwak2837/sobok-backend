@@ -81,7 +81,7 @@ export function setPassportStrategies(app: Express) {
     async (req, res) => {
       if (req.user) {
         const query = querystring.stringify({
-          token: await generateJWT({ userId: (req.user as any).id, lastLoginDate: new Date() }),
+          token: await generateJWT({ userId: (req.user as any).id }),
         })
         res.redirect(`${process.env.FRONTEND_URL}/auth?${query}`)
       } else {
