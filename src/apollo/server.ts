@@ -21,7 +21,10 @@ export const apolloServer = new ApolloServer({
     // JWT가 아니거나, JWT 서명이 유효하지 않거나, JWT 유효기간이 만료됐을 때
     if (!jwt) return { user: null }
 
-    const { rowCount, rows } = await poolQuery(await user, [jwt.userId, jwt.iat])
+    const { rowCount, rows } = await poolQuery(await user, [
+      jwt.userId,
+      new Date(jwt.iat as number),
+    ])
 
     // 로그아웃 등으로 인해 JWT가 유효하지 않을 때
     if (!rowCount) return { user: null }
