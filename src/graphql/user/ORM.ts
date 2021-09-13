@@ -10,7 +10,6 @@ import {
   serializeSQLParameters,
 } from '../../utils/ORM'
 import { Provider } from '../generated/graphql'
-import { storeFieldColumnMapping } from '../store/ORM'
 import {
   camelToSnake,
   importSQL,
@@ -24,7 +23,8 @@ import { feedFieldColumnMapping } from '../feed/ORM'
 const fromUser = importSQL(__dirname, 'sql/fromUser.sql')
 const joinComment = importSQL(__dirname, 'sql/joinComment.sql')
 const joinFeed = importSQL(__dirname, 'sql/joinFeed.sql')
-const joinLeaderFollower = importSQL(__dirname, 'sql/joinLeaderFollower.sql')
+const joinFollower = importSQL(__dirname, 'sql/joinFollower.sql')
+const joinFollowing = importSQL(__dirname, 'sql/joinFollowing.sql')
 
 const userFieldsFromOtherTable = new Set([
   'comments',
@@ -105,20 +105,20 @@ export async function buildBasicUserQuery(
 
   if (firstUserFields.has('followings')) {
     const userColumns = selectColumnFromSubField(userFields.followings, userFieldColumnMapping).map(
-      (column) => `array_agg(${column})`
+      (column) => `array_agg(DISTINCT following.${column})`
     )
 
-    sql = `${sql} ${await joinLeaderFollower}`
+    sql = `${sql} ${await joinFollowing}`
     columns = [...columns, ...userColumns]
     groupBy = true
   }
 
   if (firstUserFields.has('followers')) {
     const userColumns = selectColumnFromSubField(userFields.followers, userFieldColumnMapping).map(
-      (column) => `array_agg(${column})`
+      (column) => `array_agg(DISTINCT follower.${column})`
     )
 
-    sql = `${sql} ${await joinLeaderFollower}`
+    sql = `${sql} ${await joinFollower}`
     columns = [...columns, ...userColumns]
     groupBy = true
   }
