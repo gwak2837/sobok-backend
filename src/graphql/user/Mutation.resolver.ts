@@ -25,7 +25,7 @@ export const Mutation: MutationResolvers<ApolloContext> = {
     if (!authenticationSuceed)
       throw new AuthenticationError('로그인에 실패했어요. 이메일 또는 비밀번호를 확인해주세요.')
 
-    return await generateJWT({ userId: rows[0].id })
+    return { userUniqueName: rows[0].unique_name, jwt: await generateJWT({ userId: rows[0].id }) }
   },
 
   logout: async (_, __, { user }) => {
@@ -58,11 +58,11 @@ export const Mutation: MutationResolvers<ApolloContext> = {
 
     const { rows } = await poolQuery(await register, registerValues)
 
-    const userId = rows[0].create_user
+    const { user_id: userId, user_unique_name: userUniqueName } = rows[0]
 
-    if (userId === '0') throw new UserInputError('이미 존재하는 이메일 또는 고유 이름입니다.')
+    if (!userId) throw new UserInputError('이미 존재하는 이메일 또는 고유 이름입니다.')
 
-    return await generateJWT({ userId })
+    return { userUniqueName, jwt: await generateJWT({ userId }) }
   },
 
   unregister: async (_, __, { user }) => {
