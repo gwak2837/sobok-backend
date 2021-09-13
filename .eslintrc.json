@@ -18,7 +18,7 @@
     "plugin:@typescript-eslint/recommended",
 
     // Rules related with Prettier MUST be at the last of the array
-    "plugin:prettier/recommended"
+    "prettier"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
