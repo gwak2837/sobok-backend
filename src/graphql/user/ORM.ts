@@ -145,7 +145,7 @@ export function userORM(rows: unknown[][], selectedColumns: string[]): GraphQLUs
       const camelColumnName = snakeToCamel(columnName)
       const cell = row[i]
 
-      if (tableName === 'menu') {
+      if (tableName === 'user') {
         graphQLUser[camelColumnName] = cell
       }
       //

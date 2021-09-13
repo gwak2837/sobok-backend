@@ -58,7 +58,7 @@ export const Mutation: MutationResolvers<ApolloContext> = {
 
     const { rows } = await poolQuery(await register, registerValues)
 
-    const [userId, userUniqueName] = rows[0].create_user
+    const { user_id: userId, user_unique_name: userUniqueName } = rows[0]
 
     if (!userId) throw new UserInputError('이미 존재하는 이메일 또는 고유 이름입니다.')
 

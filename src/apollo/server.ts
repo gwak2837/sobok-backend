@@ -23,7 +23,7 @@ export const apolloServer = new ApolloServer({
 
     const { rowCount, rows } = await poolQuery(await user, [
       jwt.userId,
-      new Date(jwt.iat as number),
+      new Date((jwt.iat as number) * 1000),
     ])
 
     // 로그아웃 등으로 인해 JWT가 유효하지 않을 때
