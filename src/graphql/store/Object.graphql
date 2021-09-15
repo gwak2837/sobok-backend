@@ -6,6 +6,8 @@ type Store {
   town: NonEmptyString!
   address: NonEmptyString!
   categories: [NonEmptyString!]!
+  latitude: Latitude!
+  longitude: Longitude!
 
   # nullable
   tel: String

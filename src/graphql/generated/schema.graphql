@@ -1,43 +1,42 @@
 type Bucket {
-  id: ID!
   creationTime: DateTime!
+  id: ID!
   modificationTime: DateTime!
   name: NonEmptyString!
   type: BucketType!
-  userId: ID!
 
   """
   버킷 소유자
   """
   user: User!
+  userId: ID!
 }
 
 enum BucketType {
-  STORE
   MENU
+  STORE
 }
 
 type Comment {
-  id: ID!
-  creationTime: DateTime!
-  modificationTime: DateTime!
+  """
+  from other table - nullable
+  """
+  comment: Comment
   contents: [NonEmptyString!]!
-
-  """
-  nullable
-  """
-  imageUrl: URL
+  creationTime: DateTime!
 
   """
   from other table
   """
   feed: Feed!
-  user: User!
+  id: ID!
 
   """
-  from other table - nullable
+  nullable
   """
-  comment: Comment
+  imageUrl: URL
+  modificationTime: DateTime!
+  user: User!
 }
 
 scalar Date
@@ -47,82 +46,86 @@ scalar DateTime
 scalar EmailAddress
 
 type Feed {
-  id: ID!
-  creationTime: DateTime!
-  modificationTime: DateTime!
-  rating: NonEmptyString!
-  contents: [NonEmptyString!]!
-  imageUrls: [URL!]!
-  likeCount: Int!
   commentCount: Int!
-  storeId: ID!
-  userId: ID!
-
-  """
-  피드 좋아요 여부 (로그인 필요)
-  """
-  isLiked: Boolean!
-
-  """
-  피드에 태그된 매장
-  """
-  store: Store!
-
-  """
-  피드 작성자
-  """
-  user: User!
 
   """
   피드에 달린 댓글
   """
   comments: [Comment!]
+  contents: [NonEmptyString!]!
+  creationTime: DateTime!
 
   """
   피드에 달린 해시태그
   """
   hashtags: [NonEmptyString!]
+  id: ID!
+  imageUrls: [URL!]!
+
+  """
+  피드 좋아요 여부 (로그인 필요)
+  """
+  isLiked: Boolean!
+  likeCount: Int!
 
   """
   피드에 태그된 메뉴 목록
   """
   menus: [Menu!]
+  modificationTime: DateTime!
+  rating: NonEmptyString!
+
+  """
+  피드에 태그된 매장
+  """
+  store: Store!
+  storeId: ID!
+
+  """
+  피드 작성자
+  """
+  user: User!
+  userId: ID!
 }
 
 """
 기본값: ALL_USER
 """
 enum FeedOptions {
-  STAR_USER
+  ALL_USER
 
   """
   로그인 필요
   """
   FOLLOWING_USER
-  ALL_USER
+  STAR_USER
 }
 
 """
 성별
 """
 enum Gender {
-  OTHER
-  MALE
   FEMALE
+  MALE
+  OTHER
 }
 
 scalar JWT
 
+scalar Latitude
+
+scalar Longitude
+
 type Menu {
-  id: ID!
-  creationTime: DateTime!
-  modificationTime: DateTime!
-  name: NonEmptyString!
-  price: Int!
-  isSoldOut: Boolean!
-  imageUrls: [URL!]!
   category: NonEmptyString!
-  storeId: ID!
+  creationTime: DateTime!
+
+  """
+  메뉴에 달린 해시태그
+  """
+  hashtags: [NonEmptyString!]
+  id: ID!
+  imageUrls: [URL!]!
 
   """
   로그인한 사용자가 이 메뉴를 버킷에 담은 여부
@@ -133,23 +136,23 @@ type Menu {
   로그인한 사용자가 이 메뉴를 좋아하는 여부
   """
   isLiked: Boolean!
+  isSoldOut: Boolean!
+  modificationTime: DateTime!
+  name: NonEmptyString!
+  price: Int!
 
   """
   이 메뉴를 판매하는 매장
   """
   store: Store!
-
-  """
-  메뉴에 달린 해시태그
-  """
-  hashtags: [NonEmptyString!]
+  storeId: ID!
 }
 
 type Mutation {
   """
   고유 이름 또는 이메일과 비밀번호를 전송하면 JWT 인증 토큰을 반환함
   """
-  login(uniqueNameOrEmail: NonEmptyString!, passwordHash: NonEmptyString!): UserAuthentication
+  login(passwordHash: NonEmptyString!, uniqueNameOrEmail: NonEmptyString!): UserAuthentication
 
   """
   JWT 인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환함
@@ -168,35 +171,36 @@ type Mutation {
 }
 
 type News {
-  id: ID!
-  creationTime: DateTime!
-  modificationTime: DateTime!
-  title: NonEmptyString!
-  contents: [NonEmptyString!]!
   category: NonEmptyString!
-  storeId: ID!
+  contents: [NonEmptyString!]!
+  creationTime: DateTime!
+  id: ID!
   imageUrls: [URL!]
 
   """
   뉴스 좋아요 여부 (로그인 필요)
   """
   isLiked: Boolean!
+  modificationTime: DateTime!
 
   """
   이 소식을 올린 매장
   """
   store: Store!
+  storeId: ID!
+  title: NonEmptyString!
 }
 
 """
 기본값: ALL_STORE
 """
 enum NewsOptions {
+  ALL_STORE
+
   """
   로그인 필요
   """
   LIKED_STORE
-  ALL_STORE
 }
 
 scalar NonEmptyString
@@ -205,10 +209,10 @@ scalar NonEmptyString
 OAuth 공급자
 """
 enum Provider {
-  SOBOK
   GOOGLE
-  NAVER
   KAKAO
+  NAVER
+  SOBOK
 }
 
 type Query {
@@ -235,7 +239,7 @@ type Query {
   """
   특정 동네 피드 목록
   """
-  feedListByTown(town: NonEmptyString, option: FeedOptions): [Feed!]
+  feedListByTown(option: FeedOptions, town: NonEmptyString): [Feed!]
 
   """
   이메일 중복 여부 검사
@@ -260,7 +264,7 @@ type Query {
   """
   메뉴 상세
   """
-  menuByName(storeId: ID!, name: NonEmptyString!): Menu
+  menuByName(name: NonEmptyString!, storeId: ID!): Menu
 
   """
   특정 매장 메뉴 목록
@@ -270,7 +274,7 @@ type Query {
   """
   특정 동네 및 특정 카테고리 피드 목록
   """
-  menusByTownAndCategory(town: NonEmptyString, category: NonEmptyString): [Menu!]
+  menusByTownAndCategory(category: NonEmptyString, town: NonEmptyString): [Menu!]
 
   """
   메뉴 버킷에만 해당
@@ -285,12 +289,12 @@ type Query {
   """
   특정 매장 소식 목록
   """
-  newsListByStore(storeId: ID!, categories: [NonEmptyString!]): [News!]
+  newsListByStore(categories: [NonEmptyString!], storeId: ID!): [News!]
 
   """
   옵션별 여러 매장 소식 목록
   """
-  newsListByTown(town: NonEmptyString, option: NewsOptions, categories: [NonEmptyString!]): [News!]
+  newsListByTown(categories: [NonEmptyString!], option: NewsOptions, town: NonEmptyString): [News!]
   searchFeed(hashtags: [NonEmptyString!]!): [Menu!]
   searchMenus(hashtags: [NonEmptyString!]!): [Menu!]
   searchStores(hashtags: [NonEmptyString!]!): [Menu!]
@@ -303,7 +307,7 @@ type Query {
   """
   동네 및 카테고리별 매장 목록
   """
-  storesByTownAndCategory(town: NonEmptyString, categories: [NonEmptyString!]): [Store!]
+  storesByTownAndCategory(categories: [NonEmptyString!], town: NonEmptyString): [Store!]
 
   """
   매장 버킷에만 해당
@@ -312,32 +316,31 @@ type Query {
 }
 
 input RegisterInput {
-  uniqueName: NonEmptyString!
-  email: EmailAddress!
-  passwordHash: NonEmptyString!
-  name: NonEmptyString!
-  phone: NonEmptyString!
-  gender: Gender!
   bio: String
   birth: Date
+  email: EmailAddress!
+  gender: Gender!
   imageUrl: URL
+  name: NonEmptyString!
+  passwordHash: NonEmptyString!
+  phone: NonEmptyString!
+  uniqueName: NonEmptyString!
 }
 
 type Store {
-  id: ID!
-  creationTime: DateTime!
-  modificationTime: DateTime!
-  name: NonEmptyString!
-  town: NonEmptyString!
   address: NonEmptyString!
-  categories: [NonEmptyString!]!
-  tel: String
-  registrationNumber: String
-  description: String
   businessHours: [NonEmptyString!]
+  categories: [NonEmptyString!]!
+  creationTime: DateTime!
+  description: String
+
+  """
+  매장에 달린 해시태그
+  """
+  hashtags: [NonEmptyString!]
   holidays: [Date!]
+  id: ID!
   imageUrls: [URL!]
-  userId: ID!
 
   """
   로그인한 사용자가 이 매장을 버킷에 담은 여부
@@ -348,33 +351,36 @@ type Store {
   로그인한 사용자가 이 매장을 좋아하는 여부
   """
   isLiked: Boolean!
+  latitude: Latitude!
+  longitude: Longitude!
 
   """
   매장에서 판매하는 메뉴 목록
   """
   menus: [Menu!]!
-
-  """
-  매장에 달린 해시태그
-  """
-  hashtags: [NonEmptyString!]
+  modificationTime: DateTime!
+  name: NonEmptyString!
 
   """
   매장에서 올린 소식 목록
   """
   news: [News!]
+  registrationNumber: String
+  tel: String
+  town: NonEmptyString!
 
   """
   매장을 소유한 사용자 정보
   """
   user: User
+  userId: ID!
 }
 
 type Trend {
-  id: ID!
-  creationTime: DateTime!
-  modificationTime: DateTime!
   contents: [NonEmptyString!]!
+  creationTime: DateTime!
+  id: ID!
+  modificationTime: DateTime!
 
   """
   트렌드 작성자
@@ -385,26 +391,15 @@ type Trend {
 scalar URL
 
 type User {
-  id: ID!
-  creationTime: DateTime!
-  modificationTime: DateTime!
-  uniqueName: NonEmptyString!
-  email: EmailAddress!
-  name: NonEmptyString!
-  phone: NonEmptyString!
-  gender: Gender!
-  isEmailVerified: Boolean!
-  isStarUser: Boolean!
-  providers: [Provider!]!
   bio: String
   birth: Date
-  imageUrl: URL
-  nickname: String
 
   """
   내가 쓴 댓글
   """
   comments: [Comment!]
+  creationTime: DateTime!
+  email: EmailAddress!
 
   """
   내가 쓴 피드
@@ -412,19 +407,19 @@ type User {
   feed: [Feed!]
 
   """
-  내가 소유한 매장
+  사용자를 따르는 다른 사용자
   """
-  stores: [Store!]
+  followers: [User!]
 
   """
   사용자가 따르고 있는 다른 사용자
   """
   followings: [User!]
-
-  """
-  사용자를 따르는 다른 사용자
-  """
-  followers: [User!]
+  gender: Gender!
+  id: ID!
+  imageUrl: URL
+  isEmailVerified: Boolean!
+  isStarUser: Boolean!
 
   """
   좋아요 누른 댓글
@@ -460,14 +455,25 @@ type User {
   내 메뉴 버킷 리스트
   """
   menuBuckets: [Bucket!]
+  modificationTime: DateTime!
+  name: NonEmptyString!
+  nickname: String
+  phone: NonEmptyString!
+  providers: [Provider!]!
 
   """
   내 매장 버킷 리스트
   """
   storeBuckets: [Bucket!]
+
+  """
+  내가 소유한 매장
+  """
+  stores: [Store!]
+  uniqueName: NonEmptyString!
 }
 
 type UserAuthentication {
-  userUniqueName: NonEmptyString!
   jwt: JWT!
+  userUniqueName: NonEmptyString!
 }
