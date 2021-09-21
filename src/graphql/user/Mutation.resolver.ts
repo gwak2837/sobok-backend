@@ -1,16 +1,17 @@
-import { AuthenticationError, ForbiddenError } from 'apollo-server-express'
+import { AuthenticationError, ForbiddenError, UserInputError } from 'apollo-server-express'
 import { compare, genSalt, hash } from 'bcryptjs'
 import { MutationResolvers } from 'src/graphql/generated/graphql'
 import { generateJWT } from '../../utils/jwt'
 import { poolQuery } from '../../database/postgres'
-import { importSQL } from '../../utils/commons'
+import { emailRegEx, importSQL } from '../../utils/commons'
+import type { ApolloContext } from 'src/apollo/server'
 
 const login = importSQL(__dirname, 'sql/login.sql')
 const logout = importSQL(__dirname, 'sql/logout.sql')
 const register = importSQL(__dirname, 'sql/register.sql')
 const unregister = importSQL(__dirname, 'sql/unregister.sql')
 
-export const Mutation: MutationResolvers = {
+export const Mutation: MutationResolvers<ApolloContext> = {
   login: async (_, { uniqueNameOrEmail, passwordHash }, { user }) => {
     if (user) throw new ForbiddenError('이미 로그인되어 있습니다. 로그아웃 후 시도해주세요.')
 
@@ -24,7 +25,7 @@ export const Mutation: MutationResolvers = {
     if (!authenticationSuceed)
       throw new AuthenticationError('로그인에 실패했어요. 이메일 또는 비밀번호를 확인해주세요.')
 
-    return await generateJWT({ userId: rows[0].id, lastLoginDate: new Date() })
+    return { userUniqueName: rows[0].unique_name, jwt: await generateJWT({ userId: rows[0].id }) }
   },
 
   logout: async (_, __, { user }) => {
@@ -38,7 +39,8 @@ export const Mutation: MutationResolvers = {
   register: async (_, { input }, { user }) => {
     if (user) throw new ForbiddenError('이미 로그인되어 있습니다. 로그아웃 후 시도해주세요.')
 
-    // 경고: uniqueName 를 다른 사람 이메일로 하면 로그인이 될 수 있음 -> 걸러줘야 함
+    if (emailRegEx.test(input.uniqueName))
+      throw new UserInputError('고유 이름은 이메일 형식이 될 수 없습니다.')
 
     const passwordHashWithSalt = await hash(input.passwordHash, await genSalt())
 
@@ -56,7 +58,11 @@ export const Mutation: MutationResolvers = {
 
     const { rows } = await poolQuery(await register, registerValues)
 
-    return await generateJWT({ userId: rows[0].id, lastLoginDate: new Date() })
+    const { user_id: userId, user_unique_name: userUniqueName } = rows[0]
+
+    if (!userId) throw new UserInputError('이미 존재하는 이메일 또는 고유 이름입니다.')
+
+    return { userUniqueName, jwt: await generateJWT({ userId }) }
   },
 
   unregister: async (_, __, { user }) => {

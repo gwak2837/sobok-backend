@@ -41,7 +41,13 @@ export function storeFieldColumnMapping(storeField: keyof GraphQLStore) {
     return 'store.id'
   }
 
-  return `store.${camelToSnake(storeField)}`
+  switch (storeField) {
+    case 'latitude':
+    case 'longitude':
+      return 'store.point'
+    default:
+      return `store.${camelToSnake(storeField)}`
+  }
 }
 
 // GraphQL fields -> SQL
@@ -107,7 +113,9 @@ export async function buildBasicStoreQuery(
     columns = [...columns, ...userColumns]
   }
 
-  const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
+  const filteredColumns = columns
+    .filter(removeColumnWithAggregateFunction)
+    .filter((column) => column !== 'store.point')
 
   if (groupBy && filteredColumns.length > 0) {
     sql = `${sql} GROUP BY ${filteredColumns}`
@@ -117,7 +125,7 @@ export async function buildBasicStoreQuery(
 }
 
 // Database records -> GraphQL fields
-export function storeORM(rows: unknown[][], selectedColumns: string[]): GraphQLStore[] {
+export function storeORM(rows: any[][], selectedColumns: string[]): GraphQLStore[] {
   return rows.map((row) => {
     const graphQLStore: any = {}
 
@@ -130,6 +138,11 @@ export function storeORM(rows: unknown[][], selectedColumns: string[]): GraphQLS
       const cell = row[i]
 
       if (tableName === 'store') {
+        if (columnName === 'point') {
+          graphQLStore.latitude = cell.x
+          graphQLStore.longitude = cell.y
+        }
+
         graphQLStore[camelColumnName] = cell
       }
       //

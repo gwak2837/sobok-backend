@@ -1,13 +1,11 @@
 import { AuthenticationError } from 'apollo-server-express'
-import format from 'pg-format'
 import { QueryResolvers } from 'src/graphql/generated/graphql'
-import { selectColumnFromField } from '../../utils/ORM'
+import { spliceSQL } from '../../utils/ORM'
 import { poolQuery } from '../../database/postgres'
 import { importSQL } from '../../utils/commons'
-import { userFieldColumnMapping, userORM } from './ORM'
-import type { user as User } from 'src/database/sobok'
+import { buildBasicUserQuery, userORM } from './ORM'
 
-const me = importSQL(__dirname, 'sql/me.sql')
+const byId = importSQL(__dirname, 'sql/byId.sql')
 const isEmailUnique = importSQL(__dirname, 'sql/isEmailUnique.sql')
 const isUniqueNameUnique = importSQL(__dirname, 'sql/isUniqueNameUnique.sql')
 
@@ -15,11 +13,14 @@ export const Query: QueryResolvers = {
   me: async (_, __, { user }, info) => {
     if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
-    // 사용자 정보는 레디스 캐시에 넣어 두기
+    let [sql, columns, values] = await buildBasicUserQuery(info, user)
 
-    const columns = selectColumnFromField(info, userFieldColumnMapping)
+    sql = spliceSQL(sql, await byId, 'GROUP BY')
+    values.push(user.id)
 
-    const { rows } = await poolQuery(format(await me, columns), [user.id])
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
 
     return userORM(rows, columns)[0]
   },
