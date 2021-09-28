@@ -1,6 +1,7 @@
 import { Pool, PoolClient, QueryArrayConfig } from 'pg'
-import { DatabaseQueryError } from '../apollo/errors'
 import { formatDate, sleep } from '../utils/commons'
+
+import { DatabaseQueryError } from '../apollo/errors'
 
 export const pool = new Pool({
   host: process.env.POSTGRES_HOST,

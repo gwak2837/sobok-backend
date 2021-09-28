@@ -2,14 +2,15 @@
   "name": "sobok-backend",
   "version": "0.1.0",
   "description": "sobok-backend",
+  "homepage": "https://github.com/teamsindy20/sobok-backend#readme",
+  "bugs": {
+    "url": "https://github.com/teamsindy20/sobok-backend/issues",
+    "email": "teamsindy20@gmail.com"
+  },
+  "license": "GPL-3.0-only",
+  "author": "sindy",
   "main": "dist/index.js",
   "repository": "https://github.com/teamsindy20/sobok-backend.git",
-  "author": "sindy",
-  "license": "GPL-3.0-only",
-  "private": true,
-  "engines": {
-    "node": ">=14.17.5"
-  },
   "scripts": {
     "dev": "NODE_ENV=development nodemon -r dotenv/config src/index.ts dotenv_config_path=.env.development --trace-warnings",
     "build": "rm -rf dist && tsc && copyfiles --up 1 src/**/*.sql src/graphql/generated/schema.graphql dist/",
@@ -20,7 +21,7 @@
     "type": "tsc --pretty --noEmit",
     "pre-push": "yarn format && yarn lint && yarn type",
     "generate": "rm -rf src/graphql/generated && graphql-codegen --config codegen.yml",
-    "generate-db": "schemats postgres postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB} -o src/database/sobok.ts && prettier src/database/sobok.ts --write",
+    "generate-db": "export $(grep -v '^#' .env.development | xargs) && schemats postgres postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB} -o src/database/sobok.ts && prettier src/database/sobok.ts --write",
     "postinstall": "[ -d '.husky' ] && husky install || true"
   },
   "dependencies": {
@@ -29,7 +30,6 @@
     "@graphql-tools/schema": "^8.2.0",
     "apollo-server-express": "^3.3.0",
     "bcryptjs": "^2.4.3",
-    "concurrently": "^6.2.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "graphql": "^15.5.1",
@@ -78,5 +78,9 @@
     "prettier": "^2.4.0",
     "ts-node": "^10.2.1",
     "typescript": "^4.3.5"
-  }
+  },
+  "engines": {
+    "node": ">=14.17.5"
+  },
+  "private": true
 }
