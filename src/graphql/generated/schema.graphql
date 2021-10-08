@@ -156,9 +156,9 @@ enum MenuOrder {
 }
 
 input MenuPagination {
+  endId: ID
+  endValue: NonEmptyString
   limit: Int!
-  start: NonEmptyString!
-  startId: ID!
 }
 
 type Mutation {

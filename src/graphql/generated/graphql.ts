@@ -127,9 +127,9 @@ export enum MenuOrder {
 }
 
 export type MenuPagination = {
+  endId?: Maybe<Scalars['ID']>
+  endValue?: Maybe<Scalars['NonEmptyString']>
   limit: Scalars['Int']
-  start: Scalars['NonEmptyString']
-  startId: Scalars['ID']
 }
 
 export type Mutation = {
