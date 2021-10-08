@@ -1,35 +1,55 @@
 import { ApolloServer } from 'apollo-server-express'
-import schema from '../graphql/schema'
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core'
+import express from 'express'
+import http from 'http'
 import { poolQuery } from '../database/postgres'
+import schema from '../graphql/schema'
+import user from './sql/user.sql'
 import { verifyJWT } from '../utils/jwt'
-import { importSQL } from '../utils/commons'
 
-export type ApolloContext = {
-  user?: { id: string }
+export type ApolloContext =
+  | {
+      userId?: string
+    }
+  | undefined
+
+export async function startApolloServer() {
+  // Required logic for integrating with Express
+  const app = express()
+  const httpServer = http.createServer(app)
+
+  // Same ApolloServer initialization as before, plus the drain plugin.
+  const apolloServer = new ApolloServer({
+    context: async ({ req }) => {
+      const jwt = req.headers.authorization ?? ''
+
+      if (!jwt) return
+
+      const verifiedJwt = await verifyJWT(jwt).catch(() => null)
+
+      if (!verifiedJwt) return
+
+      const { rowCount, rows } = await poolQuery(user, [
+        verifiedJwt.userId,
+        new Date(((verifiedJwt.iat ?? 0) + 2) * 1000),
+      ])
+
+      // 로그아웃 등으로 인해 JWT가 유효하지 않을 때
+      if (!rowCount) return
+
+      return { userId: rows[0].id }
+    },
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    schema,
+  })
+
+  // More required logic for integrating with Express
+  await apolloServer.start()
+  apolloServer.applyMiddleware({ app })
+
+  // Modified server startup
+  const port = process.env.PORT ?? 4000
+  httpServer.listen(port, () =>
+    console.log(`🚀 Server ready at http://localhost:${port}${apolloServer.graphqlPath}`)
+  )
 }
-
-const user = importSQL(__dirname, 'sql/user.sql')
-
-export const apolloServer = new ApolloServer({
-  context: async ({ req }) => {
-    const token = req.headers.authorization || ''
-
-    const jwt = await verifyJWT(token).catch(() => {
-      return null
-    })
-
-    // JWT가 아니거나, JWT 서명이 유효하지 않거나, JWT 유효기간이 만료됐을 때
-    if (!jwt) return { user: null }
-
-    const { rowCount, rows } = await poolQuery(await user, [
-      jwt.userId,
-      new Date(((jwt.iat as number) + 2) * 1000),
-    ])
-
-    // 로그아웃 등으로 인해 JWT가 유효하지 않을 때
-    if (!rowCount) return { user: null }
-
-    return { user: rows[0] } as ApolloContext
-  },
-  schema,
-})
