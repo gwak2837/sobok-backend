@@ -13,8 +13,8 @@
   "repository": "https://github.com/teamsindy20/sobok-backend.git",
   "scripts": {
     "clean": "rm -rf .yarn/cache .yarn/unplugged .yarn/install-state.gz dist .pnp.cjs yarn.lock",
-    "dev": "NODE_ENV=development concurrently \"yarn webpack\" \"nodemon -r dotenv/config dist/index.js dotenv_config_path=.env.development --trace-warnings\"",
-    "build": "rm -rf dist && yarn generate && NODE_ENV=production yarn webpack",
+    "dev": "NODE_ENV=development concurrently \"webpack\" \"nodemon -r dotenv/config dist/index.js dotenv_config_path=.env.development --trace-warnings\"",
+    "build": "rm -rf dist && yarn generate && NODE_ENV=production webpack",
     "start": "NODE_ENV=production node -r dotenv/config dist/index.js",
     "test": "NODE_ENV=test ts-node -r dotenv/config test/index.ts dotenv_config_path=.env.test --trace-warnings --watch test",
     "format": "prettier . --write --ignore-path .gitignore",
@@ -22,11 +22,10 @@
     "type": "tsc --pretty --noEmit",
     "pre-push": "yarn format && yarn lint && yarn type",
     "generate": "rm -rf src/graphql/generated && graphql-codegen --config codegen.yml",
-    "generate-db": "schemats postgres postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB} -o src/database/types.ts && prettier src/database/types.ts --write",
+    "generate-db": "schemats postgres postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB} -o src/database/${POSTGRES_DB}.ts && prettier src/database/${POSTGRES_DB}.ts --write",
     "postinstall": "[ -d '.husky' ] && husky install || true"
   },
   "dependencies": {
-    "@graphql-tools/load-files": "^6.5.1",
     "@graphql-tools/merge": "^8.1.2",
     "@graphql-tools/schema": "^8.2.0",
     "apollo-server-core": "^3.3.0",
