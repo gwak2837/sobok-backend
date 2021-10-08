@@ -11,7 +11,12 @@ module.exports = {
     rules: [
       {
         include: resolve(__dirname, 'src'),
-        test: /\.(sql|graphql)$/,
+        test: /\.graphql$/,
+        type: 'asset/source',
+      },
+      {
+        include: resolve(__dirname, 'src'),
+        test: /\.sql$/,
         type: 'asset/source',
       },
       {
@@ -30,7 +35,7 @@ module.exports = {
   },
   plugins: [new IgnorePlugin({ resourceRegExp: /^pg-native$/ })],
   resolve: {
-    extensions: ['.js', '.ts'],
+    extensions: ['.ts', '.mjs', '.js'],
   },
   target: 'node',
   watch: NODE_ENV === 'development',
