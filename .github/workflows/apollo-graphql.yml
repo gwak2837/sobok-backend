@@ -19,6 +19,8 @@ jobs:
     # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsenv
     env:
       APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+      APOLLO_GRAPH_ID: ${{ secrets.APOLLO_GRAPH_ID }}
+      APOLLO_GRAPH_VARIANT: ${{ secrets.APOLLO_GRAPH_VARIANT }}
       APOLLO_VCS_COMMIT: ${{ github.event.pull_request.head.sha }}
       GRAPHQL_SCHEMA: src/graphql/generated/schema.graphql
 
@@ -36,4 +38,4 @@ jobs:
           echo "$HOME/.rover/bin" >> $GITHUB_PATH
       - name: Publish schema against Sobok@current
         run: |
-          rover graph publish Sobok@current --schema ${{ env.GRAPHQL_SCHEMA }}
+          rover graph publish ${{ env.APOLLO_GRAPH_ID }}@${{ env.APOLLO_GRAPH_VARIANT }} --schema ${{ env.GRAPHQL_SCHEMA }}
