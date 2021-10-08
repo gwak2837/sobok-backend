@@ -15,7 +15,7 @@ export const Query: QueryResolvers = {
   bucket: async (_, { id }, { userId }, info) => {
     let [sql, columns, values] = await buildBasicBucketQuery(info, userId)
 
-    sql = spliceSQL(sql, await byId, 'GROUP BY')
+    sql = spliceSQL(sql, byId, 'GROUP BY')
     values.push(id)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
@@ -32,14 +32,14 @@ export const Query: QueryResolvers = {
     let [sql, columns, values] = await buildBasicBucketQuery(info, userId)
 
     if (userId) {
-      sql = spliceSQL(sql, await byUserIdAndBucketType, 'GROUP BY')
+      sql = spliceSQL(sql, byUserIdAndBucketType, 'GROUP BY')
       values.push(userId, type)
     } else {
       if (sql.includes('JOIN "user"')) {
-        sql = spliceSQL(sql, await onUniqueNameAndBucketType, joinUserOnUserId, true)
+        sql = spliceSQL(sql, onUniqueNameAndBucketType, joinUserOnUserId, true)
         values.push(userUniqueName, type)
       } else {
-        sql = spliceSQL(sql, await joinUserOnUniqueNameAndBucketType, 'WHERE')
+        sql = spliceSQL(sql, joinUserOnUniqueNameAndBucketType, 'WHERE')
         values.push(userUniqueName, type)
       }
     }

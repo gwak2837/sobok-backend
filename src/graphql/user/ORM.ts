@@ -1,25 +1,24 @@
-import { camelToSnake, importSQL, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
+import { GraphQLResolveInfo } from 'graphql'
+import graphqlFields from 'graphql-fields'
+import format from 'pg-format'
+
+import type { ApolloContext } from '../../apollo/server'
+import type { user as DatabaseUser } from '../../database/sobok'
+import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
   removeColumnWithAggregateFunction,
   selectColumnFromSubField,
   serializeSQLParameters,
 } from '../../utils/ORM'
-
-import type { ApolloContext } from 'src/apollo/server'
-import type { user as DatabaseUser } from 'src/database/sobok'
-import { GraphQLResolveInfo } from 'graphql'
-import type { User as GraphQLUser } from 'src/graphql/generated/graphql'
-import { Provider } from '../generated/graphql'
 import { commentFieldColumnMapping } from '../comment/ORM'
 import { feedFieldColumnMapping } from '../feed/ORM'
-import format from 'pg-format'
-import graphqlFields from 'graphql-fields'
-
-const fromUser = importSQL(__dirname, 'sql/fromUser.sql')
-const joinComment = importSQL(__dirname, 'sql/joinComment.sql')
-const joinFeed = importSQL(__dirname, 'sql/joinFeed.sql')
-const joinFollower = importSQL(__dirname, 'sql/joinFollower.sql')
-const joinFollowing = importSQL(__dirname, 'sql/joinFollowing.sql')
+import type { User as GraphQLUser } from '../generated/graphql'
+import { Provider } from '../generated/graphql'
+import fromUser from './sql/fromUser.sql'
+import joinComment from './sql/joinComment.sql'
+import joinFeed from './sql/joinFeed.sql'
+import joinFollower from './sql/joinFollower.sql'
+import joinFollowing from './sql/joinFollowing.sql'
 
 const userFieldsFromOtherTable = new Set([
   'comments',
@@ -66,7 +65,7 @@ export function userFieldColumnMapping(userField: keyof GraphQLUser) {
 // GraphQL fields -> SQL
 export async function buildBasicUserQuery(
   info: GraphQLResolveInfo,
-  user: ApolloContext['user'],
+  userId: ApolloContext['userId'],
   selectColumns = true
 ) {
   const userFields = graphqlFields(info) as Record<string, any>

@@ -1,4 +1,4 @@
-import type { FeedResolvers } from 'src/graphql/generated/graphql'
+import type { FeedResolvers } from '../generated/graphql'
 import { decodeRating } from './ORM'
 
 export const Feed: FeedResolvers = {

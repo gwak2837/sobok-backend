@@ -1,25 +1,23 @@
-import { buildBasicMenuQuery, encodeCategory, menuORM } from './ORM'
-
-import type { ApolloContext } from 'src/apollo/server'
-import type { QueryResolvers } from '../generated/graphql'
 import { UserInputError } from 'apollo-server-express'
-import { importSQL } from '../../utils'
+
+import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
 import { spliceSQL } from '../../utils/ORM'
-
-const byCategory = importSQL(__dirname, 'sql/byCategory.sql')
-const byId = importSQL(__dirname, 'sql/byId.sql')
-const byMenuBucketId = importSQL(__dirname, 'sql/byMenuBucketId.sql')
-const byName = importSQL(__dirname, 'sql/byName.sql')
-const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
-const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
-const joinMenuBucketOnMenuBucketId = importSQL(__dirname, 'sql/joinMenuBucketOnMenuBucketId.sql')
-const joinStoreOnTown = importSQL(__dirname, 'sql/joinStoreOnTown.sql')
-const joinStoreOnTownAndCategory = importSQL(__dirname, 'sql/joinStoreOnTownAndCategory.sql')
-const onHashtagName = importSQL(__dirname, 'sql/onHashtagName.sql')
-const onTown = importSQL(__dirname, 'sql/onTown.sql')
-const onTownAndCategory = importSQL(__dirname, 'sql/onTownAndCategory.sql')
-const verifyUserBucket = importSQL(__dirname, 'sql/verifyUserBucket.sql')
+import type { QueryResolvers } from '../generated/graphql'
+import { buildBasicMenuQuery, encodeCategory, menuORM } from './ORM'
+import byCategory from './sql/byCategory.sql'
+import byId from './sql/byId.sql'
+import byMenuBucketId from './sql/byMenuBucketId.sql'
+import byName from './sql/byName.sql'
+import byStoreId from './sql/byStoreId.sql'
+import joinHashtag from './sql/joinHashtag.sql'
+import joinMenuBucketOnMenuBucketId from './sql/joinMenuBucketOnMenuBucketId.sql'
+import joinStoreOnTown from './sql/joinStoreOnTown.sql'
+import joinStoreOnTownAndCategory from './sql/joinStoreOnTownAndCategory.sql'
+import onHashtagName from './sql/onHashtagName.sql'
+import onTown from './sql/onTown.sql'
+import onTownAndCategory from './sql/onTownAndCategory.sql'
+import verifyUserBucket from './sql/verifyUserBucket.sql'
 
 const joinHashtagShort = 'JOIN hashtag ON hashtag.id = menu_x_hashtag.hashtag_id'
 
@@ -29,10 +27,10 @@ export const MenuOrder = {
 }
 
 export const Query: QueryResolvers<ApolloContext> = {
-  menu: async (_, { id }, { user }, info) => {
-    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
+  menu: async (_, { id }, { userId }, info) => {
+    let [sql, columns, values] = await buildBasicMenuQuery(info, userId)
 
-    sql = spliceSQL(sql, await byId, 'GROUP BY')
+    sql = spliceSQL(sql, byId, 'GROUP BY')
     values.push(id)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
@@ -42,10 +40,10 @@ export const Query: QueryResolvers<ApolloContext> = {
     return menuORM(rows, columns)[0]
   },
 
-  menuByName: async (_, { storeId, name }, { user }, info) => {
-    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
+  menuByName: async (_, { storeId, name }, { userId }, info) => {
+    let [sql, columns, values] = await buildBasicMenuQuery(info, userId)
 
-    sql = spliceSQL(sql, await byName, 'GROUP BY')
+    sql = spliceSQL(sql, byName, 'GROUP BY')
     values.push(storeId, name)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
@@ -55,7 +53,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     return menuORM(rows, columns)[0]
   },
 
-  menusByTownAndCategory: async (_, { town, category }, { user }, info) => {
+  menusByTownAndCategory: async (_, { town, category }, { userId }, info) => {
     let encodedCategory
 
     if (category) {
@@ -64,7 +62,7 @@ export const Query: QueryResolvers<ApolloContext> = {
       if (encodedCategory === null) throw new UserInputError('Invalid category value')
     }
 
-    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
+    let [sql, columns, values] = await buildBasicMenuQuery(info, userId)
 
     if (town && category) {
       if (sql.includes('JOIN store')) {
@@ -75,7 +73,7 @@ export const Query: QueryResolvers<ApolloContext> = {
           true
         )
       } else {
-        sql = spliceSQL(sql, await joinStoreOnTownAndCategory, 'JOIN')
+        sql = spliceSQL(sql, joinStoreOnTownAndCategory, 'JOIN')
       }
 
       values.push(town, encodedCategory)
@@ -83,16 +81,16 @@ export const Query: QueryResolvers<ApolloContext> = {
     //
     else if (town) {
       if (sql.includes('JOIN store')) {
-        sql = spliceSQL(sql, await onTown, 'JOIN store ON store.id = menu.store_id', true)
+        sql = spliceSQL(sql, onTown, 'JOIN store ON store.id = menu.store_id', true)
       } else {
-        sql = spliceSQL(sql, await joinStoreOnTown, 'JOIN')
+        sql = spliceSQL(sql, joinStoreOnTown, 'JOIN')
       }
 
       values.push(town)
     }
     //
     else if (category) {
-      sql = spliceSQL(sql, await byCategory, 'GROUP BY')
+      sql = spliceSQL(sql, byCategory, 'GROUP BY')
       values.push(encodedCategory)
     }
 
@@ -103,10 +101,10 @@ export const Query: QueryResolvers<ApolloContext> = {
     return menuORM(rows, columns)
   },
 
-  menusByStore: async (_, { storeId }, { user }, info) => {
-    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
+  menusByStore: async (_, { storeId }, { userId }, info) => {
+    let [sql, columns, values] = await buildBasicMenuQuery(info, userId)
 
-    sql = spliceSQL(sql, await byStoreId, 'GROUP BY')
+    sql = spliceSQL(sql, byStoreId, 'GROUP BY')
     values.push(storeId)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
@@ -116,8 +114,8 @@ export const Query: QueryResolvers<ApolloContext> = {
     return menuORM(rows, columns)
   },
 
-  menusInBucket: async (_, { bucketId, userUniqueName }, { user }, info) => {
-    const response = await poolQuery(await verifyUserBucket, [bucketId, userUniqueName, user?.id])
+  menusInBucket: async (_, { bucketId, userUniqueName }, { userId }, info) => {
+    const response = await poolQuery(verifyUserBucket, [bucketId, userUniqueName, userId])
 
     const result = response.rows[0].verify_user_bucket
 
@@ -128,12 +126,12 @@ export const Query: QueryResolvers<ApolloContext> = {
 
     const publicBucketOnly = result === '4' // TODO: 공개/비공개 버킷을 적절히 구분해서 응답
 
-    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
+    let [sql, columns, values] = await buildBasicMenuQuery(info, userId)
 
     if (sql.includes('LEFT JOIN bucket')) {
-      sql = spliceSQL(sql, await byMenuBucketId, 'GROUP BY')
+      sql = spliceSQL(sql, byMenuBucketId, 'GROUP BY')
     } else {
-      sql = spliceSQL(sql, await joinMenuBucketOnMenuBucketId, 'GROUP BY')
+      sql = spliceSQL(sql, joinMenuBucketOnMenuBucketId, 'GROUP BY')
     }
 
     values.push(bucketId)
@@ -145,22 +143,22 @@ export const Query: QueryResolvers<ApolloContext> = {
     return menuORM(rows, columns)
   },
 
-  searchMenus: async (_, { hashtags, order, pagination }, { user }, info) => {
+  searchMenus: async (_, { hashtags, order, pagination }, { userId }, info) => {
     if (hashtags.length === 0) throw new UserInputError('해시태그 배열은 비어있을 수 없습니다.')
-    if ((pagination.start && !pagination.startId) || (!pagination.start && pagination.startId))
-      throw new UserInputError('Pagination의 start와 startId를 모두 입력해주세요.')
+    if ((pagination.endValue && !pagination.endId) || (!pagination.endValue && pagination.endId))
+      throw new UserInputError('Pagination의 endValue와 endId를 모두 입력해주세요.')
 
-    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
+    let [sql, columns, values] = await buildBasicMenuQuery(info, userId)
 
     if (sql.includes(joinHashtagShort)) {
-      sql = spliceSQL(sql, await onHashtagName, joinHashtagShort, true)
+      sql = spliceSQL(sql, onHashtagName, joinHashtagShort, true)
     } else {
-      sql = spliceSQL(sql, `${await joinHashtag} ${await onHashtagName}`, 'GROUP BY')
+      sql = spliceSQL(sql, `${joinHashtag} ${onHashtagName}`, 'GROUP BY')
     }
 
     values.push(hashtags)
 
-    if (pagination.start && pagination.startId) {
+    if (pagination.endValue && pagination.endId) {
       if (sql.includes('WHERE')) {
         sql = spliceSQL(sql, `(, id) < ($1, $2)`, 'WHERE', true)
       } else {
@@ -168,7 +166,7 @@ export const Query: QueryResolvers<ApolloContext> = {
       }
     }
 
-    values.push(pagination.start, pagination.startId)
+    values.push(pagination.endValue, pagination.endId)
 
     let a = 'ORDER BY created_on DESC, id DESC'
 

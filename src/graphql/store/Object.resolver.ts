@@ -1,4 +1,4 @@
-import type { StoreResolvers } from 'src/graphql/generated/graphql'
+import type { StoreResolvers } from '../generated/graphql'
 import { decodeCategories } from './ORM'
 
 export const Store: StoreResolvers = {

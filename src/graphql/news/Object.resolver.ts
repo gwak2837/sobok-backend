@@ -1,10 +1,5 @@
-import type { NewsResolvers } from 'src/graphql/generated/graphql'
+import type { NewsResolvers } from '../generated/graphql'
 import { decodeCategory } from './ORM'
-import format from 'pg-format'
-import graphqlFields from 'graphql-fields'
-import { isThereIntersection } from '../../utils'
-import { poolQuery } from 'src/database/postgres'
-import { serializeSQLParameters } from 'src/utils/ORM'
 
 export const News: NewsResolvers = {
   category: ({ category }) => {

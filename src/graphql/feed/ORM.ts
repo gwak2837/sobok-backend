@@ -1,27 +1,26 @@
-import { camelToSnake, importSQL, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
+import { GraphQLResolveInfo } from 'graphql'
+import graphqlFields from 'graphql-fields'
+import format from 'pg-format'
+
+import type { ApolloContext } from '../../apollo/server'
+import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
   removeColumnWithAggregateFunction,
   selectColumnFromSubField,
   serializeSQLParameters,
 } from '../../utils/ORM'
-
-import type { ApolloContext } from 'src/apollo/server'
-import type { Feed as GraphQLFeed } from 'src/graphql/generated/graphql'
-import { GraphQLResolveInfo } from 'graphql'
 import { commentFieldColumnMapping } from '../comment/ORM'
-import format from 'pg-format'
-import graphqlFields from 'graphql-fields'
+import type { Feed as GraphQLFeed } from '../generated/graphql'
 import { menuFieldColumnMapping } from '../menu/ORM'
 import { storeFieldColumnMapping } from '../store/ORM'
 import { userFieldColumnMapping } from '../user/ORM'
-
-const feedList = importSQL(__dirname, 'sql/feedList.sql')
-const joinComment = importSQL(__dirname, 'sql/joinComment.sql')
-const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
-const joinLikedFeed = importSQL(__dirname, 'sql/joinLikedFeed.sql')
-const joinMenu = importSQL(__dirname, 'sql/joinMenu.sql')
-const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
-const joinUser = importSQL(__dirname, 'sql/joinUser.sql')
+import feedList from './sql/feedList.sql'
+import joinComment from './sql/joinComment.sql'
+import joinHashtag from './sql/joinHashtag.sql'
+import joinLikedFeed from './sql/joinLikedFeed.sql'
+import joinMenu from './sql/joinMenu.sql'
+import joinStore from './sql/joinStore.sql'
+import joinUser from './sql/joinUser.sql'
 
 const feedFieldsFromOtherTable = new Set([
   'isLiked',
@@ -44,36 +43,36 @@ export function feedFieldColumnMapping(feedField: keyof GraphQLFeed) {
 // GraphQL fields -> SQL
 export async function buildBasicFeedQuery(
   info: GraphQLResolveInfo,
-  user: ApolloContext['user'],
+  userId: ApolloContext['userId'],
   selectColumns = true
 ) {
   const feedFields = graphqlFields(info) as Record<string, any>
   const firstFeedFields = new Set(Object.keys(feedFields))
 
-  let sql = await feedList
+  let sql = feedList
   let columns = selectColumns ? selectColumnFromSubField(feedFields, feedFieldColumnMapping) : []
   const values: unknown[] = []
   let groupBy = false
 
   if (firstFeedFields.has('isLiked')) {
-    if (user) {
-      sql = `${sql} ${await joinLikedFeed}`
+    if (userId) {
+      sql = `${sql} ${joinLikedFeed}`
       columns.push('user_x_liked_feed.user_id')
-      values.push(user.id)
+      values.push(userId)
     }
   }
 
   if (firstFeedFields.has('store')) {
     const storeColumns = selectColumnFromSubField(feedFields.store, storeFieldColumnMapping)
 
-    sql = `${sql} ${await joinStore}`
+    sql = `${sql} ${joinStore}`
     columns = [...columns, ...storeColumns]
   }
 
   if (firstFeedFields.has('user')) {
     const userColumns = selectColumnFromSubField(feedFields.user, userFieldColumnMapping)
 
-    sql = `${sql} ${await joinUser}`
+    sql = `${sql} ${joinUser}`
     columns = [...columns, ...userColumns]
   }
 
@@ -83,13 +82,13 @@ export async function buildBasicFeedQuery(
       commentFieldColumnMapping
     ).map((column) => `array_agg(${column})`)
 
-    sql = `${sql} ${await joinComment}`
+    sql = `${sql} ${joinComment}`
     columns = [...columns, ...commentColumns]
     groupBy = true
   }
 
   if (firstFeedFields.has('hashtags')) {
-    sql = `${sql} ${await joinHashtag}`
+    sql = `${sql} ${joinHashtag}`
     columns.push('array_agg(hashtag.name)')
     groupBy = true
   }
@@ -99,7 +98,7 @@ export async function buildBasicFeedQuery(
       (column) => `array_agg(${column})`
     )
 
-    sql = `${sql} ${await joinMenu}`
+    sql = `${sql} ${joinMenu}`
     columns = [...columns, ...menuColumns]
     groupBy = true
   }

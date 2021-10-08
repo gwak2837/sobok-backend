@@ -24,13 +24,13 @@ export function bucketFieldColumnMapping(bucketField: keyof GraphQLBucket) {
 // GraphQL fields -> SQL
 export async function buildBasicBucketQuery(
   info: GraphQLResolveInfo,
-  user: ApolloContext,
+  userId: ApolloContext['userId'],
   selectColumns = true
 ) {
   const bucketFields = graphqlFields(info) as Record<string, any>
   const firstBucketFields = new Set(Object.keys(bucketFields))
 
-  let sql = await fromBucket
+  let sql = fromBucket
   let columns = selectColumns
     ? selectColumnFromSubField(bucketFields, bucketFieldColumnMapping)
     : []
@@ -39,7 +39,7 @@ export async function buildBasicBucketQuery(
   if (firstBucketFields.has('user')) {
     const userColumns = selectColumnFromSubField(bucketFields.user, userFieldColumnMapping)
 
-    sql = `${sql} ${await joinUser}`
+    sql = `${sql} ${joinUser}`
     columns = [...columns, ...userColumns]
   }
 
