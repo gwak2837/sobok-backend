@@ -14,7 +14,7 @@
   "scripts": {
     "clean": "rm -rf .yarn/cache .yarn/unplugged .yarn/install-state.gz dist .pnp.cjs yarn.lock",
     "dev": "NODE_ENV=development concurrently \"yarn webpack\" \"nodemon -r dotenv/config dist/index.js dotenv_config_path=.env.development --trace-warnings\"",
-    "build": "yarn generate && yarn generate-db && rm -rf dist && NODE_ENV=production yarn webpack",
+    "build": "rm -rf dist && yarn generate && NODE_ENV=production yarn webpack",
     "start": "NODE_ENV=production node -r dotenv/config dist/index.js",
     "test": "NODE_ENV=test ts-node -r dotenv/config test/index.ts dotenv_config_path=.env.test --trace-warnings --watch test",
     "format": "prettier . --write --ignore-path .gitignore",

@@ -1,11 +1,13 @@
-import { ApolloServer } from 'apollo-server-express'
-import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core'
-import express from 'express'
 import http from 'http'
+
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core'
+import { ApolloServer } from 'apollo-server-express'
+import express from 'express'
+
 import { poolQuery } from '../database/postgres'
 import schema from '../graphql/schema'
-import user from './sql/user.sql'
 import { verifyJWT } from '../utils/jwt'
+import user from './sql/user.sql'
 
 export type ApolloContext =
   | {
