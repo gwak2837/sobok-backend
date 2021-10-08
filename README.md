@@ -4,22 +4,14 @@
 
 2021년 8월 11일 (수) ~ ing
 
-## 구성원
+## Requires
 
-|  이름  |                      GitHub                      |        역할        |
-| :----: | :----------------------------------------------: | :----------------: |
-| 곽태욱 | [@rmfpdlxmtidl](https://github.com/rmfpdlxmtidl) | 프로젝트 초기 설정 |
-| 김효진 |       [@hy57in](https://github.com/hy57in)       |                    |
-
-## 개발 환경
-
-- macOS 11.2
+- macOS 11.5
 - [Git](https://git-scm.com/downloads) 2.32
-- [Node](https://hub.docker.com/_/node) LTS Alpine
-- [Yarn](https://yarnpkg.com/getting-started/install#about-global-installs) 1.22
+- [Node](https://hub.docker.com/_/node) 16 Alpine
+- [Yarn](https://yarnpkg.com/getting-started/install#about-global-installs) berry
 - [Visual Studio Code](https://code.visualstudio.com/Download) 1.58
-- [PostgreSQL](https://hub.docker.com/_/postgres) Alpine
-- [Redis](https://hub.docker.com/_/redis) Alpine
+- [PostgreSQL](https://hub.docker.com/_/postgres) 14 Alpine
 - [Docker](https://www.docker.com/get-started) 20.10
 - Docker Compose 1.29
 
@@ -34,11 +26,11 @@ $ docker-compose --version
 
 위 명령어를 통해 프로젝트에 필요한 모든 프로그램이 설치되어 있는지 확인합니다.
 
-## 프로젝트 구조
+## Project structure
 
 ![images/architecture.webp](images/architecture.webp)
 
-## 설치 방법
+## Quick start
 
 ### 프로젝트 다운로드
 
@@ -95,7 +87,7 @@ GraphQL API 서버를 로컬 Node.js 환경에서 실행하는 경우에만 Redi
 
 반면 GraphQL API 서버를 [컨테이너 환경](#배포-모드-컨테이너)에서 실행하는 경우에는 Redis 서버를 따로 실행하지 않아도 됩니다.
 
-### 환경 변수 설정
+### Create environment variables
 
 ```
 POSTGRES_HOST=
@@ -117,54 +109,43 @@ BACKEND_URL=
 PORT=4000
 ```
 
-루트 폴더에 `.env` (또는 `.env.development`, `.env.test`) 파일을 생성하고 거기에 프로젝트에 필요한 환경 변수를 설정합니다.
+루트 폴더에 `.env`, `.env.development`, `.env.test` 파일을 생성하고 프로젝트에서 사용되는 환경 변수를 설정합니다.
 
-### 개발 모드
+### Start Node.js server
 
-```bash
+```shell
 $ yarn dev
 ```
 
 TypeScript 파일을 그대로 사용해 Nodemon으로 서비스를 실행합니다.
 
-### 배포 모드
+or
 
-```bash
-$ yarn build
-$ yarn start
+```shell
+$ yarn build && yarn start
 ```
 
 TypeScript 파일을 JavaScript로 트랜스파일한 후 Node.js로 서비스를 실행합니다.
 
-### 배포 모드 (컨테이너)
+or
 
-```bash
+```shell
 $ docker-compose up --detach --build --force-recreate
 ```
 
-Cloud Run 환경이랑 동일한 Docker 환경을 생성합니다.
-
-### 브라우저 실행
-
-```
-http://localhost:4000/graphql
-```
-
-브라우저에서 아래 주소로 접속하면 개발 중인 사이트를 볼 수 있습니다.
+(Cloud Run 환경과 동일한) Docker 환경에서 Node.js 서버를 실행합니다.
 
 ### Cloud Run 배포
 
 Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문에 GitHub로 commit을 push할 때마다 Cloud Run에 자동으로 배포됩니다.
 
-### PostgreSQL -> TypeScript 자동 생성
+## Scripts
+
+### `yarn generate-db`
 
 ```bash
 $ export $(grep -v '^#' .env.development | xargs)
 $ yarn generate-db
 ```
 
-환경 변수로 넣어줄 파일 이름을 입력해주고 `yarn generate-db` 명령어를 실행한다.
-
-## 데이터베이스 ERD
-
-[database/erd.html](https://teamsindy20.github.io/sobok-backend/database/erd.html)
+PostgreSQL 데이터베이스 구조를 바탕으로 TypeScript 기반 자료형이 담긴 파일을 생성합니다.
