@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import http from 'http'
 
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core'
@@ -9,11 +10,9 @@ import schema from '../graphql/schema'
 import { verifyJWT } from '../utils/jwt'
 import user from './sql/user.sql'
 
-export type ApolloContext =
-  | {
-      userId?: string
-    }
-  | undefined
+export type ApolloContext = {
+  userId?: string
+}
 
 export async function startApolloServer() {
   // Required logic for integrating with Express
@@ -23,13 +22,11 @@ export async function startApolloServer() {
   // Same ApolloServer initialization as before, plus the drain plugin.
   const apolloServer = new ApolloServer({
     context: async ({ req }) => {
-      const jwt = req.headers.authorization ?? ''
-
-      if (!jwt) return
+      const jwt = req.headers.authorization
+      if (!jwt) return {}
 
       const verifiedJwt = await verifyJWT(jwt).catch(() => null)
-
-      if (!verifiedJwt) return
+      if (!verifiedJwt) return {}
 
       const { rowCount, rows } = await poolQuery(user, [
         verifiedJwt.userId,
@@ -37,7 +34,7 @@ export async function startApolloServer() {
       ])
 
       // 로그아웃 등으로 인해 JWT가 유효하지 않을 때
-      if (!rowCount) return
+      if (!rowCount) return {}
 
       return { userId: rows[0].id }
     },

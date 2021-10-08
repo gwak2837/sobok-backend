@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { startApolloServer } from './apollo/server'
 import { pool } from './database/postgres'
 

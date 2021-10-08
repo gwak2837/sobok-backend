@@ -1,7 +1,7 @@
 import { connectDatabase, poolQuery } from '../src/database/postgres'
 import { importSQL } from '../src/utils/commons'
 
-const test = importSQL(__dirname, 'sql/test.sql')
+const test from './sql/test.sql')
 
 ;(async () => {
   await connectDatabase()
