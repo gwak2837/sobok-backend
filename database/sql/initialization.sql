@@ -109,6 +109,8 @@ CREATE TABLE trend (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   modification_time timestamptz NOT NULL DEFAULT NOW(),
+  category int NOT NULL,
+  title varchar(100) NOT NULL,
   contents text [] NOT NULL,
   user_id uuid NOT NULL REFERENCES "user" ON DELETE CASCADE
 );
@@ -721,13 +723,15 @@ RETURNING id INTO bucket_id;
 
 END $$;
 
-CREATE PROCEDURE create_trend (
+CREATE FUNCTION create_trend (
+  category int,
+  title varchar(100),
   contents text [],
   user_id uuid,
-  INOUT trend_id bigint DEFAULT NULL
+  OUT trend_id bigint
 ) LANGUAGE SQL AS $$
-INSERT INTO trend (contents, user_id)
-VALUES (contents, user_id)
+INSERT INTO trend (category, title, contents, user_id)
+VALUES (category, title, contents, user_id)
 RETURNING id;
 
 $$;
