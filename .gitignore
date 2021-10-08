@@ -115,16 +115,28 @@ dist
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+### Node Patch ###
+# Serverless Webpack directories
+.webpack/
+
 # End of https://www.toptal.com/developers/gitignore/api/node
 
-# Node.js environment variables
-.env.development
-
-# yarn v2
 /.yarn/*
 !/.yarn/patches
 !/.yarn/plugins
 !/.yarn/releases
 !/.yarn/sdks
 
+# Swap the comments on the following lines if you don't wish to use zero-installs
+# Documentation here: https://yarnpkg.com/features/zero-installs
+# !/.yarn/cache
 /.pnp.*
+
+.env.development
