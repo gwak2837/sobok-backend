@@ -1,22 +1,32 @@
-import { BucketType, QueryResolvers } from '../generated/graphql'
-import { importSQL } from '../../utils/commons'
+import { buildBasicMenuQuery, encodeCategory, menuORM } from './ORM'
+
+import type { ApolloContext } from 'src/apollo/server'
+import type { QueryResolvers } from '../generated/graphql'
+import { UserInputError } from 'apollo-server-express'
+import { importSQL } from '../../utils'
 import { poolQuery } from '../../database/postgres'
 import { spliceSQL } from '../../utils/ORM'
-import { buildBasicMenuQuery, encodeCategory, menuORM } from './ORM'
-import { UserInputError } from 'apollo-server-express'
-import type { ApolloContext } from 'src/apollo/server'
 
 const byCategory = importSQL(__dirname, 'sql/byCategory.sql')
 const byId = importSQL(__dirname, 'sql/byId.sql')
 const byMenuBucketId = importSQL(__dirname, 'sql/byMenuBucketId.sql')
 const byName = importSQL(__dirname, 'sql/byName.sql')
 const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
+const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
 const joinMenuBucketOnMenuBucketId = importSQL(__dirname, 'sql/joinMenuBucketOnMenuBucketId.sql')
 const joinStoreOnTown = importSQL(__dirname, 'sql/joinStoreOnTown.sql')
 const joinStoreOnTownAndCategory = importSQL(__dirname, 'sql/joinStoreOnTownAndCategory.sql')
+const onHashtagName = importSQL(__dirname, 'sql/onHashtagName.sql')
 const onTown = importSQL(__dirname, 'sql/onTown.sql')
 const onTownAndCategory = importSQL(__dirname, 'sql/onTownAndCategory.sql')
 const verifyUserBucket = importSQL(__dirname, 'sql/verifyUserBucket.sql')
+
+const joinHashtagShort = 'JOIN hashtag ON hashtag.id = menu_x_hashtag.hashtag_id'
+
+export const MenuOrder = {
+  NAME: 0,
+  NAME_DESC: 1,
+}
 
 export const Query: QueryResolvers<ApolloContext> = {
   menu: async (_, { id }, { user }, info) => {
@@ -127,6 +137,42 @@ export const Query: QueryResolvers<ApolloContext> = {
     }
 
     values.push(bucketId)
+
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
+
+    return menuORM(rows, columns)
+  },
+
+  searchMenus: async (_, { hashtags, order, pagination }, { user }, info) => {
+    if (hashtags.length === 0) throw new UserInputError('해시태그 배열은 비어있을 수 없습니다.')
+    if ((pagination.start && !pagination.startId) || (!pagination.start && pagination.startId))
+      throw new UserInputError('Pagination의 start와 startId를 모두 입력해주세요.')
+
+    let [sql, columns, values] = await buildBasicMenuQuery(info, user)
+
+    if (sql.includes(joinHashtagShort)) {
+      sql = spliceSQL(sql, await onHashtagName, joinHashtagShort, true)
+    } else {
+      sql = spliceSQL(sql, `${await joinHashtag} ${await onHashtagName}`, 'GROUP BY')
+    }
+
+    values.push(hashtags)
+
+    if (pagination.start && pagination.startId) {
+      if (sql.includes('WHERE')) {
+        sql = spliceSQL(sql, `(, id) < ($1, $2)`, 'WHERE', true)
+      } else {
+        sql = spliceSQL(sql, `WHERE (, id) < ($1, $2)`, 'GROUP BY')
+      }
+    }
+
+    values.push(pagination.start, pagination.startId)
+
+    let a = 'ORDER BY created_on DESC, id DESC'
+
+    sql = `${sql} FETCH FIRST ${pagination.limit} ROWS ONLY`
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 

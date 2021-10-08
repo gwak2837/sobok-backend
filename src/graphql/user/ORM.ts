@@ -1,24 +1,19 @@
-import { GraphQLResolveInfo } from 'graphql'
-import graphqlFields from 'graphql-fields'
-import format from 'pg-format'
-import type { user as DatabaseUser } from 'src/database/sobok'
-import type { User as GraphQLUser } from 'src/graphql/generated/graphql'
-import type { ApolloContext } from 'src/apollo/server'
+import { camelToSnake, importSQL, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
-  selectColumnFromSubField,
   removeColumnWithAggregateFunction,
+  selectColumnFromSubField,
   serializeSQLParameters,
 } from '../../utils/ORM'
+
+import type { ApolloContext } from 'src/apollo/server'
+import type { user as DatabaseUser } from 'src/database/sobok'
+import { GraphQLResolveInfo } from 'graphql'
+import type { User as GraphQLUser } from 'src/graphql/generated/graphql'
 import { Provider } from '../generated/graphql'
-import {
-  camelToSnake,
-  importSQL,
-  removeQuotes,
-  snakeToCamel,
-  tableColumnRegEx,
-} from '../../utils/commons'
 import { commentFieldColumnMapping } from '../comment/ORM'
 import { feedFieldColumnMapping } from '../feed/ORM'
+import format from 'pg-format'
+import graphqlFields from 'graphql-fields'
 
 const fromUser = importSQL(__dirname, 'sql/fromUser.sql')
 const joinComment = importSQL(__dirname, 'sql/joinComment.sql')

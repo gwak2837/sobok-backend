@@ -1,8 +1,9 @@
 import { AuthenticationError, UserInputError } from 'apollo-server-express'
-import type { ApolloContext } from 'src/apollo/server'
 import { NewsOptions, QueryResolvers } from '../../graphql/generated/graphql'
-import { encodeCategory, buildBasicNewsQuery, newsORM } from './ORM'
-import { importSQL } from '../../utils/commons'
+import { buildBasicNewsQuery, encodeCategory, newsORM } from './ORM'
+
+import type { ApolloContext } from 'src/apollo/server'
+import { importSQL } from '../../utils'
 import { poolQuery } from '../../database/postgres'
 import { spliceSQL } from '../../utils/ORM'
 

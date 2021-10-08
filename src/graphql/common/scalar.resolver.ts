@@ -7,6 +7,7 @@ import {
   LongitudeResolver,
   NonEmptyStringResolver,
   URLResolver,
+  UUIDResolver,
 } from 'graphql-scalars'
 
 export const Date = DateResolver
@@ -15,5 +16,6 @@ export const EmailAddress = EmailAddressResolver
 export const JWT = JWTResolver
 export const Latitude = LatitudeResolver
 export const Longitude = LongitudeResolver
-export const URL = URLResolver
 export const NonEmptyString = NonEmptyStringResolver
+export const URL = URLResolver
+export const UUID = UUIDResolver

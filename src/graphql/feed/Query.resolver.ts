@@ -1,18 +1,23 @@
-import type { ApolloContext } from 'src/apollo/server'
+import { AuthenticationError, UserInputError } from 'apollo-server-express'
 import { FeedOptions, QueryResolvers } from '../../graphql/generated/graphql'
-import { importSQL } from '../../utils/commons'
-import { poolQuery } from '../../database/postgres'
 import { buildBasicFeedQuery, feedORM } from './ORM'
+
+import type { ApolloContext } from 'src/apollo/server'
+import { importSQL } from '../../utils'
+import { poolQuery } from '../../database/postgres'
 import { spliceSQL } from '../../utils/ORM'
-import { AuthenticationError } from 'apollo-server-express'
 
 const byId = importSQL(__dirname, 'sql/byId.sql')
 const byStarUser = importSQL(__dirname, 'sql/byStarUser.sql')
 const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
 const joinFollowingUser = importSQL(__dirname, 'sql/joinFollowingUser.sql')
+const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
 const joinStoreOnTown = importSQL(__dirname, 'sql/joinStoreOnTown.sql')
 const joinStarUser = importSQL(__dirname, 'sql/joinStarUser.sql')
+const onHashtagName = importSQL(__dirname, 'sql/onHashtagName.sql')
 const onTown = importSQL(__dirname, 'sql/onTown.sql')
+
+const joinHashtagShort = 'JOIN hashtag ON hashtag.id = feed_x_hashtag.hashtag_id'
 
 export const Query: QueryResolvers<ApolloContext> = {
   feed: async (_, { id }, { user }, info) => {
@@ -72,6 +77,26 @@ export const Query: QueryResolvers<ApolloContext> = {
 
       values.push(user!.id)
     }
+
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
+
+    return feedORM(rows, columns)
+  },
+
+  searchFeedList: async (_, { hashtags }, { user }, info) => {
+    if (hashtags.length === 0) throw new UserInputError('해시태그 배열은 비어있을 수 없습니다.')
+
+    let [sql, columns, values] = await buildBasicFeedQuery(info, user)
+
+    if (sql.includes(joinHashtagShort)) {
+      sql = spliceSQL(sql, await onHashtagName, joinHashtagShort, true)
+    } else {
+      sql = spliceSQL(sql, `${await joinHashtag} ${await onHashtagName}`, 'GROUP BY')
+    }
+
+    values.push(hashtags)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 

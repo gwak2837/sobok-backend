@@ -1,24 +1,19 @@
-import { GraphQLResolveInfo } from 'graphql'
-import graphqlFields from 'graphql-fields'
-import format from 'pg-format'
-import type { Feed as GraphQLFeed } from 'src/graphql/generated/graphql'
-import { commentFieldColumnMapping } from '../comment/ORM'
-import { storeFieldColumnMapping } from '../store/ORM'
-import { userFieldColumnMapping } from '../user/ORM'
-import {
-  camelToSnake,
-  importSQL,
-  removeQuotes,
-  snakeToCamel,
-  tableColumnRegEx,
-} from '../../utils/commons'
+import { camelToSnake, importSQL, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
   removeColumnWithAggregateFunction,
   selectColumnFromSubField,
   serializeSQLParameters,
 } from '../../utils/ORM'
-import { menuFieldColumnMapping } from '../menu/ORM'
+
 import type { ApolloContext } from 'src/apollo/server'
+import type { Feed as GraphQLFeed } from 'src/graphql/generated/graphql'
+import { GraphQLResolveInfo } from 'graphql'
+import { commentFieldColumnMapping } from '../comment/ORM'
+import format from 'pg-format'
+import graphqlFields from 'graphql-fields'
+import { menuFieldColumnMapping } from '../menu/ORM'
+import { storeFieldColumnMapping } from '../store/ORM'
+import { userFieldColumnMapping } from '../user/ORM'
 
 const feedList = importSQL(__dirname, 'sql/feedList.sql')
 const joinComment = importSQL(__dirname, 'sql/joinComment.sql')
@@ -57,7 +52,7 @@ export async function buildBasicFeedQuery(
 
   let sql = await feedList
   let columns = selectColumns ? selectColumnFromSubField(feedFields, feedFieldColumnMapping) : []
-  const values = []
+  const values: unknown[] = []
   let groupBy = false
 
   if (firstFeedFields.has('isLiked')) {

@@ -1,6 +1,7 @@
-import type { trend } from 'src/database/sobok'
+import { camelToSnake, snakeKeyToCamelKey } from '../../utils'
+
 import type { Trend } from 'src/graphql/generated/graphql'
-import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
+import type { trend } from 'src/database/sobok'
 
 // All GraphQL fields -> Database columns
 export function trendFieldColumnMapping(trendField: keyof Trend) {

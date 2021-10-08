@@ -1,23 +1,19 @@
 import { UserInputError } from 'apollo-server-express'
-import type { QueryResolvers } from 'src/graphql/generated/graphql'
-import { bucketORM, buildBasicBucketQuery } from './ORM'
-import { spliceSQL } from '../../utils/ORM'
-import { poolQuery } from '../../database/postgres'
-import { importSQL } from '../../utils/commons'
 
-const byId = importSQL(__dirname, 'sql/byId.sql')
-const byUserIdAndBucketType = importSQL(__dirname, 'sql/byUserIdAndBucketType.sql')
-const joinUserOnUniqueNameAndBucketType = importSQL(
-  __dirname,
-  'sql/joinUserOnUniqueNameAndBucketType.sql'
-)
-const onUniqueNameAndBucketType = importSQL(__dirname, 'sql/onUniqueNameAndBucketType.sql')
+import { poolQuery } from '../../database/postgres'
+import { spliceSQL } from '../../utils/ORM'
+import type { QueryResolvers } from '../generated/graphql'
+import { bucketORM, buildBasicBucketQuery } from './ORM'
+import byId from './sql/byId.sql'
+import byUserIdAndBucketType from './sql/byUserIdAndBucketType.sql'
+import joinUserOnUniqueNameAndBucketType from './sql/joinUserOnUniqueNameAndBucketType.sql'
+import onUniqueNameAndBucketType from './sql/onUniqueNameAndBucketType.sql'
 
 const joinUserOnUserId = 'JOIN "user" ON "user".id = bucket.user_id'
 
 export const Query: QueryResolvers = {
-  bucket: async (_, { id }, { user }, info) => {
-    let [sql, columns, values] = await buildBasicBucketQuery(info, user)
+  bucket: async (_, { id }, { userId }, info) => {
+    let [sql, columns, values] = await buildBasicBucketQuery(info, userId)
 
     sql = spliceSQL(sql, await byId, 'GROUP BY')
     values.push(id)
@@ -29,15 +25,15 @@ export const Query: QueryResolvers = {
     return bucketORM(rows, columns)[0]
   },
 
-  buckets: async (_, { userUniqueName, type }, { user }, info) => {
-    if (!user && !userUniqueName)
+  buckets: async (_, { userUniqueName, type }, { userId }, info) => {
+    if (!userId && !userUniqueName)
       throw new UserInputError('로그인 하거나 사용자 고유 이름을 입력해주세요')
 
-    let [sql, columns, values] = await buildBasicBucketQuery(info, user)
+    let [sql, columns, values] = await buildBasicBucketQuery(info, userId)
 
-    if (user) {
+    if (userId) {
       sql = spliceSQL(sql, await byUserIdAndBucketType, 'GROUP BY')
-      values.push(user.id, type)
+      values.push(userId, type)
     } else {
       if (sql.includes('JOIN "user"')) {
         sql = spliceSQL(sql, await onUniqueNameAndBucketType, joinUserOnUserId, true)

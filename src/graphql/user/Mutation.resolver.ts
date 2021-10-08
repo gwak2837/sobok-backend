@@ -1,10 +1,11 @@
 import { AuthenticationError, ForbiddenError, UserInputError } from 'apollo-server-express'
 import { compare, genSalt, hash } from 'bcryptjs'
-import { MutationResolvers } from 'src/graphql/generated/graphql'
+import { emailRegEx, importSQL } from '../../utils'
+
+import type { ApolloContext } from '../../apollo/server'
+import { MutationResolvers } from '../generated/graphql'
 import { generateJWT } from '../../utils/jwt'
 import { poolQuery } from '../../database/postgres'
-import { emailRegEx, importSQL } from '../../utils/commons'
-import type { ApolloContext } from 'src/apollo/server'
 
 const login = importSQL(__dirname, 'sql/login.sql')
 const logout = importSQL(__dirname, 'sql/logout.sql')

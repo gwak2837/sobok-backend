@@ -148,6 +148,19 @@ type Menu {
   storeId: ID!
 }
 
+enum MenuOrder {
+  NAME
+  NAME_DESC
+  PRICE
+  PRICE_DESC
+}
+
+input MenuPagination {
+  limit: Int!
+  start: NonEmptyString!
+  startId: ID!
+}
+
 type Mutation {
   """
   고유 이름 또는 이메일과 비밀번호를 전송하면 JWT 인증 토큰을 반환함
@@ -254,7 +267,7 @@ type Query {
   """
   인증 토큰과 같이 요청하면 사용자 정보를 반환
   """
-  me: User
+  me: User!
 
   """
   메뉴 상세
@@ -295,9 +308,21 @@ type Query {
   옵션별 여러 매장 소식 목록
   """
   newsListByTown(categories: [NonEmptyString!], option: NewsOptions, town: NonEmptyString): [News!]
-  searchFeed(hashtags: [NonEmptyString!]!): [Menu!]
-  searchMenus(hashtags: [NonEmptyString!]!): [Menu!]
-  searchStores(hashtags: [NonEmptyString!]!): [Menu!]
+
+  """
+  해시태그로 메뉴 검색
+  """
+  searchFeedList(hashtags: [NonEmptyString!]!): [Feed!]
+
+  """
+  해시태그로 메뉴 검색
+  """
+  searchMenus(hashtags: [NonEmptyString!]!, order: MenuOrder, pagination: MenuPagination!): [Menu!]
+
+  """
+  해시태그로 매장 검색
+  """
+  searchStores(hashtags: [NonEmptyString!]!): [Store!]
 
   """
   특정 매장 정보
@@ -390,6 +415,8 @@ type Trend {
 
 scalar URL
 
+scalar UUID
+
 type User {
   bio: String
   birth: Date
@@ -416,7 +443,7 @@ type User {
   """
   followings: [User!]
   gender: Gender!
-  id: ID!
+  id: UUID!
   imageUrl: URL
   isEmailVerified: Boolean!
   isStarUser: Boolean!

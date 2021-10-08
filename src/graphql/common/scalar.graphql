@@ -4,5 +4,6 @@ scalar EmailAddress
 scalar JWT
 scalar Latitude
 scalar Longitude
-scalar URL
 scalar NonEmptyString
+scalar URL
+scalar UUID

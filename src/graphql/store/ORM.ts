@@ -1,20 +1,15 @@
-import { GraphQLResolveInfo } from 'graphql'
-import graphqlFields from 'graphql-fields'
-import format from 'pg-format'
-import { ApolloContext } from 'src/apollo/server'
-import type { Store as GraphQLStore } from 'src/graphql/generated/graphql'
+import { camelToSnake, importSQL, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
   removeColumnWithAggregateFunction,
   selectColumnFromSubField,
   serializeSQLParameters,
 } from '../../utils/ORM'
-import {
-  camelToSnake,
-  importSQL,
-  removeQuotes,
-  snakeToCamel,
-  tableColumnRegEx,
-} from '../../utils/commons'
+
+import { ApolloContext } from 'src/apollo/server'
+import { GraphQLResolveInfo } from 'graphql'
+import type { Store as GraphQLStore } from 'src/graphql/generated/graphql'
+import format from 'pg-format'
+import graphqlFields from 'graphql-fields'
 import { menuFieldColumnMapping } from '../menu/ORM'
 import { newsFieldColumnMapping } from '../news/ORM'
 import { userFieldColumnMapping } from '../user/ORM'

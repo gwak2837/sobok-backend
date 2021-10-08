@@ -1,22 +1,28 @@
+import { buildBasicStoreQuery, encodeCategories, storeORM } from './ORM'
+
+import { ApolloContext } from 'src/apollo/server'
 import type { QueryResolvers } from 'src/graphql/generated/graphql'
-import { importSQL } from '../../utils/commons'
+import { UserInputError } from 'apollo-server-express'
+import { importSQL } from '../../utils'
 import { poolQuery } from '../../database/postgres'
 import { spliceSQL } from '../../utils/ORM'
-import { buildBasicStoreQuery, encodeCategories, storeORM } from './ORM'
-import { UserInputError } from 'apollo-server-express'
 
 const byCategories = importSQL(__dirname, 'sql/byCategories.sql')
 const byId = importSQL(__dirname, 'sql/byId.sql')
 const byStoreBucketId = importSQL(__dirname, 'sql/byStoreBucketId.sql')
 const byTown = importSQL(__dirname, 'sql/byTown.sql')
 const byTownAndCategories = importSQL(__dirname, 'sql/byTownAndCategories.sql')
+const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
 const joinStoreBucketOnStoreBucketId = importSQL(
   __dirname,
   'sql/joinStoreBucketOnStoreBucketId.sql'
 )
+const onHashtagName = importSQL(__dirname, 'sql/onHashtagName.sql')
 const verifyUserBucket = importSQL(__dirname, 'sql/verifyUserBucket.sql')
 
-export const Query: QueryResolvers = {
+const joinHashtagShort = 'JOIN hashtag ON hashtag.id = store_x_hashtag.hashtag_id'
+
+export const Query: QueryResolvers<ApolloContext> = {
   store: async (_, { id }, { user }, info) => {
     let [sql, columns, values] = await buildBasicStoreQuery(info, user)
 
@@ -34,7 +40,7 @@ export const Query: QueryResolvers = {
     let encodedCategories
 
     if (categories) {
-      if (categories.length === 0) throw new UserInputError('Invalid categories value')
+      if (categories.length === 0) throw new UserInputError('카테고리 배열은 비어있을 수 없습니다.')
 
       encodedCategories = encodeCategories(categories)
 
@@ -87,6 +93,26 @@ export const Query: QueryResolvers = {
     }
 
     values.push(bucketId)
+
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
+
+    return storeORM(rows, columns)
+  },
+
+  searchStores: async (_, { hashtags }, { user }, info) => {
+    if (hashtags.length === 0) throw new UserInputError('해시태그 배열은 비어있을 수 없습니다.')
+
+    let [sql, columns, values] = await buildBasicStoreQuery(info, user)
+
+    if (sql.includes(joinHashtagShort)) {
+      sql = spliceSQL(sql, await onHashtagName, joinHashtagShort, true)
+    } else {
+      sql = spliceSQL(sql, `${await joinHashtag} ${await onHashtagName}`, 'GROUP BY')
+    }
+
+    values.push(hashtags)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 

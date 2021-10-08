@@ -1,9 +1,10 @@
-import { AuthenticationError } from 'apollo-server-express'
-import { QueryResolvers } from 'src/graphql/generated/graphql'
-import { spliceSQL } from '../../utils/ORM'
-import { poolQuery } from '../../database/postgres'
-import { importSQL } from '../../utils/commons'
 import { buildBasicUserQuery, userORM } from './ORM'
+
+import { AuthenticationError } from 'apollo-server-express'
+import { QueryResolvers } from '../generated/graphql'
+import { importSQL } from '../../utils'
+import { poolQuery } from '../../database/postgres'
+import { spliceSQL } from '../../utils/ORM'
 
 const byId = importSQL(__dirname, 'sql/byId.sql')
 const isEmailUnique = importSQL(__dirname, 'sql/isEmailUnique.sql')
@@ -18,9 +19,7 @@ export const Query: QueryResolvers = {
     sql = spliceSQL(sql, await byId, 'GROUP BY')
     values.push(user.id)
 
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
-    if (rowCount === 0) return null
+    const { rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
     return userORM(rows, columns)[0]
   },

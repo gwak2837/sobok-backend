@@ -17,4 +17,7 @@ type Query {
 
   "특정 동네 피드 목록"
   feedListByTown(town: NonEmptyString, option: FeedOptions): [Feed!]
+
+  "해시태그로 메뉴 검색"
+  searchFeedList(hashtags: [NonEmptyString!]!): [Feed!]
 }

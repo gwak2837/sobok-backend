@@ -1,3 +1,16 @@
+enum MenuOrder {
+  NAME
+  NAME_DESC
+  PRICE
+  PRICE_DESC
+}
+
+input MenuPagination {
+  endId: ID
+  endValue: NonEmptyString
+  limit: Int!
+}
+
 type Query {
   "메뉴 상세"
   menu(id: ID!): Menu
@@ -13,4 +26,7 @@ type Query {
 
   "메뉴 버킷에만 해당"
   menusInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Menu!]
+
+  "해시태그로 메뉴 검색"
+  searchMenus(hashtags: [NonEmptyString!]!, order: MenuOrder, pagination: MenuPagination!): [Menu!]
 }

@@ -22,6 +22,7 @@ export type Scalars = {
   Longitude: any
   NonEmptyString: any
   URL: any
+  UUID: any
 }
 
 export type Bucket = {
@@ -118,6 +119,19 @@ export type Menu = {
   storeId: Scalars['ID']
 }
 
+export enum MenuOrder {
+  Name = 'NAME',
+  NameDesc = 'NAME_DESC',
+  Price = 'PRICE',
+  PriceDesc = 'PRICE_DESC',
+}
+
+export type MenuPagination = {
+  limit: Scalars['Int']
+  start: Scalars['NonEmptyString']
+  startId: Scalars['ID']
+}
+
 export type Mutation = {
   __typename?: 'Mutation'
   /** 고유 이름 또는 이메일과 비밀번호를 전송하면 JWT 인증 토큰을 반환함 */
@@ -187,7 +201,7 @@ export type Query = {
   /** 사용자 고유 이름 중복 여부 검사 */
   isUniqueNameUnique: Scalars['Boolean']
   /** 인증 토큰과 같이 요청하면 사용자 정보를 반환 */
-  me?: Maybe<User>
+  me: User
   /** 메뉴 상세 */
   menu?: Maybe<Menu>
   /** 메뉴 상세 */
@@ -204,9 +218,12 @@ export type Query = {
   newsListByStore?: Maybe<Array<News>>
   /** 옵션별 여러 매장 소식 목록 */
   newsListByTown?: Maybe<Array<News>>
-  searchFeed?: Maybe<Array<Menu>>
+  /** 해시태그로 메뉴 검색 */
+  searchFeedList?: Maybe<Array<Feed>>
+  /** 해시태그로 메뉴 검색 */
   searchMenus?: Maybe<Array<Menu>>
-  searchStores?: Maybe<Array<Menu>>
+  /** 해시태그로 매장 검색 */
+  searchStores?: Maybe<Array<Store>>
   /** 특정 매장 정보 */
   store?: Maybe<Store>
   /** 동네 및 카테고리별 매장 목록 */
@@ -283,12 +300,14 @@ export type QueryNewsListByTownArgs = {
   town?: Maybe<Scalars['NonEmptyString']>
 }
 
-export type QuerySearchFeedArgs = {
+export type QuerySearchFeedListArgs = {
   hashtags: Array<Scalars['NonEmptyString']>
 }
 
 export type QuerySearchMenusArgs = {
   hashtags: Array<Scalars['NonEmptyString']>
+  order?: Maybe<MenuOrder>
+  pagination: MenuPagination
 }
 
 export type QuerySearchStoresArgs = {
@@ -378,7 +397,7 @@ export type User = {
   /** 사용자가 따르고 있는 다른 사용자 */
   followings?: Maybe<Array<User>>
   gender: Gender
-  id: Scalars['ID']
+  id: Scalars['UUID']
   imageUrl?: Maybe<Scalars['URL']>
   isEmailVerified: Scalars['Boolean']
   isStarUser: Scalars['Boolean']
@@ -514,6 +533,8 @@ export type ResolversTypes = {
   Latitude: ResolverTypeWrapper<Scalars['Latitude']>
   Longitude: ResolverTypeWrapper<Scalars['Longitude']>
   Menu: ResolverTypeWrapper<Menu>
+  MenuOrder: MenuOrder
+  MenuPagination: MenuPagination
   Mutation: ResolverTypeWrapper<{}>
   News: ResolverTypeWrapper<News>
   NewsOptions: NewsOptions
@@ -525,6 +546,7 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']>
   Trend: ResolverTypeWrapper<Trend>
   URL: ResolverTypeWrapper<Scalars['URL']>
+  UUID: ResolverTypeWrapper<Scalars['UUID']>
   User: ResolverTypeWrapper<User>
   UserAuthentication: ResolverTypeWrapper<UserAuthentication>
 }
@@ -544,6 +566,7 @@ export type ResolversParentTypes = {
   Latitude: Scalars['Latitude']
   Longitude: Scalars['Longitude']
   Menu: Menu
+  MenuPagination: MenuPagination
   Mutation: {}
   News: News
   NonEmptyString: Scalars['NonEmptyString']
@@ -553,6 +576,7 @@ export type ResolversParentTypes = {
   String: Scalars['String']
   Trend: Trend
   URL: Scalars['URL']
+  UUID: Scalars['UUID']
   User: User
   UserAuthentication: UserAuthentication
 }
@@ -745,7 +769,7 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryIsUniqueNameUniqueArgs, 'uniqueName'>
   >
-  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>
+  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>
   menu?: Resolver<
     Maybe<ResolversTypes['Menu']>,
     ParentType,
@@ -794,20 +818,20 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryNewsListByTownArgs, never>
   >
-  searchFeed?: Resolver<
-    Maybe<Array<ResolversTypes['Menu']>>,
+  searchFeedList?: Resolver<
+    Maybe<Array<ResolversTypes['Feed']>>,
     ParentType,
     ContextType,
-    RequireFields<QuerySearchFeedArgs, 'hashtags'>
+    RequireFields<QuerySearchFeedListArgs, 'hashtags'>
   >
   searchMenus?: Resolver<
     Maybe<Array<ResolversTypes['Menu']>>,
     ParentType,
     ContextType,
-    RequireFields<QuerySearchMenusArgs, 'hashtags'>
+    RequireFields<QuerySearchMenusArgs, 'hashtags' | 'pagination'>
   >
   searchStores?: Resolver<
-    Maybe<Array<ResolversTypes['Menu']>>,
+    Maybe<Array<ResolversTypes['Store']>>,
     ParentType,
     ContextType,
     RequireFields<QuerySearchStoresArgs, 'hashtags'>
@@ -877,6 +901,10 @@ export interface UrlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
   name: 'URL'
 }
 
+export interface UuidScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['UUID'], any> {
+  name: 'UUID'
+}
+
 export type UserResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']
@@ -890,7 +918,7 @@ export type UserResolvers<
   followers?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>
   followings?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>
   gender?: Resolver<ResolversTypes['Gender'], ParentType, ContextType>
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  id?: Resolver<ResolversTypes['UUID'], ParentType, ContextType>
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>
   isEmailVerified?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   isStarUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
@@ -939,6 +967,7 @@ export type Resolvers<ContextType = any> = {
   Store?: StoreResolvers<ContextType>
   Trend?: TrendResolvers<ContextType>
   URL?: GraphQLScalarType
+  UUID?: GraphQLScalarType
   User?: UserResolvers<ContextType>
   UserAuthentication?: UserAuthenticationResolvers<ContextType>
 }
