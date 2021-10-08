@@ -1,22 +1,18 @@
 /* eslint-disable node/no-unpublished-require */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { resolve } = require('path')
-const { NODE_ENV } = process.env
 const { IgnorePlugin } = require('webpack')
 
+const { NODE_ENV } = process.env
+
 module.exports = {
-  entry: './src',
+  entry: './src/index.ts',
   mode: NODE_ENV,
   module: {
     rules: [
       {
         include: resolve(__dirname, 'src'),
-        test: /\.graphql$/,
-        type: 'asset/source',
-      },
-      {
-        include: resolve(__dirname, 'src'),
-        test: /\.sql$/,
+        test: /\.(graphql|sql)$/,
         type: 'asset/source',
       },
       {
@@ -40,6 +36,6 @@ module.exports = {
   target: 'node',
   watch: NODE_ENV === 'development',
   watchOptions: {
-    ignored: ['.yarn', 'dist'],
+    ignored: '!src',
   },
 }

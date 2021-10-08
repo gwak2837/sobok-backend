@@ -1171,19 +1171,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/load-files@npm:^6.5.1":
-  version: 6.5.1
-  resolution: "@graphql-tools/load-files@npm:6.5.1"
-  dependencies:
-    globby: 11.0.4
-    tslib: ~2.3.0
-    unixify: 1.0.0
-  peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
-  checksum: 9a3b5bc0b5a720dc5a1a340ef85cae2d0d92a4906c3acd9a4e560978f41169b1745d870f23cc69a4569e6cd755c3fc73416db25557697e1191609bafdc3a24a3
-  languageName: node
-  linkType: hard
-
 "@graphql-tools/load@npm:^7.1.0, @graphql-tools/load@npm:^7.3.0":
   version: 7.3.2
   resolution: "@graphql-tools/load@npm:7.3.2"
@@ -5341,7 +5328,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globby@npm:11.0.4, globby@npm:^11.0.3, globby@npm:^11.0.4":
+"globby@npm:^11.0.3, globby@npm:^11.0.4":
   version: 11.0.4
   resolution: "globby@npm:11.0.4"
   dependencies:
@@ -9323,7 +9310,6 @@ __metadata:
     "@graphql-codegen/schema-ast": ^2.2.0
     "@graphql-codegen/typescript": 2.2.2
     "@graphql-codegen/typescript-resolvers": 2.3.0
-    "@graphql-tools/load-files": ^6.5.1
     "@graphql-tools/merge": ^8.1.2
     "@graphql-tools/schema": ^8.2.0
     "@types/bcryptjs": ^2.4.2
@@ -10254,7 +10240,7 @@ typescript@^4.4.3:
   languageName: node
   linkType: hard
 
-"unixify@npm:1.0.0, unixify@npm:^1.0.0":
+"unixify@npm:^1.0.0":
   version: 1.0.0
   resolution: "unixify@npm:1.0.0"
   dependencies:
