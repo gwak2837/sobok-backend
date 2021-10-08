@@ -57,7 +57,6 @@ export function spliceSQL(sql: string, sql2: string, targetString?: string, endI
   return `${sql.slice(0, foundIndex)} ${formattedSQL} ${sql.slice(foundIndex)}`
 }
 
-
 export function buildSQL(sql: string) {
   return ''
 }

@@ -134,10 +134,7 @@ export const User: UserResolvers<ApolloContext> = {
 
     const columns = selectColumnFromField(info, feedFieldColumnMapping)
 
-    const formattedSQL = removeDoubleQuotesAround(
-      ['feed.user_id'],
-      format(likedFeed, columns)
-    )
+    const formattedSQL = removeDoubleQuotesAround(['feed.user_id'], format(likedFeed, columns))
 
     const { rows } = await poolQuery(formattedSQL, [userId])
 
@@ -163,10 +160,7 @@ export const User: UserResolvers<ApolloContext> = {
       column === 'user_id' ? 'news.user_id' : column
     )
 
-    const formattedSQL = removeDoubleQuotesAround(
-      ['news.user_id'],
-      format(likedNews, columns)
-    )
+    const formattedSQL = removeDoubleQuotesAround(['news.user_id'], format(likedNews, columns))
 
     const { rows } = await poolQuery(formattedSQL, [userId])
 
@@ -182,10 +176,7 @@ export const User: UserResolvers<ApolloContext> = {
       column === 'user_id' ? 'store.user_id' : column
     )
 
-    const formattedSQL = removeDoubleQuotesAround(
-      ['store.user_id'],
-      format(likedStores, columns)
-    )
+    const formattedSQL = removeDoubleQuotesAround(['store.user_id'], format(likedStores, columns))
 
     const { rows } = await poolQuery(formattedSQL, [userId])
 
@@ -199,10 +190,7 @@ export const User: UserResolvers<ApolloContext> = {
       column === 'user_id' ? 'trend.user_id' : column
     )
 
-    const formattedSQL = removeDoubleQuotesAround(
-      ['trend.user_id'],
-      format(likedTrends, columns)
-    )
+    const formattedSQL = removeDoubleQuotesAround(['trend.user_id'], format(likedTrends, columns))
 
     const { rows } = await poolQuery(formattedSQL, [userId])
 
