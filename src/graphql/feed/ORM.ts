@@ -6,7 +6,7 @@ import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
   removeColumnWithAggregateFunction,
-  selectColumnFromSubField,
+  selectColumnFromField,
   serializeParameters,
 } from '../../utils/ORM'
 import { commentFieldColumnMapping } from '../comment/ORM'
@@ -50,7 +50,7 @@ export async function buildBasicFeedQuery(
   const firstFeedFields = new Set(Object.keys(feedFields))
 
   let sql = feedList
-  let columns = selectColumns ? selectColumnFromSubField(feedFields, feedFieldColumnMapping) : []
+  let columns = selectColumns ? selectColumnFromField(feedFields, feedFieldColumnMapping) : []
   const values: unknown[] = []
   let groupBy = false
 
@@ -63,21 +63,21 @@ export async function buildBasicFeedQuery(
   }
 
   if (firstFeedFields.has('store')) {
-    const storeColumns = selectColumnFromSubField(feedFields.store, storeFieldColumnMapping)
+    const storeColumns = selectColumnFromField(feedFields.store, storeFieldColumnMapping)
 
     sql = `${sql} ${joinStore}`
     columns = [...columns, ...storeColumns]
   }
 
   if (firstFeedFields.has('user')) {
-    const userColumns = selectColumnFromSubField(feedFields.user, userFieldColumnMapping)
+    const userColumns = selectColumnFromField(feedFields.user, userFieldColumnMapping)
 
     sql = `${sql} ${joinUser}`
     columns = [...columns, ...userColumns]
   }
 
   if (firstFeedFields.has('comments')) {
-    const commentColumns = selectColumnFromSubField(
+    const commentColumns = selectColumnFromField(
       feedFields.comments,
       commentFieldColumnMapping
     ).map((column) => `array_agg(${column})`)
@@ -94,7 +94,7 @@ export async function buildBasicFeedQuery(
   }
 
   if (firstFeedFields.has('menus')) {
-    const menuColumns = selectColumnFromSubField(feedFields.menus, menuFieldColumnMapping).map(
+    const menuColumns = selectColumnFromField(feedFields.menus, menuFieldColumnMapping).map(
       (column) => `array_agg(${column})`
     )
 

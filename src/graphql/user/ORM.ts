@@ -7,7 +7,7 @@ import type { user as DatabaseUser } from '../../database/sobok'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
   removeColumnWithAggregateFunction,
-  selectColumnFromSubField,
+  selectColumnFromField,
   serializeParameters,
 } from '../../utils/ORM'
 import { commentFieldColumnMapping } from '../comment/ORM'
@@ -49,13 +49,9 @@ const privateUserField = new Set([
 export function userFieldColumnMapping(userField: keyof GraphQLUser) {
   if (userField === 'providers') {
     return ['"user".id', '"user".google_oauth', '"user".naver_oauth', '"user".kakao_oauth']
-  }
-  //
-  else if (userFieldsFromOtherTable.has(userField)) {
+  } else if (userFieldsFromOtherTable.has(userField)) {
     return '"user".id'
-  }
-  //
-  else if (privateUserField.has(userField)) {
+  } else if (privateUserField.has(userField)) {
     return ['"user".id', `"user".${camelToSnake(userField)}`]
   }
 
@@ -71,51 +67,71 @@ export async function buildBasicUserQuery(
   const userFields = graphqlFields(info) as Record<string, any>
   const firstUserFields = new Set(Object.keys(userFields))
 
-  let sql = await fromUser
-  let columns = selectColumns ? selectColumnFromSubField(userFields, userFieldColumnMapping) : []
+  let sql = fromUser
+  let columns = selectColumns ? selectColumnFromField(userFields, userFieldColumnMapping) : []
   const values: unknown[] = []
   let groupBy = false
 
   if (firstUserFields.has('comments')) {
-    const commentColumns = selectColumnFromSubField(
+    const commentColumns = selectColumnFromField(
       userFields.comments,
       commentFieldColumnMapping
     ).map((column) => `array_agg(${column})`)
 
-    sql = `${sql} ${await joinComment}`
+    sql = `${sql} ${joinComment}`
     columns = [...columns, ...commentColumns]
     groupBy = true
   }
 
   if (firstUserFields.has('feed')) {
-    const feedColumns = selectColumnFromSubField(userFields.feed, feedFieldColumnMapping).map(
+    const feedColumns = selectColumnFromField(userFields.feed, feedFieldColumnMapping).map(
       (column) => `array_agg(${column})`
     )
 
-    sql = `${sql} ${await joinFeed}`
+    sql = `${sql} ${joinFeed}`
     columns = [...columns, ...feedColumns]
     groupBy = true
   }
 
   if (firstUserFields.has('followings')) {
-    const userColumns = selectColumnFromSubField(userFields.followings, userFieldColumnMapping).map(
+    const userColumns = selectColumnFromField(userFields.followings, userFieldColumnMapping).map(
       (column) => `array_agg(DISTINCT following.${column})`
     )
 
-    sql = `${sql} ${await joinFollowing}`
+    sql = `${sql} ${joinFollowing}`
     columns = [...columns, ...userColumns]
     groupBy = true
   }
 
   if (firstUserFields.has('followers')) {
-    const userColumns = selectColumnFromSubField(userFields.followers, userFieldColumnMapping).map(
+    const userColumns = selectColumnFromField(userFields.followers, userFieldColumnMapping).map(
       (column) => `array_agg(DISTINCT follower.${column})`
     )
 
-    sql = `${sql} ${await joinFollower}`
+    sql = `${sql} ${joinFollower}`
     columns = [...columns, ...userColumns]
     groupBy = true
   }
+
+  // if (firstUserFields.has('likedComments')) {
+  //   const userColumns = selectColumnFromField(userFields.followers, userFieldColumnMapping).map(
+  //     (column) => `array_agg(DISTINCT follower.${column})`
+  //   )
+
+  //   sql = `${sql} ${joinFollower}`
+  //   columns = [...columns, ...userColumns]
+  //   groupBy = true
+  // }
+
+  // if (firstUserFields.has('likedFeed')) {
+  //   const userColumns = selectColumnFromField(userFields.followers, userFieldColumnMapping).map(
+  //     (column) => `array_agg(DISTINCT follower.${column})`
+  //   )
+
+  //   sql = `${sql} ${joinFollower}`
+  //   columns = [...columns, ...userColumns]
+  //   groupBy = true
+  // }
 
   const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
 

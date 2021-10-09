@@ -6,7 +6,7 @@ import { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
   removeColumnWithAggregateFunction,
-  selectColumnFromSubField,
+  selectColumnFromField,
   serializeParameters,
 } from '../../utils/ORM'
 import type { Store as GraphQLStore } from '../generated/graphql'
@@ -54,7 +54,7 @@ export async function buildBasicStoreQuery(
   const firstMenuFields = new Set(Object.keys(storeFields))
 
   let sql = stores
-  let columns = selectColumns ? selectColumnFromSubField(storeFields, storeFieldColumnMapping) : []
+  let columns = selectColumns ? selectColumnFromField(storeFields, storeFieldColumnMapping) : []
   const values: unknown[] = []
   let groupBy = false
 
@@ -75,7 +75,7 @@ export async function buildBasicStoreQuery(
   }
 
   if (firstMenuFields.has('menus')) {
-    const menuColumns = selectColumnFromSubField(storeFields.menus, menuFieldColumnMapping).map(
+    const menuColumns = selectColumnFromField(storeFields.menus, menuFieldColumnMapping).map(
       (column) => `array_agg(${column})`
     )
 
@@ -91,7 +91,7 @@ export async function buildBasicStoreQuery(
   }
 
   if (firstMenuFields.has('news')) {
-    const newsColumns = selectColumnFromSubField(storeFields.news, newsFieldColumnMapping).map(
+    const newsColumns = selectColumnFromField(storeFields.news, newsFieldColumnMapping).map(
       (column) => `array_agg(${column})`
     )
 
@@ -101,7 +101,7 @@ export async function buildBasicStoreQuery(
   }
 
   if (firstMenuFields.has('user')) {
-    const userColumns = selectColumnFromSubField(storeFields.user, userFieldColumnMapping)
+    const userColumns = selectColumnFromField(storeFields.user, userFieldColumnMapping)
 
     sql = `${sql} ${joinUser}`
     columns = [...columns, ...userColumns]

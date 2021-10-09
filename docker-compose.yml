@@ -1,11 +1,11 @@
 version: '3.9'
 
 services:
-  graphql-server:
+  sobok-graphql-server:
     build: .
-    container_name: graphql-server
+    container_name: sobok-graphql-server
     env_file: .env
-    image: graphql-server:latest
+    image: sobok-graphql-server:latest
     restart: always
     ports:
       - $PORT:$PORT

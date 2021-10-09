@@ -5,7 +5,7 @@ import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
   removeColumnWithAggregateFunction,
-  selectColumnFromSubField,
+  selectColumnFromField,
   serializeParameters,
 } from '../../utils/ORM'
 import type { Menu as GraphQLMenu } from '../generated/graphql'
@@ -36,7 +36,7 @@ export async function buildBasicMenuQuery(
   const firstMenuFields = new Set(Object.keys(menuFields))
 
   let sql = ''
-  let columns = selectColumns ? selectColumnFromSubField(menuFields, menuFieldColumnMapping) : []
+  let columns = selectColumns ? selectColumnFromField(menuFields, menuFieldColumnMapping) : []
   const values: unknown[] = []
   let groupBy = false
 
@@ -57,7 +57,7 @@ export async function buildBasicMenuQuery(
   }
 
   if (firstMenuFields.has('store')) {
-    const storeColumns = selectColumnFromSubField(menuFields.store, storeFieldColumnMapping)
+    const storeColumns = selectColumnFromField(menuFields.store, storeFieldColumnMapping)
     sql = `${sql} ${joinStore}`
     columns = [...columns, ...storeColumns]
   }
