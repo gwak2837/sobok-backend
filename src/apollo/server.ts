@@ -38,6 +38,7 @@ export async function startApolloServer() {
 
       return { userId: rows[0].id }
     },
+    introspection: process.env.NODE_ENV === 'development',
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
     schema,
   })

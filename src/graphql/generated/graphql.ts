@@ -21,6 +21,7 @@ export type Scalars = {
   Latitude: any
   Longitude: any
   NonEmptyString: any
+  PositiveInt: any
   URL: any
   UUID: any
 }
@@ -119,17 +120,15 @@ export type Menu = {
   storeId: Scalars['ID']
 }
 
-export enum MenuOrder {
-  Name = 'NAME',
-  NameDesc = 'NAME_DESC',
-  Price = 'PRICE',
-  PriceDesc = 'PRICE_DESC',
+export type MenuOrder = {
+  by?: Maybe<MenuOrderBy>
+  direction?: Maybe<OrderDirection>
 }
 
-export type MenuPagination = {
-  endId?: Maybe<Scalars['ID']>
-  endValue?: Maybe<Scalars['NonEmptyString']>
-  limit: Scalars['Int']
+/** 기본값: id */
+export enum MenuOrderBy {
+  Name = 'NAME',
+  Price = 'PRICE',
 }
 
 export type Mutation = {
@@ -176,6 +175,17 @@ export enum NewsOptions {
   LikedStore = 'LIKED_STORE',
 }
 
+/** 기본값: 내림차순 */
+export enum OrderDirection {
+  Asc = 'ASC',
+}
+
+export type Pagination = {
+  lastId?: Maybe<Scalars['ID']>
+  lastValue?: Maybe<Scalars['NonEmptyString']>
+  limit: Scalars['PositiveInt']
+}
+
 /** OAuth 공급자 */
 export enum Provider {
   Google = 'GOOGLE',
@@ -210,7 +220,7 @@ export type Query = {
   menusByStore?: Maybe<Array<Menu>>
   /** 특정 동네 및 특정 카테고리 피드 목록 */
   menusByTownAndCategory?: Maybe<Array<Menu>>
-  /** 메뉴 버킷에만 해당 */
+  /** 메뉴 버킷에서 메뉴 가져오기 */
   menusInBucket?: Maybe<Array<Menu>>
   /** 소식 상세 */
   news?: Maybe<News>
@@ -307,7 +317,7 @@ export type QuerySearchFeedListArgs = {
 export type QuerySearchMenusArgs = {
   hashtags: Array<Scalars['NonEmptyString']>
   order?: Maybe<MenuOrder>
-  pagination: MenuPagination
+  pagination: Pagination
 }
 
 export type QuerySearchStoresArgs = {
@@ -534,11 +544,14 @@ export type ResolversTypes = {
   Longitude: ResolverTypeWrapper<Scalars['Longitude']>
   Menu: ResolverTypeWrapper<Menu>
   MenuOrder: MenuOrder
-  MenuPagination: MenuPagination
+  MenuOrderBy: MenuOrderBy
   Mutation: ResolverTypeWrapper<{}>
   News: ResolverTypeWrapper<News>
   NewsOptions: NewsOptions
   NonEmptyString: ResolverTypeWrapper<Scalars['NonEmptyString']>
+  OrderDirection: OrderDirection
+  Pagination: Pagination
+  PositiveInt: ResolverTypeWrapper<Scalars['PositiveInt']>
   Provider: Provider
   Query: ResolverTypeWrapper<{}>
   RegisterInput: RegisterInput
@@ -566,10 +579,12 @@ export type ResolversParentTypes = {
   Latitude: Scalars['Latitude']
   Longitude: Scalars['Longitude']
   Menu: Menu
-  MenuPagination: MenuPagination
+  MenuOrder: MenuOrder
   Mutation: {}
   News: News
   NonEmptyString: Scalars['NonEmptyString']
+  Pagination: Pagination
+  PositiveInt: Scalars['PositiveInt']
   Query: {}
   RegisterInput: RegisterInput
   Store: Store
@@ -721,6 +736,11 @@ export type NewsResolvers<
 export interface NonEmptyStringScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes['NonEmptyString'], any> {
   name: 'NonEmptyString'
+}
+
+export interface PositiveIntScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes['PositiveInt'], any> {
+  name: 'PositiveInt'
 }
 
 export type QueryResolvers<
@@ -963,6 +983,7 @@ export type Resolvers<ContextType = any> = {
   Mutation?: MutationResolvers<ContextType>
   News?: NewsResolvers<ContextType>
   NonEmptyString?: GraphQLScalarType
+  PositiveInt?: GraphQLScalarType
   Query?: QueryResolvers<ContextType>
   Store?: StoreResolvers<ContextType>
   Trend?: TrendResolvers<ContextType>
