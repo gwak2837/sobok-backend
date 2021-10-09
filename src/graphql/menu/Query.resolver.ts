@@ -9,10 +9,10 @@ import joinHashtag from './sql/joinHashtag.sql'
 import joinMenuBucketOnMenuBucketId from './sql/joinMenuBucketOnMenuBucketId.sql'
 import joinStoreOnTown from './sql/joinStoreOnTown.sql'
 import joinStoreOnTownAndCategory from './sql/joinStoreOnTownAndCategory.sql'
-import onTownAndCategory from './sql/onTownAndCategory.sql'
 import verifyUserBucket from './sql/verifyUserBucket.sql'
 
 const joinHashtagShort = 'JOIN hashtag ON hashtag.id = menu_x_hashtag.hashtag_id'
+const joinStoreOnId = 'JOIN store ON store.id = menu.store_id'
 
 export const MenuOrderBy = {
   NAME: 'name',
@@ -55,14 +55,14 @@ export const Query: QueryResolvers<ApolloContext> = {
 
     if (town && category) {
       if (sql.includes('JOIN store')) {
-        sql = spliceSQL(sql, onTownAndCategory, 'JOIN store ON store.id = menu.store_id', true)
+        sql = spliceSQL(sql, 'AND store.town = $1 AND menu.category = $2', joinStoreOnId, true)
       } else {
         sql = buildSQL(sql, 'JOIN', joinStoreOnTownAndCategory)
       }
       values.push(town, encodedCategory)
     } else if (town) {
       if (sql.includes('JOIN store')) {
-        sql = spliceSQL(sql, 'AND store.town = $1', 'JOIN store ON store.id = menu.store_id', true)
+        sql = spliceSQL(sql, 'AND store.town = $1', joinStoreOnId, true)
       } else {
         sql = buildSQL(sql, 'JOIN', joinStoreOnTown)
       }
