@@ -5,10 +5,14 @@ import { pool } from './database/postgres'
 pool
   .query('SELECT NOW()')
   .then(({ rows }) =>
-    console.log('🚅 PostgreSQL 서버에 접속했습니다. ' + new Date(rows[0].now).toLocaleString())
+    console.log('🚅 Connected to PostgreSQL server at ' + new Date(rows[0].now).toLocaleString())
   )
   .catch(() => {
     throw new Error('PostgreSQL 서버에 접속할 수 없습니다.')
   })
 
 startApolloServer()
+  .then((url) => console.log(`🚀 Server ready at ${url}`))
+  .catch(() => {
+    throw new Error('Apollo 서버를 실행할 수 없습니다.')
+  })
