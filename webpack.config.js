@@ -33,7 +33,7 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.mjs', '.js'],
   },
-  target: 'node',
+  target: 'node16',
   watch: NODE_ENV === 'development',
   watchOptions: {
     ignored: '!src',
