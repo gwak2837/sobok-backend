@@ -119,7 +119,7 @@ export const Query: QueryResolvers<ApolloContext> = {
 
   searchMenus: async (_, { hashtags, order, pagination }, { userId }, info) => {
     if (hashtags.length === 0) throw new UserInputError('hashtags 배열은 비어있을 수 없습니다.')
-    if (order && (!order.by || !order.direction))
+    if (order && !order.by && !order.direction)
       throw new UserInputError('order 객체는 비어있을 수 없습니다.')
     if (!pagination.lastId && pagination.lastValue)
       throw new UserInputError('pagination.lastId가 존재해야 합니다.')
