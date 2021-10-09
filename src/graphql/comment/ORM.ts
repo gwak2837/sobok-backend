@@ -1,6 +1,6 @@
-import type { comment } from 'src/database/sobok'
-import type { Comment } from 'src/graphql/generated/graphql'
-import { camelToSnake, snakeKeyToCamelKey } from '../../utils/commons'
+import type { comment } from '../../database/sobok'
+import { camelToSnake, snakeKeyToCamelKey } from '../../utils'
+import type { Comment } from '../generated/graphql'
 
 // All GraphQL fields -> Database columns
 export function commentFieldColumnMapping(commentField: keyof Comment) {

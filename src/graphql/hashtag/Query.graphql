@@ -1,5 +1,0 @@
-type Query {
-  searchFeed(hashtags: [NonEmptyString!]!): [Menu!]
-  searchMenus(hashtags: [NonEmptyString!]!): [Menu!]
-  searchStores(hashtags: [NonEmptyString!]!): [Menu!]
-}

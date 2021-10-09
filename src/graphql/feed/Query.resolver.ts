@@ -1,24 +1,27 @@
-import type { ApolloContext } from 'src/apollo/server'
-import { FeedOptions, QueryResolvers } from '../../graphql/generated/graphql'
-import { importSQL } from '../../utils/commons'
-import { poolQuery } from '../../database/postgres'
-import { buildBasicFeedQuery, feedORM } from './ORM'
-import { spliceSQL } from '../../utils/ORM'
-import { AuthenticationError } from 'apollo-server-express'
+import { AuthenticationError, UserInputError } from 'apollo-server-express'
 
-const byId = importSQL(__dirname, 'sql/byId.sql')
-const byStarUser = importSQL(__dirname, 'sql/byStarUser.sql')
-const byStoreId = importSQL(__dirname, 'sql/byStoreId.sql')
-const joinFollowingUser = importSQL(__dirname, 'sql/joinFollowingUser.sql')
-const joinStoreOnTown = importSQL(__dirname, 'sql/joinStoreOnTown.sql')
-const joinStarUser = importSQL(__dirname, 'sql/joinStarUser.sql')
-const onTown = importSQL(__dirname, 'sql/onTown.sql')
+import type { ApolloContext } from '../../apollo/server'
+import { poolQuery } from '../../database/postgres'
+import { FeedOptions, QueryResolvers } from '../../graphql/generated/graphql'
+import { spliceSQL } from '../../utils/ORM'
+import { buildBasicFeedQuery, feedORM } from './ORM'
+import byId from './sql/byId.sql'
+import byStarUser from './sql/byStarUser.sql'
+import byStoreId from './sql/byStoreId.sql'
+import joinFollowingUser from './sql/joinFollowingUser.sql'
+import joinHashtag from './sql/joinHashtag.sql'
+import joinStarUser from './sql/joinStarUser.sql'
+import joinStoreOnTown from './sql/joinStoreOnTown.sql'
+import onHashtagName from './sql/onHashtagName.sql'
+import onTown from './sql/onTown.sql'
+
+const joinHashtagShort = 'JOIN hashtag ON hashtag.id = feed_x_hashtag.hashtag_id'
 
 export const Query: QueryResolvers<ApolloContext> = {
-  feed: async (_, { id }, { user }, info) => {
-    let [sql, columns, values] = await buildBasicFeedQuery(info, user)
+  feed: async (_, { id }, { userId }, info) => {
+    let [sql, columns, values] = await buildBasicFeedQuery(info, userId)
 
-    sql = spliceSQL(sql, await byId, 'GROUP BY')
+    sql = spliceSQL(sql, byId, 'GROUP BY')
     values.push(id)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
@@ -28,10 +31,10 @@ export const Query: QueryResolvers<ApolloContext> = {
     return feedORM(rows, columns)[0]
   },
 
-  feedListByStore: async (_, { storeId }, { user }, info) => {
-    let [sql, columns, values] = await buildBasicFeedQuery(info, user)
+  feedListByStore: async (_, { storeId }, { userId }, info) => {
+    let [sql, columns, values] = await buildBasicFeedQuery(info, userId)
 
-    sql = spliceSQL(sql, await byStoreId, 'GROUP BY')
+    sql = spliceSQL(sql, byStoreId, 'GROUP BY')
     values.push(storeId)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
@@ -41,37 +44,58 @@ export const Query: QueryResolvers<ApolloContext> = {
     return feedORM(rows, columns)
   },
 
-  feedListByTown: async (_, { town, option }, { user }, info) => {
+  feedListByTown: async (_, { town, option }, { userId }, info) => {
     if (option === FeedOptions.FollowingUser || option === FeedOptions.StarUser) {
-      if (!user) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+      if (!userId)
+        throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
     }
 
-    let [sql, columns, values] = await buildBasicFeedQuery(info, user)
+    let [sql, columns, values] = await buildBasicFeedQuery(info, userId)
 
     if (town) {
       if (sql.includes('JOIN store')) {
-        sql = spliceSQL(sql, await onTown, 'JOIN store ON store.id = feed.store_id', true)
+        sql = spliceSQL(sql, onTown, 'JOIN store ON store.id = feed.store_id', true)
       } else {
-        sql = spliceSQL(sql, await joinStoreOnTown, 'JOIN')
+        sql = spliceSQL(sql, joinStoreOnTown, 'JOIN')
       }
 
       values.push(town)
     }
 
     if (option === FeedOptions.FollowingUser) {
-      sql = spliceSQL(sql, await joinFollowingUser, 'WHERE')
-      values.push(user!.id)
+      sql = spliceSQL(sql, joinFollowingUser, 'WHERE')
+      values.push(userId)
     }
     //
     else if (option === FeedOptions.StarUser) {
       if (sql.includes('JOIN "user"')) {
-        sql = spliceSQL(sql, await byStarUser, 'GROUP BY')
+        sql = spliceSQL(sql, byStarUser, 'GROUP BY')
       } else {
-        sql = spliceSQL(sql, await joinStarUser, 'WHERE')
+        sql = spliceSQL(sql, joinStarUser, 'WHERE')
       }
 
-      values.push(user!.id)
+      values.push(userId)
     }
+
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+
+    if (rowCount === 0) return null
+
+    return feedORM(rows, columns)
+  },
+
+  searchFeedList: async (_, { hashtags }, { userId }, info) => {
+    if (hashtags.length === 0) throw new UserInputError('해시태그 배열은 비어있을 수 없습니다.')
+
+    let [sql, columns, values] = await buildBasicFeedQuery(info, userId)
+
+    if (sql.includes(joinHashtagShort)) {
+      sql = spliceSQL(sql, onHashtagName, joinHashtagShort, true)
+    } else {
+      sql = spliceSQL(sql, `${joinHashtag} ${onHashtagName}`, 'GROUP BY')
+    }
+
+    values.push(hashtags)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 

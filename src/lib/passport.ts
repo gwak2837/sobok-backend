@@ -1,13 +1,11 @@
-import passport from 'passport'
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
-import { Strategy as FacebookStrategy } from 'passport-facebook'
-import querystring from 'querystring'
-import { poolQuery } from '../database/postgres'
-import { importSQL } from '../utils/commons'
-import { generateJWT } from '../utils/jwt'
 import { Express } from 'express'
-
-const socialLogin = importSQL(__dirname, 'sql/socialLogin.sql')
+import { Strategy as FacebookStrategy } from 'passport-facebook'
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
+import { generateJWT } from '../utils/jwt'
+import passport from 'passport'
+import { poolQuery } from '../database/postgres'
+import querystring from 'querystring'
+import socialLogin from './sql/socialLogin.sql'
 
 export function setPassportStrategies(app: Express) {
   app.use(passport.initialize())

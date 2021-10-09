@@ -1,4 +1,4 @@
 {
-  "ext": "graphql,sql,ts",
-  "watch": ["src/"]
+  "ext": "js",
+  "watch": ["dist"]
 }

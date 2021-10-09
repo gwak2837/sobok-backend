@@ -1,31 +1,25 @@
 # Install all packages and transpile TypeScript into JavaScript
-FROM node:lts-alpine AS node-builder
-
-WORKDIR /server
-
-COPY .yarn .yarn
-COPY src src
-COPY .yarnrc.yml package.json tsconfig.json yarn.lock ./
-
-RUN yarn && yarn build
-
-# Install only dependency packages
-FROM node:lts-alpine
+FROM node:16-alpine AS builder
 
 ENV NODE_ENV=production
 
 WORKDIR /server
 
-COPY --from=node-builder /server/dist dist
-COPY .yarn/plugins .yarn/plugins
-COPY .yarn/releases .yarn/releases
-COPY .yarnrc.yml package.json yarn.lock ./
+COPY .yarn .yarn
+COPY src src
+COPY .yarnrc.yml codegen.yml package.json tsconfig.json webpack.config.js yarn.lock ./
 
-RUN yarn workspaces focus --production
-RUN apk add redis
+RUN yarn && yarn build
+
+# Install only dependency packages
+FROM node:16-alpine
+
+ENV NODE_ENV=production
+
+WORKDIR /server
+
+COPY --from=builder /server/dist dist
 
 EXPOSE $PORT
 
-ENTRYPOINT [ "yarn" ]
-
-CMD [ "concurrently", "\"/usr/bin/redis-server --bind 'localhost'\"", "\"yarn start\""]
+ENTRYPOINT ["node", "dist"]

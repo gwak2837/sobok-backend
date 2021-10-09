@@ -1,27 +1,19 @@
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
-import format from 'pg-format'
-import type { ApolloContext } from 'src/apollo/server'
-import type { Menu as GraphQLMenu } from 'src/graphql/generated/graphql'
-import {
-  selectColumnFromSubField,
-  removeColumnWithAggregateFunction,
-  serializeSQLParameters,
-} from '../../utils/ORM'
-import {
-  camelToSnake,
-  importSQL,
-  removeQuotes,
-  snakeToCamel,
-  tableColumnRegEx,
-} from '../../utils/commons'
-import { storeFieldColumnMapping } from '../store/ORM'
 
-const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
-const joinLikedMenu = importSQL(__dirname, 'sql/joinLikedMenu.sql')
-const joinMenuBucket = importSQL(__dirname, 'sql/joinMenuBucket.sql')
-const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
-const menus = importSQL(__dirname, 'sql/menus.sql')
+import type { ApolloContext } from '../../apollo/server'
+import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
+import {
+  removeColumnWithAggregateFunction,
+  selectColumnFromSubField,
+  serializeParameters,
+} from '../../utils/ORM'
+import type { Menu as GraphQLMenu } from '../generated/graphql'
+import { storeFieldColumnMapping } from '../store/ORM'
+import joinHashtag from './sql/joinHashtag.sql'
+import joinLikedMenu from './sql/joinLikedMenu.sql'
+import joinMenuBucket from './sql/joinMenuBucket.sql'
+import joinStore from './sql/joinStore.sql'
 
 const menuFieldsFromOtherTable = new Set(['isInBucket', 'isLiked', 'store', 'hashtags'])
 
@@ -37,53 +29,55 @@ export function menuFieldColumnMapping(menuField: keyof GraphQLMenu) {
 // GraphQL fields -> SQL
 export async function buildBasicMenuQuery(
   info: GraphQLResolveInfo,
-  user: ApolloContext['user'],
+  userId: ApolloContext['userId'],
   selectColumns = true
 ) {
   const menuFields = graphqlFields(info) as Record<string, any>
   const firstMenuFields = new Set(Object.keys(menuFields))
 
-  let sql = await menus
+  let sql = ''
   let columns = selectColumns ? selectColumnFromSubField(menuFields, menuFieldColumnMapping) : []
   const values: unknown[] = []
   let groupBy = false
 
   if (firstMenuFields.has('isInBucket')) {
-    if (user) {
-      sql = `${sql} ${await joinMenuBucket}`
+    if (userId) {
+      sql = `${sql} ${joinMenuBucket}`
       columns.push('bucket.id')
-      values.push(user.id)
+      values.push(userId)
     }
   }
 
   if (firstMenuFields.has('isLiked')) {
-    if (user) {
-      sql = `${sql} ${await joinLikedMenu}`
+    if (userId) {
+      sql = `${sql} ${joinLikedMenu}`
       columns.push('user_x_liked_menu.user_id')
-      values.push(user.id)
+      values.push(userId)
     }
   }
 
   if (firstMenuFields.has('store')) {
     const storeColumns = selectColumnFromSubField(menuFields.store, storeFieldColumnMapping)
-
-    sql = `${sql} ${await joinStore}`
+    sql = `${sql} ${joinStore}`
     columns = [...columns, ...storeColumns]
   }
 
   if (firstMenuFields.has('hashtags')) {
-    sql = `${sql} ${await joinHashtag}`
+    sql = `${sql} ${joinHashtag}`
     columns.push('array_agg(hashtag.name)')
     groupBy = true
   }
 
   const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
-
   if (groupBy && filteredColumns.length > 0) {
     sql = `${sql} GROUP BY ${filteredColumns}`
   }
 
-  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+  return [
+    `SELECT ${columns} FROM menu ${serializeParameters(sql)}` as string,
+    columns,
+    values,
+  ] as const
 }
 
 // Database records -> GraphQL fields

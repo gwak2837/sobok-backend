@@ -14,7 +14,7 @@ enum Gender {
 }
 
 type User {
-  id: ID!
+  id: UUID!
   creationTime: DateTime!
   modificationTime: DateTime!
   uniqueName: NonEmptyString!

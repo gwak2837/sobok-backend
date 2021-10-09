@@ -1,31 +1,25 @@
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
 import format from 'pg-format'
-import { ApolloContext } from 'src/apollo/server'
-import type { Store as GraphQLStore } from 'src/graphql/generated/graphql'
+
+import { ApolloContext } from '../../apollo/server'
+import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
   removeColumnWithAggregateFunction,
   selectColumnFromSubField,
-  serializeSQLParameters,
+  serializeParameters,
 } from '../../utils/ORM'
-import {
-  camelToSnake,
-  importSQL,
-  removeQuotes,
-  snakeToCamel,
-  tableColumnRegEx,
-} from '../../utils/commons'
+import type { Store as GraphQLStore } from '../generated/graphql'
 import { menuFieldColumnMapping } from '../menu/ORM'
 import { newsFieldColumnMapping } from '../news/ORM'
 import { userFieldColumnMapping } from '../user/ORM'
-
-const joinHashtag = importSQL(__dirname, 'sql/joinHashtag.sql')
-const joinLikedStore = importSQL(__dirname, 'sql/joinLikedStore.sql')
-const joinMenu = importSQL(__dirname, 'sql/joinMenu.sql')
-const joinNews = importSQL(__dirname, 'sql/joinNews.sql')
-const joinStoreBucket = importSQL(__dirname, 'sql/joinStoreBucket.sql')
-const joinUser = importSQL(__dirname, 'sql/joinUser.sql')
-const stores = importSQL(__dirname, 'sql/stores.sql')
+import joinHashtag from './sql/joinHashtag.sql'
+import joinLikedStore from './sql/joinLikedStore.sql'
+import joinMenu from './sql/joinMenu.sql'
+import joinNews from './sql/joinNews.sql'
+import joinStoreBucket from './sql/joinStoreBucket.sql'
+import joinUser from './sql/joinUser.sql'
+import stores from './sql/stores.sql'
 
 const storeFieldsFromOtherTable = new Set([
   'isInBucket',
@@ -53,30 +47,30 @@ export function storeFieldColumnMapping(storeField: keyof GraphQLStore) {
 // GraphQL fields -> SQL
 export async function buildBasicStoreQuery(
   info: GraphQLResolveInfo,
-  user: ApolloContext['user'],
+  userId: ApolloContext['userId'],
   selectColumns = true
 ) {
   const storeFields = graphqlFields(info) as Record<string, any>
   const firstMenuFields = new Set(Object.keys(storeFields))
 
-  let sql = await stores
+  let sql = stores
   let columns = selectColumns ? selectColumnFromSubField(storeFields, storeFieldColumnMapping) : []
   const values: unknown[] = []
   let groupBy = false
 
   if (firstMenuFields.has('isInBucket')) {
-    if (user) {
-      sql = `${sql} ${await joinStoreBucket}`
+    if (userId) {
+      sql = `${sql} ${joinStoreBucket}`
       columns.push('bucket.id')
-      values.push(user.id)
+      values.push(userId)
     }
   }
 
   if (firstMenuFields.has('isLiked')) {
-    if (user) {
-      sql = `${sql} ${await joinLikedStore}`
+    if (userId) {
+      sql = `${sql} ${joinLikedStore}`
       columns.push('user_x_liked_store.user_id')
-      values.push(user.id)
+      values.push(userId)
     }
   }
 
@@ -85,13 +79,13 @@ export async function buildBasicStoreQuery(
       (column) => `array_agg(${column})`
     )
 
-    sql = `${sql} ${await joinMenu}`
+    sql = `${sql} ${joinMenu}`
     columns = [...columns, ...menuColumns]
     groupBy = true
   }
 
   if (firstMenuFields.has('hashtags')) {
-    sql = `${sql} ${await joinHashtag}`
+    sql = `${sql} ${joinHashtag}`
     columns.push('array_agg(hashtag.name)')
     groupBy = true
   }
@@ -101,7 +95,7 @@ export async function buildBasicStoreQuery(
       (column) => `array_agg(${column})`
     )
 
-    sql = `${sql} ${await joinNews}`
+    sql = `${sql} ${joinNews}`
     columns = [...columns, ...newsColumns]
     groupBy = true
   }
@@ -109,7 +103,7 @@ export async function buildBasicStoreQuery(
   if (firstMenuFields.has('user')) {
     const userColumns = selectColumnFromSubField(storeFields.user, userFieldColumnMapping)
 
-    sql = `${sql} ${await joinUser}`
+    sql = `${sql} ${joinUser}`
     columns = [...columns, ...userColumns]
   }
 
@@ -121,7 +115,7 @@ export async function buildBasicStoreQuery(
     sql = `${sql} GROUP BY ${filteredColumns}`
   }
 
-  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+  return [format(serializeParameters(sql), columns), columns, values] as const
 }
 
 // Database records -> GraphQL fields

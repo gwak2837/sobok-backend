@@ -148,6 +148,19 @@ type Menu {
   storeId: ID!
 }
 
+input MenuOrder {
+  by: MenuOrderBy
+  direction: OrderDirection
+}
+
+"""
+기본값: id
+"""
+enum MenuOrderBy {
+  NAME
+  PRICE
+}
+
 type Mutation {
   """
   고유 이름 또는 이메일과 비밀번호를 전송하면 JWT 인증 토큰을 반환함
@@ -206,6 +219,21 @@ enum NewsOptions {
 scalar NonEmptyString
 
 """
+기본값: 내림차순
+"""
+enum OrderDirection {
+  ASC
+}
+
+input Pagination {
+  lastId: ID
+  lastValue: NonEmptyString
+  limit: PositiveInt!
+}
+
+scalar PositiveInt
+
+"""
 OAuth 공급자
 """
 enum Provider {
@@ -254,7 +282,7 @@ type Query {
   """
   인증 토큰과 같이 요청하면 사용자 정보를 반환
   """
-  me: User
+  me: User!
 
   """
   메뉴 상세
@@ -277,7 +305,7 @@ type Query {
   menusByTownAndCategory(category: NonEmptyString, town: NonEmptyString): [Menu!]
 
   """
-  메뉴 버킷에만 해당
+  메뉴 버킷에서 메뉴 가져오기
   """
   menusInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Menu!]
 
@@ -295,9 +323,21 @@ type Query {
   옵션별 여러 매장 소식 목록
   """
   newsListByTown(categories: [NonEmptyString!], option: NewsOptions, town: NonEmptyString): [News!]
-  searchFeed(hashtags: [NonEmptyString!]!): [Menu!]
-  searchMenus(hashtags: [NonEmptyString!]!): [Menu!]
-  searchStores(hashtags: [NonEmptyString!]!): [Menu!]
+
+  """
+  해시태그로 메뉴 검색
+  """
+  searchFeedList(hashtags: [NonEmptyString!]!): [Feed!]
+
+  """
+  해시태그로 메뉴 검색
+  """
+  searchMenus(hashtags: [NonEmptyString!]!, order: MenuOrder, pagination: Pagination!): [Menu!]
+
+  """
+  해시태그로 매장 검색
+  """
+  searchStores(hashtags: [NonEmptyString!]!): [Store!]
 
   """
   특정 매장 정보
@@ -390,6 +430,8 @@ type Trend {
 
 scalar URL
 
+scalar UUID
+
 type User {
   bio: String
   birth: Date
@@ -416,7 +458,7 @@ type User {
   """
   followings: [User!]
   gender: Gender!
-  id: ID!
+  id: UUID!
   imageUrl: URL
   isEmailVerified: Boolean!
   isStarUser: Boolean!

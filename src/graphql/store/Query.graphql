@@ -7,4 +7,7 @@ type Query {
 
   "매장 버킷에만 해당"
   storesInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Store!]
+
+  "해시태그로 매장 검색"
+  searchStores(hashtags: [NonEmptyString!]!): [Store!]
 }

@@ -1,8 +1,0 @@
-scalar Date
-scalar DateTime
-scalar EmailAddress
-scalar JWT
-scalar Latitude
-scalar Longitude
-scalar URL
-scalar NonEmptyString

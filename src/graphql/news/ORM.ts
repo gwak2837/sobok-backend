@@ -1,21 +1,15 @@
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
 import format from 'pg-format'
-import type { News as GraphQLNews } from 'src/graphql/generated/graphql'
-import { selectColumnFromSubField, serializeSQLParameters } from '../../utils/ORM'
-import {
-  camelToSnake,
-  importSQL,
-  removeQuotes,
-  snakeToCamel,
-  tableColumnRegEx,
-} from '../../utils/commons'
-import { storeFieldColumnMapping } from '../store/ORM'
-import type { ApolloContext } from 'src/apollo/server'
 
-const joinLikedNews = importSQL(__dirname, 'sql/joinLikedNews.sql')
-const joinStore = importSQL(__dirname, 'sql/joinStore.sql')
-const newsList = importSQL(__dirname, 'sql/newsList.sql')
+import type { ApolloContext } from '../../apollo/server'
+import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
+import { selectColumnFromSubField, serializeParameters } from '../../utils/ORM'
+import type { News as GraphQLNews } from '../generated/graphql'
+import { storeFieldColumnMapping } from '../store/ORM'
+import joinLikedNews from './sql/joinLikedNews.sql'
+import joinStore from './sql/joinStore.sql'
+import newsList from './sql/newsList.sql'
 
 const newsFieldsFromOtherTable = new Set(['isLiked', 'store'])
 
@@ -31,32 +25,32 @@ export function newsFieldColumnMapping(newsField: keyof GraphQLNews) {
 // GraphQL fields -> SQL
 export async function buildBasicNewsQuery(
   info: GraphQLResolveInfo,
-  user: ApolloContext['user'],
+  userId: ApolloContext['userId'],
   selectColumns = true
 ) {
   const newsFields = graphqlFields(info) as Record<string, any>
   const firstNewsFields = Object.keys(newsFields)
 
-  let sql = await newsList
+  let sql = newsList
   let columns = selectColumns ? selectColumnFromSubField(newsFields, newsFieldColumnMapping) : []
   const values: unknown[] = []
 
   if (firstNewsFields.includes('isLiked')) {
-    if (user) {
-      sql = `${sql} ${await joinLikedNews}`
+    if (userId) {
+      sql = `${sql} ${joinLikedNews}`
       columns.push('user_x_liked_news.user_id')
-      values.push(user.id)
+      values.push(userId)
     }
   }
 
   if (firstNewsFields.includes('store')) {
     const storeColumns = selectColumnFromSubField(newsFields.store, storeFieldColumnMapping)
 
-    sql = `${sql} ${await joinStore}`
+    sql = `${sql} ${joinStore}`
     columns = [...columns, ...storeColumns]
   }
 
-  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+  return [format(serializeParameters(sql), columns), columns, values] as const
 }
 
 // Database record -> GraphQL fields

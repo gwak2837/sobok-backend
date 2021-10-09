@@ -1,6 +1,7 @@
-import { Pool, PoolClient, QueryArrayConfig } from 'pg'
+import { Pool, QueryArrayConfig } from 'pg'
+
 import { DatabaseQueryError } from '../apollo/errors'
-import { formatDate, sleep } from '../utils/commons'
+import { formatDate } from '../utils'
 
 export const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -27,24 +28,11 @@ export async function poolQuery(query: string | QueryArrayConfig<any[]>, values?
   })
 }
 
-export async function transactionQuery(client: PoolClient, sql: string, values?: unknown[]) {
-  return client.query(sql, values).catch(async (error) => {
-    await client.query('ROLLBACK')
-    client.release()
-    if (process.env.NODE_ENV === 'production') throw new DatabaseQueryError('Database query error')
-    else throw new DatabaseQueryError(error)
-  })
-}
-
-export async function connectDatabase() {
-  while (true) {
-    try {
-      await pool.query('SELECT NOW()')
-      console.log('Connected to the PostgreSQL server')
-      break
-    } catch (error) {
-      console.warn(error)
-      await sleep(5000)
-    }
-  }
-}
+// export async function transactionQuery(client: PoolClient, sql: string, values?: unknown[]) {
+//   return client.query(sql, values).catch(async (error) => {
+//     await client.query('ROLLBACK')
+//     client.release()
+//     if (process.env.NODE_ENV === 'production') throw new DatabaseQueryError('Database query error')
+//     else throw new DatabaseQueryError(error)
+//   })
+// }

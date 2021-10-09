@@ -1,12 +1,5 @@
-import { promises } from 'fs'
-import { join } from 'path'
-
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-export async function importSQL(dirname: string, filename: string) {
-  return (await promises.readFile(join(dirname, filename), 'utf-8')).replace(/\s+/gi, ' ')
 }
 
 export function camelToSnake(str: string) {
@@ -90,3 +83,11 @@ export function formatDate(date: Date): string {
 export const tableColumnRegEx = /[\w"`]+\.[\w"`]+/
 
 export const emailRegEx = /\S+@\S+[.\S+]*/
+
+export function isEmptyObject(obj: any) {
+  return (
+    obj && // 👈 null and undefined check
+    Object.keys(obj).length === 0 &&
+    Object.getPrototypeOf(obj) === Object.prototype
+  )
+}

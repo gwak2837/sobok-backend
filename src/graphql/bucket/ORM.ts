@@ -1,20 +1,14 @@
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
 import format from 'pg-format'
-import { ApolloContext } from 'src/apollo/server'
-import type { Bucket as GraphQLBucket } from 'src/graphql/generated/graphql'
-import { userFieldColumnMapping } from '../user/ORM'
-import {
-  camelToSnake,
-  importSQL,
-  removeQuotes,
-  snakeToCamel,
-  tableColumnRegEx,
-} from '../../utils/commons'
-import { selectColumnFromSubField, serializeSQLParameters } from '../../utils/ORM'
 
-const fromBucket = importSQL(__dirname, 'sql/fromBucket.sql')
-const joinUser = importSQL(__dirname, 'sql/joinUser.sql')
+import { ApolloContext } from '../../apollo/server'
+import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
+import { selectColumnFromSubField, serializeParameters } from '../../utils/ORM'
+import type { Bucket as GraphQLBucket } from '../generated/graphql'
+import { userFieldColumnMapping } from '../user/ORM'
+import fromBucket from './sql/fromBucket.sql'
+import joinUser from './sql/joinUser.sql'
 
 const bucketFieldsFromOtherTable = new Set(['user'])
 
@@ -30,13 +24,13 @@ export function bucketFieldColumnMapping(bucketField: keyof GraphQLBucket) {
 // GraphQL fields -> SQL
 export async function buildBasicBucketQuery(
   info: GraphQLResolveInfo,
-  user: ApolloContext['user'],
+  userId: ApolloContext['userId'],
   selectColumns = true
 ) {
   const bucketFields = graphqlFields(info) as Record<string, any>
   const firstBucketFields = new Set(Object.keys(bucketFields))
 
-  let sql = await fromBucket
+  let sql = fromBucket
   let columns = selectColumns
     ? selectColumnFromSubField(bucketFields, bucketFieldColumnMapping)
     : []
@@ -45,11 +39,11 @@ export async function buildBasicBucketQuery(
   if (firstBucketFields.has('user')) {
     const userColumns = selectColumnFromSubField(bucketFields.user, userFieldColumnMapping)
 
-    sql = `${sql} ${await joinUser}`
+    sql = `${sql} ${joinUser}`
     columns = [...columns, ...userColumns]
   }
 
-  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+  return [format(serializeParameters(sql), columns), columns, values] as const
 }
 
 // Database records -> GraphQL fields
