@@ -83,3 +83,11 @@ export function formatDate(date: Date): string {
 export const tableColumnRegEx = /[\w"`]+\.[\w"`]+/
 
 export const emailRegEx = /\S+@\S+[.\S+]*/
+
+export function isEmptyObject(obj: any) {
+  return (
+    obj && // 👈 null and undefined check
+    Object.keys(obj).length === 0 &&
+    Object.getPrototypeOf(obj) === Object.prototype
+  )
+}

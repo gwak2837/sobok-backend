@@ -60,7 +60,6 @@ export async function buildBasicMenuQuery(
 
   if (firstMenuFields.has('store')) {
     const storeColumns = selectColumnFromSubField(menuFields.store, storeFieldColumnMapping)
-
     sql = `${sql} ${joinStore}`
     columns = [...columns, ...storeColumns]
   }
@@ -72,7 +71,6 @@ export async function buildBasicMenuQuery(
   }
 
   const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
-
   if (groupBy && filteredColumns.length > 0) {
     sql = `${sql} GROUP BY ${filteredColumns}`
   }

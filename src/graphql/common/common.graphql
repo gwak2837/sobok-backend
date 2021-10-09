@@ -1,0 +1,21 @@
+scalar Date
+scalar DateTime
+scalar EmailAddress
+scalar JWT
+scalar Latitude
+scalar Longitude
+scalar NonEmptyString
+scalar PositiveInt
+scalar URL
+scalar UUID
+
+"기본값: 내림차순"
+enum OrderDirection {
+  ASC
+}
+
+input Pagination {
+  lastId: ID
+  lastValue: NonEmptyString
+  limit: PositiveInt!
+}
