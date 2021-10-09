@@ -4,7 +4,7 @@ import format from 'pg-format'
 
 import { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import { selectColumnFromSubField, serializeSQLParameters } from '../../utils/ORM'
+import { selectColumnFromSubField, serializeParameters } from '../../utils/ORM'
 import type { Bucket as GraphQLBucket } from '../generated/graphql'
 import { userFieldColumnMapping } from '../user/ORM'
 import fromBucket from './sql/fromBucket.sql'
@@ -43,7 +43,7 @@ export async function buildBasicBucketQuery(
     columns = [...columns, ...userColumns]
   }
 
-  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+  return [format(serializeParameters(sql), columns), columns, values] as const
 }
 
 // Database records -> GraphQL fields

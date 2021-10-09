@@ -29,7 +29,7 @@ export function selectColumnFromSubField(
   ]
 }
 
-export function serializeSQLParameters(sql: string) {
+export function serializeParameters(sql: string) {
   let i = 1
   return sql.replace(/\$\d+/g, () => `$${i++}`)
 }

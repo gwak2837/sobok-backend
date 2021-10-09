@@ -1,13 +1,12 @@
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
-import format from 'pg-format'
 
 import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import {
   removeColumnWithAggregateFunction,
   selectColumnFromSubField,
-  serializeSQLParameters,
+  serializeParameters,
 } from '../../utils/ORM'
 import type { Menu as GraphQLMenu } from '../generated/graphql'
 import { storeFieldColumnMapping } from '../store/ORM'
@@ -15,7 +14,6 @@ import joinHashtag from './sql/joinHashtag.sql'
 import joinLikedMenu from './sql/joinLikedMenu.sql'
 import joinMenuBucket from './sql/joinMenuBucket.sql'
 import joinStore from './sql/joinStore.sql'
-import menus from './sql/menus.sql'
 
 const menuFieldsFromOtherTable = new Set(['isInBucket', 'isLiked', 'store', 'hashtags'])
 
@@ -37,7 +35,7 @@ export async function buildBasicMenuQuery(
   const menuFields = graphqlFields(info) as Record<string, any>
   const firstMenuFields = new Set(Object.keys(menuFields))
 
-  let sql = menus
+  let sql = ''
   let columns = selectColumns ? selectColumnFromSubField(menuFields, menuFieldColumnMapping) : []
   const values: unknown[] = []
   let groupBy = false
@@ -75,7 +73,11 @@ export async function buildBasicMenuQuery(
     sql = `${sql} GROUP BY ${filteredColumns}`
   }
 
-  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+  return [
+    `SELECT ${columns} FROM menu ${serializeParameters(sql)}` as string,
+    columns,
+    values,
+  ] as const
 }
 
 // Database records -> GraphQL fields

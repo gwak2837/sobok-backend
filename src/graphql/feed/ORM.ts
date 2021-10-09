@@ -7,7 +7,7 @@ import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../.
 import {
   removeColumnWithAggregateFunction,
   selectColumnFromSubField,
-  serializeSQLParameters,
+  serializeParameters,
 } from '../../utils/ORM'
 import { commentFieldColumnMapping } from '../comment/ORM'
 import type { Feed as GraphQLFeed } from '../generated/graphql'
@@ -109,7 +109,7 @@ export async function buildBasicFeedQuery(
     sql = `${sql} GROUP BY ${filteredColumns}`
   }
 
-  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+  return [format(serializeParameters(sql), columns), columns, values] as const
 }
 
 // Database records -> GraphQL fields

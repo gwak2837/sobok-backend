@@ -7,7 +7,7 @@ import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../.
 import {
   removeColumnWithAggregateFunction,
   selectColumnFromSubField,
-  serializeSQLParameters,
+  serializeParameters,
 } from '../../utils/ORM'
 import type { Store as GraphQLStore } from '../generated/graphql'
 import { menuFieldColumnMapping } from '../menu/ORM'
@@ -115,7 +115,7 @@ export async function buildBasicStoreQuery(
     sql = `${sql} GROUP BY ${filteredColumns}`
   }
 
-  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+  return [format(serializeParameters(sql), columns), columns, values] as const
 }
 
 // Database records -> GraphQL fields

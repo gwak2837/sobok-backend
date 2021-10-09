@@ -5,14 +5,10 @@ import { poolQuery } from '../../database/postgres'
 import { buildSQL, spliceSQL } from '../../utils/ORM'
 import { OrderDirection, QueryResolvers } from '../generated/graphql'
 import { buildBasicMenuQuery, encodeCategory, menuORM } from './ORM'
-import byMenuBucketId from './sql/byMenuBucketId.sql'
-import fetch from './sql/fetch.sql'
 import joinHashtag from './sql/joinHashtag.sql'
 import joinMenuBucketOnMenuBucketId from './sql/joinMenuBucketOnMenuBucketId.sql'
 import joinStoreOnTown from './sql/joinStoreOnTown.sql'
 import joinStoreOnTownAndCategory from './sql/joinStoreOnTownAndCategory.sql'
-import onHashtagName from './sql/onHashtagName.sql'
-import onTown from './sql/onTown.sql'
 import onTownAndCategory from './sql/onTownAndCategory.sql'
 import verifyUserBucket from './sql/verifyUserBucket.sql'
 
@@ -31,7 +27,6 @@ export const Query: QueryResolvers<ApolloContext> = {
     values.push(id)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
     if (rowCount === 0) return null
 
     return menuORM(rows, columns)[0]
@@ -44,7 +39,6 @@ export const Query: QueryResolvers<ApolloContext> = {
     values.push(storeId, name)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
     if (rowCount === 0) return null
 
     return menuORM(rows, columns)[0]
@@ -63,14 +57,14 @@ export const Query: QueryResolvers<ApolloContext> = {
       if (sql.includes('JOIN store')) {
         sql = spliceSQL(sql, onTownAndCategory, 'JOIN store ON store.id = menu.store_id', true)
       } else {
-        sql = spliceSQL(sql, joinStoreOnTownAndCategory, 'JOIN')
+        sql = buildSQL(sql, 'JOIN', joinStoreOnTownAndCategory)
       }
       values.push(town, encodedCategory)
     } else if (town) {
       if (sql.includes('JOIN store')) {
-        sql = spliceSQL(sql, onTown, 'JOIN store ON store.id = menu.store_id', true)
+        sql = spliceSQL(sql, 'AND store.town = $1', 'JOIN store ON store.id = menu.store_id', true)
       } else {
-        sql = spliceSQL(sql, joinStoreOnTown, 'JOIN')
+        sql = buildSQL(sql, 'JOIN', joinStoreOnTown)
       }
       values.push(town)
     } else if (category) {
@@ -79,7 +73,6 @@ export const Query: QueryResolvers<ApolloContext> = {
     }
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
     if (rowCount === 0) return null
 
     return menuORM(rows, columns)
@@ -92,7 +85,6 @@ export const Query: QueryResolvers<ApolloContext> = {
     values.push(storeId)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
     if (rowCount === 0) return null
 
     return menuORM(rows, columns)
@@ -113,15 +105,13 @@ export const Query: QueryResolvers<ApolloContext> = {
     let [sql, columns, values] = await buildBasicMenuQuery(info, userId)
 
     if (sql.includes('LEFT JOIN bucket')) {
-      sql = spliceSQL(sql, byMenuBucketId, 'GROUP BY')
+      sql = buildSQL(sql, 'WHERE', 'bucket.type = 1 AND bucket.id = $1')
     } else {
-      sql = spliceSQL(sql, joinMenuBucketOnMenuBucketId, 'GROUP BY')
+      sql = buildSQL(sql, 'JOIN', joinMenuBucketOnMenuBucketId)
     }
-
     values.push(bucketId)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
     if (rowCount === 0) return null
 
     return menuORM(rows, columns)
@@ -137,9 +127,9 @@ export const Query: QueryResolvers<ApolloContext> = {
     let [sql, columns, values] = await buildBasicMenuQuery(info, userId)
 
     if (sql.includes(joinHashtagShort)) {
-      sql = spliceSQL(sql, onHashtagName, joinHashtagShort, true)
+      sql = spliceSQL(sql, 'AND hashtag.name = ANY($1)', joinHashtagShort, true)
     } else {
-      sql = spliceSQL(sql, `${joinHashtag} ${onHashtagName}`, 'GROUP BY')
+      sql = buildSQL(sql, 'JOIN', `${joinHashtag} AND hashtag.name = ANY($1)`)
     }
     values.push(hashtags)
 
@@ -171,11 +161,10 @@ export const Query: QueryResolvers<ApolloContext> = {
     }
 
     // FETCH
-    sql = buildSQL(sql, 'FETCH', fetch)
+    sql = buildSQL(sql, 'FETCH', 'FIRST $1 ROWS ONLY')
     values.push(pagination.limit)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
     if (rowCount === 0) return null
 
     return menuORM(rows, columns)

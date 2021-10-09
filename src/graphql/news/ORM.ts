@@ -4,7 +4,7 @@ import format from 'pg-format'
 
 import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import { selectColumnFromSubField, serializeSQLParameters } from '../../utils/ORM'
+import { selectColumnFromSubField, serializeParameters } from '../../utils/ORM'
 import type { News as GraphQLNews } from '../generated/graphql'
 import { storeFieldColumnMapping } from '../store/ORM'
 import joinLikedNews from './sql/joinLikedNews.sql'
@@ -50,7 +50,7 @@ export async function buildBasicNewsQuery(
     columns = [...columns, ...storeColumns]
   }
 
-  return [format(serializeSQLParameters(sql), columns), columns, values] as const
+  return [format(serializeParameters(sql), columns), columns, values] as const
 }
 
 // Database record -> GraphQL fields
