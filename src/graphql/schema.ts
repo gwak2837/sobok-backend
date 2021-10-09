@@ -3,7 +3,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 
 import * as bucketObjectResolver from './bucket/Object.resolver'
 import * as bucketQueryResolver from './bucket/Query.resolver'
-import * as scalarResolver from './common/scalar.resolver'
+import * as commonResolver from './common/common.resolver'
 import * as feedObjectResolver from './feed/Object.resolver'
 import * as feedQueryResolver from './feed/Query.resolver'
 import typeDefs from './generated/schema.graphql'
@@ -20,7 +20,7 @@ import * as userQueryResolver from './user/Query.resolver'
 const resolversArray = [
   bucketObjectResolver,
   bucketQueryResolver,
-  scalarResolver,
+  commonResolver,
   feedObjectResolver,
   feedQueryResolver,
   menuObjectResolver,

@@ -1,1 +1,0 @@
-WHERE menu.store_id = $1

@@ -38,6 +38,7 @@ export async function startApolloServer() {
 
       return { userId: rows[0].id }
     },
+    introspection: process.env.NODE_ENV === 'development',
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
     schema,
   })
@@ -48,7 +49,7 @@ export async function startApolloServer() {
 
   // Modified server startup
   const port = process.env.PORT ?? 4000
-  httpServer.listen(port, () =>
-    console.log(`🚀 Server ready at http://localhost:${port}${apolloServer.graphqlPath}`)
-  )
+  return new Promise((resolve) => {
+    httpServer.listen(port, () => resolve(`http://localhost:${port}${apolloServer.graphqlPath}`))
+  })
 }

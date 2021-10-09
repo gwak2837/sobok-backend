@@ -1,16 +1,3 @@
-enum MenuOrder {
-  NAME
-  NAME_DESC
-  PRICE
-  PRICE_DESC
-}
-
-input MenuPagination {
-  endId: ID
-  endValue: NonEmptyString
-  limit: Int!
-}
-
 type Query {
   "메뉴 상세"
   menu(id: ID!): Menu
@@ -24,9 +11,20 @@ type Query {
   "특정 매장 메뉴 목록"
   menusByStore(storeId: ID!): [Menu!]
 
-  "메뉴 버킷에만 해당"
+  "메뉴 버킷에서 메뉴 가져오기"
   menusInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Menu!]
 
   "해시태그로 메뉴 검색"
-  searchMenus(hashtags: [NonEmptyString!]!, order: MenuOrder, pagination: MenuPagination!): [Menu!]
+  searchMenus(hashtags: [NonEmptyString!]!, order: MenuOrder, pagination: Pagination!): [Menu!]
+}
+
+input MenuOrder {
+  by: MenuOrderBy
+  direction: OrderDirection
+}
+
+"기본값: id"
+enum MenuOrderBy {
+  PRICE
+  NAME
 }

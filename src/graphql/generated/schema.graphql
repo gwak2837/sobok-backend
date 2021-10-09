@@ -148,17 +148,17 @@ type Menu {
   storeId: ID!
 }
 
-enum MenuOrder {
-  NAME
-  NAME_DESC
-  PRICE
-  PRICE_DESC
+input MenuOrder {
+  by: MenuOrderBy
+  direction: OrderDirection
 }
 
-input MenuPagination {
-  endId: ID
-  endValue: NonEmptyString
-  limit: Int!
+"""
+기본값: id
+"""
+enum MenuOrderBy {
+  NAME
+  PRICE
 }
 
 type Mutation {
@@ -217,6 +217,21 @@ enum NewsOptions {
 }
 
 scalar NonEmptyString
+
+"""
+기본값: 내림차순
+"""
+enum OrderDirection {
+  ASC
+}
+
+input Pagination {
+  lastId: ID
+  lastValue: NonEmptyString
+  limit: PositiveInt!
+}
+
+scalar PositiveInt
 
 """
 OAuth 공급자
@@ -290,7 +305,7 @@ type Query {
   menusByTownAndCategory(category: NonEmptyString, town: NonEmptyString): [Menu!]
 
   """
-  메뉴 버킷에만 해당
+  메뉴 버킷에서 메뉴 가져오기
   """
   menusInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Menu!]
 
@@ -317,7 +332,7 @@ type Query {
   """
   해시태그로 메뉴 검색
   """
-  searchMenus(hashtags: [NonEmptyString!]!, order: MenuOrder, pagination: MenuPagination!): [Menu!]
+  searchMenus(hashtags: [NonEmptyString!]!, order: MenuOrder, pagination: Pagination!): [Menu!]
 
   """
   해시태그로 매장 검색
