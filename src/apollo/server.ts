@@ -7,6 +7,7 @@ import express from 'express'
 
 import { poolQuery } from '../database/postgres'
 import schema from '../graphql/schema'
+import { setPassportStrategies } from '../lib/passport'
 import { verifyJWT } from '../utils/jwt'
 import user from './sql/user.sql'
 
@@ -18,6 +19,7 @@ export async function startApolloServer() {
   // Required logic for integrating with Express
   const app = express()
   const httpServer = http.createServer(app)
+  setPassportStrategies(app)
 
   // Same ApolloServer initialization as before, plus the drain plugin.
   const apolloServer = new ApolloServer({
