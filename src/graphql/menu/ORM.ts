@@ -64,11 +64,12 @@ export async function buildBasicMenuQuery(
 
   if (firstMenuFields.has('hashtags')) {
     sql = `${sql} ${joinHashtag}`
-    columns.push('array_agg(hashtag.name)')
+    columns.push('array_agg(DISTINCT hashtag.name)')
     groupBy = true
   }
 
   const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
+
   if (groupBy && filteredColumns.length > 0) {
     sql = `${sql} GROUP BY ${filteredColumns}`
   }

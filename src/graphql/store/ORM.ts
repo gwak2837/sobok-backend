@@ -1,6 +1,5 @@
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
-import format from 'pg-format'
 
 import { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
@@ -19,7 +18,6 @@ import joinMenu from './sql/joinMenu.sql'
 import joinNews from './sql/joinNews.sql'
 import joinStoreBucket from './sql/joinStoreBucket.sql'
 import joinUser from './sql/joinUser.sql'
-import stores from './sql/stores.sql'
 
 const storeFieldsFromOtherTable = new Set([
   'isInBucket',
@@ -47,14 +45,13 @@ export function storeFieldColumnMapping(storeField: keyof GraphQLStore) {
 // GraphQL fields -> SQL
 export async function buildBasicStoreQuery(
   info: GraphQLResolveInfo,
-  userId: ApolloContext['userId'],
-  selectColumns = true
+  userId: ApolloContext['userId']
 ) {
   const storeFields = graphqlFields(info) as Record<string, any>
   const firstMenuFields = new Set(Object.keys(storeFields))
 
-  let sql = stores
-  let columns = selectColumns ? selectColumnFromField(storeFields, storeFieldColumnMapping) : []
+  let sql = ''
+  let columns = selectColumnFromField(storeFields, storeFieldColumnMapping)
   const values: unknown[] = []
   let groupBy = false
 
@@ -76,7 +73,7 @@ export async function buildBasicStoreQuery(
 
   if (firstMenuFields.has('menus')) {
     const menuColumns = selectColumnFromField(storeFields.menus, menuFieldColumnMapping).map(
-      (column) => `array_agg(${column})`
+      (column) => `array_agg(DISTINCT ${column})`
     )
 
     sql = `${sql} ${joinMenu}`
@@ -86,13 +83,13 @@ export async function buildBasicStoreQuery(
 
   if (firstMenuFields.has('hashtags')) {
     sql = `${sql} ${joinHashtag}`
-    columns.push('array_agg(hashtag.name)')
+    columns.push('array_agg(DISTINCT hashtag.name)')
     groupBy = true
   }
 
   if (firstMenuFields.has('news')) {
     const newsColumns = selectColumnFromField(storeFields.news, newsFieldColumnMapping).map(
-      (column) => `array_agg(${column})`
+      (column) => `array_agg(DISTINCT ${column})`
     )
 
     sql = `${sql} ${joinNews}`
@@ -115,7 +112,11 @@ export async function buildBasicStoreQuery(
     sql = `${sql} GROUP BY ${filteredColumns}`
   }
 
-  return [format(serializeParameters(sql), columns), columns, values] as const
+  return [
+    `SELECT ${columns} FROM store ${serializeParameters(sql)}` as string,
+    columns,
+    values,
+  ] as const
 }
 
 // Database records -> GraphQL fields
@@ -123,8 +124,8 @@ export function storeORM(rows: any[][], selectedColumns: string[]): GraphQLStore
   return rows.map((row) => {
     const graphQLStore: any = {}
 
-    selectedColumns.forEach((selectedColumn, i) => {
-      const [_, __] = (selectedColumn.match(tableColumnRegEx) ?? [''])[0].split('.')
+    for (let i = 0; i < selectedColumns.length; i++) {
+      const [_, __] = (selectedColumns[i].match(tableColumnRegEx) ?? [''])[0].split('.')
       const tableName = removeQuotes(_)
       const columnName = removeQuotes(__)
       const camelTableName = snakeToCamel(tableName)
@@ -136,7 +137,6 @@ export function storeORM(rows: any[][], selectedColumns: string[]): GraphQLStore
           graphQLStore.latitude = cell.x
           graphQLStore.longitude = cell.y
         }
-
         graphQLStore[camelColumnName] = cell
       }
       //
@@ -161,25 +161,22 @@ export function storeORM(rows: any[][], selectedColumns: string[]): GraphQLStore
           graphQLStore.menus = []
         }
 
-        const menus = cell as unknown[]
-
-        menus.forEach((menu, j) => {
+        const menusLength = cell.length
+        for (let j = 0; j < menusLength; j++) {
           if (!graphQLStore.menus[j]) {
             graphQLStore.menus[j] = {}
           }
-
-          graphQLStore.menus[j][camelColumnName] = menu
-        })
+          graphQLStore.menus[j][camelColumnName] = cell[j]
+        }
       }
       //
       else {
         if (!graphQLStore[camelTableName]) {
           graphQLStore[camelTableName] = {}
         }
-
         graphQLStore[camelTableName][camelColumnName] = cell
       }
-    })
+    }
 
     return graphQLStore
   })
