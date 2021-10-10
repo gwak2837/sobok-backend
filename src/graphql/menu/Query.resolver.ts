@@ -2,8 +2,8 @@ import { UserInputError } from 'apollo-server-express'
 
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { buildSQL, spliceSQL } from '../../utils/ORM'
-import { OrderDirection, QueryResolvers } from '../generated/graphql'
+import { applyPaginationAndSorting, buildSQL, spliceSQL } from '../../utils/ORM'
+import { QueryResolvers } from '../generated/graphql'
 import { buildBasicMenuQuery, encodeCategory, menuORM } from './ORM'
 import joinHashtag from './sql/joinHashtag.sql'
 import joinMenuBucketOnMenuBucketId from './sql/joinMenuBucketOnMenuBucketId.sql'
@@ -133,36 +133,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     }
     values.push(hashtags)
 
-    // Pagination
-    if (pagination.lastId) {
-      const inequalitySign = order?.direction === OrderDirection.Asc ? '>' : '<'
-      if (pagination.lastValue) {
-        if (!order?.by)
-          throw new UserInputError('pagination.lastValue와 order.by가 모두 존재해야 합니다.')
-
-        sql = buildSQL(sql, 'WHERE', `(menu.${order.by}, menu.id) ${inequalitySign} ($1, $2)`)
-        values.push(pagination.lastValue, pagination.lastId)
-      } else {
-        sql = buildSQL(sql, 'WHERE', `menu.id ${inequalitySign} $1`)
-        values.push(pagination.lastId)
-      }
-    }
-
-    // ORDER BY
-    const orderDirection = order?.direction === OrderDirection.Asc ? '' : 'DESC'
-    if (order?.by) {
-      sql = buildSQL(
-        sql,
-        'ORDER BY',
-        `menu.${order.by} ${orderDirection}, menu.id ${orderDirection}`
-      )
-    } else {
-      sql = buildSQL(sql, 'ORDER BY', `menu.id ${orderDirection}`)
-    }
-
-    // FETCH
-    sql = buildSQL(sql, 'FETCH', 'FIRST $1 ROWS ONLY')
-    values.push(pagination.limit)
+    sql = applyPaginationAndSorting(sql, values, 'menu', order, pagination)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
     if (rowCount === 0) return null

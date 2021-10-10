@@ -3,7 +3,7 @@ import { AuthenticationError, UserInputError } from 'apollo-server-express'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
 import { FeedOptions, QueryResolvers } from '../../graphql/generated/graphql'
-import { spliceSQL } from '../../utils/ORM'
+import { applyPaginationAndSorting, spliceSQL } from '../../utils/ORM'
 import { buildBasicFeedQuery, feedORM } from './ORM'
 import byId from './sql/byId.sql'
 import byStarUser from './sql/byStarUser.sql'
@@ -16,6 +16,11 @@ import onHashtagName from './sql/onHashtagName.sql'
 import onTown from './sql/onTown.sql'
 
 const joinHashtagShort = 'JOIN hashtag ON hashtag.id = feed_x_hashtag.hashtag_id'
+
+export const FeedOrderBy = {
+  NAME: 'name',
+  PRICE: 'price',
+}
 
 export const Query: QueryResolvers<ApolloContext> = {
   feed: async (_, { id }, { userId }, info) => {
@@ -58,33 +63,28 @@ export const Query: QueryResolvers<ApolloContext> = {
       } else {
         sql = spliceSQL(sql, joinStoreOnTown, 'JOIN')
       }
-
       values.push(town)
     }
 
     if (option === FeedOptions.FollowingUser) {
       sql = spliceSQL(sql, joinFollowingUser, 'WHERE')
       values.push(userId)
-    }
-    //
-    else if (option === FeedOptions.StarUser) {
+    } else if (option === FeedOptions.StarUser) {
       if (sql.includes('JOIN "user"')) {
         sql = spliceSQL(sql, byStarUser, 'GROUP BY')
       } else {
         sql = spliceSQL(sql, joinStarUser, 'WHERE')
       }
-
       values.push(userId)
     }
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
     if (rowCount === 0) return null
 
     return feedORM(rows, columns)
   },
 
-  searchFeedList: async (_, { hashtags }, { userId }, info) => {
+  searchFeedList: async (_, { hashtags, order, pagination }, { userId }, info) => {
     if (hashtags.length === 0) throw new UserInputError('해시태그 배열은 비어있을 수 없습니다.')
 
     let [sql, columns, values] = await buildBasicFeedQuery(info, userId)
@@ -94,11 +94,11 @@ export const Query: QueryResolvers<ApolloContext> = {
     } else {
       sql = spliceSQL(sql, `${joinHashtag} ${onHashtagName}`, 'GROUP BY')
     }
-
     values.push(hashtags)
 
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+    sql = applyPaginationAndSorting(sql, values, 'feed', order, pagination)
 
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
     if (rowCount === 0) return null
 
     return feedORM(rows, columns)

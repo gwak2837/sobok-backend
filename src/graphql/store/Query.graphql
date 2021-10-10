@@ -9,5 +9,15 @@ type Query {
   storesInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Store!]
 
   "해시태그로 매장 검색"
-  searchStores(hashtags: [NonEmptyString!]!): [Store!]
+  searchStores(hashtags: [NonEmptyString!]!, order: StoreOrder, pagination: Pagination!): [Store!]
+}
+
+input StoreOrder {
+  by: StoreOrderBy
+  direction: OrderDirection
+}
+
+"기본값: id"
+enum StoreOrderBy {
+  NAME
 }

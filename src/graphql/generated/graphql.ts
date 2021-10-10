@@ -84,12 +84,21 @@ export type Feed = {
   userId: Scalars['ID']
 }
 
-/** 기본값: ALL_USER */
+/** 기본값: 모든 사용자 */
 export enum FeedOptions {
-  AllUser = 'ALL_USER',
   /** 로그인 필요 */
   FollowingUser = 'FOLLOWING_USER',
   StarUser = 'STAR_USER',
+}
+
+export type FeedOrder = {
+  by?: Maybe<FeedOrderBy>
+  direction?: Maybe<OrderDirection>
+}
+
+/** 기본값: id */
+export enum FeedOrderBy {
+  CreationTime = 'CREATION_TIME',
 }
 
 /** 성별 */
@@ -312,6 +321,8 @@ export type QueryNewsListByTownArgs = {
 
 export type QuerySearchFeedListArgs = {
   hashtags: Array<Scalars['NonEmptyString']>
+  order?: Maybe<FeedOrder>
+  pagination: Pagination
 }
 
 export type QuerySearchMenusArgs = {
@@ -322,6 +333,8 @@ export type QuerySearchMenusArgs = {
 
 export type QuerySearchStoresArgs = {
   hashtags: Array<Scalars['NonEmptyString']>
+  order?: Maybe<StoreOrder>
+  pagination: Pagination
 }
 
 export type QueryStoreArgs = {
@@ -380,6 +393,16 @@ export type Store = {
   /** 매장을 소유한 사용자 정보 */
   user?: Maybe<User>
   userId: Scalars['ID']
+}
+
+export type StoreOrder = {
+  by?: Maybe<StoreOrderBy>
+  direction?: Maybe<OrderDirection>
+}
+
+/** 기본값: id */
+export enum StoreOrderBy {
+  Name = 'NAME',
 }
 
 export type Trend = {
@@ -536,6 +559,8 @@ export type ResolversTypes = {
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>
   Feed: ResolverTypeWrapper<Feed>
   FeedOptions: FeedOptions
+  FeedOrder: FeedOrder
+  FeedOrderBy: FeedOrderBy
   Gender: Gender
   ID: ResolverTypeWrapper<Scalars['ID']>
   Int: ResolverTypeWrapper<Scalars['Int']>
@@ -556,6 +581,8 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>
   RegisterInput: RegisterInput
   Store: ResolverTypeWrapper<Store>
+  StoreOrder: StoreOrder
+  StoreOrderBy: StoreOrderBy
   String: ResolverTypeWrapper<Scalars['String']>
   Trend: ResolverTypeWrapper<Trend>
   URL: ResolverTypeWrapper<Scalars['URL']>
@@ -573,6 +600,7 @@ export type ResolversParentTypes = {
   DateTime: Scalars['DateTime']
   EmailAddress: Scalars['EmailAddress']
   Feed: Feed
+  FeedOrder: FeedOrder
   ID: Scalars['ID']
   Int: Scalars['Int']
   JWT: Scalars['JWT']
@@ -588,6 +616,7 @@ export type ResolversParentTypes = {
   Query: {}
   RegisterInput: RegisterInput
   Store: Store
+  StoreOrder: StoreOrder
   String: Scalars['String']
   Trend: Trend
   URL: Scalars['URL']
@@ -842,7 +871,7 @@ export type QueryResolvers<
     Maybe<Array<ResolversTypes['Feed']>>,
     ParentType,
     ContextType,
-    RequireFields<QuerySearchFeedListArgs, 'hashtags'>
+    RequireFields<QuerySearchFeedListArgs, 'hashtags' | 'pagination'>
   >
   searchMenus?: Resolver<
     Maybe<Array<ResolversTypes['Menu']>>,
@@ -854,7 +883,7 @@ export type QueryResolvers<
     Maybe<Array<ResolversTypes['Store']>>,
     ParentType,
     ContextType,
-    RequireFields<QuerySearchStoresArgs, 'hashtags'>
+    RequireFields<QuerySearchStoresArgs, 'hashtags' | 'pagination'>
   >
   store?: Resolver<
     Maybe<ResolversTypes['Store']>,

@@ -89,16 +89,26 @@ type Feed {
 }
 
 """
-기본값: ALL_USER
+기본값: 모든 사용자
 """
 enum FeedOptions {
-  ALL_USER
-
   """
   로그인 필요
   """
   FOLLOWING_USER
   STAR_USER
+}
+
+input FeedOrder {
+  by: FeedOrderBy
+  direction: OrderDirection
+}
+
+"""
+기본값: id
+"""
+enum FeedOrderBy {
+  CREATION_TIME
 }
 
 """
@@ -327,7 +337,7 @@ type Query {
   """
   해시태그로 메뉴 검색
   """
-  searchFeedList(hashtags: [NonEmptyString!]!): [Feed!]
+  searchFeedList(hashtags: [NonEmptyString!]!, order: FeedOrder, pagination: Pagination!): [Feed!]
 
   """
   해시태그로 메뉴 검색
@@ -337,7 +347,7 @@ type Query {
   """
   해시태그로 매장 검색
   """
-  searchStores(hashtags: [NonEmptyString!]!): [Store!]
+  searchStores(hashtags: [NonEmptyString!]!, order: StoreOrder, pagination: Pagination!): [Store!]
 
   """
   특정 매장 정보
@@ -414,6 +424,18 @@ type Store {
   """
   user: User
   userId: ID!
+}
+
+input StoreOrder {
+  by: StoreOrderBy
+  direction: OrderDirection
+}
+
+"""
+기본값: id
+"""
+enum StoreOrderBy {
+  NAME
 }
 
 type Trend {

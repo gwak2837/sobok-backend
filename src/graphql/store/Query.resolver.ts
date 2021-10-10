@@ -1,9 +1,9 @@
-import { UserInputError } from 'apollo-server-express'
+import { UserInputError } from 'apollo-server-core'
 
 import { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { spliceSQL } from '../../utils/ORM'
-import type { QueryResolvers } from '../generated/graphql'
+import { applyPaginationAndSorting, buildSQL, spliceSQL } from '../../utils/ORM'
+import { OrderDirection, QueryResolvers } from '../generated/graphql'
 import { buildBasicStoreQuery, encodeCategories, storeORM } from './ORM'
 import byCategories from './sql/byCategories.sql'
 import byId from './sql/byId.sql'
@@ -16,6 +16,10 @@ import onHashtagName from './sql/onHashtagName.sql'
 import verifyUserBucket from './sql/verifyUserBucket.sql'
 
 const joinHashtagShort = 'JOIN hashtag ON hashtag.id = store_x_hashtag.hashtag_id'
+
+export const StoreOrderBy = {
+  NAME: 'name',
+}
 
 export const Query: QueryResolvers<ApolloContext> = {
   store: async (_, { id }, { userId }, info) => {
@@ -48,20 +52,15 @@ export const Query: QueryResolvers<ApolloContext> = {
     if (town && categories) {
       sql = spliceSQL(sql, byTownAndCategories, 'GROUP BY')
       values.push(town, encodedCategories)
-    }
-    //
-    else if (town) {
+    } else if (town) {
       sql = spliceSQL(sql, byTown, 'GROUP BY')
       values.push(town)
-    }
-    //
-    else if (categories) {
+    } else if (categories) {
       sql = spliceSQL(sql, byCategories, 'GROUP BY')
       values.push(encodedCategories)
     }
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
     if (rowCount === 0) return null
 
     return storeORM(rows, columns)
@@ -90,14 +89,17 @@ export const Query: QueryResolvers<ApolloContext> = {
     values.push(bucketId)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
     if (rowCount === 0) return null
 
     return storeORM(rows, columns)
   },
 
-  searchStores: async (_, { hashtags }, { userId }, info) => {
+  searchStores: async (_, { hashtags, order, pagination }, { userId }, info) => {
     if (hashtags.length === 0) throw new UserInputError('해시태그 배열은 비어있을 수 없습니다.')
+    if (order && !order.by && !order.direction)
+      throw new UserInputError('order 객체는 비어있을 수 없습니다.')
+    if (!pagination.lastId && pagination.lastValue)
+      throw new UserInputError('pagination.lastId가 존재해야 합니다.')
 
     let [sql, columns, values] = await buildBasicStoreQuery(info, userId)
 
@@ -106,11 +108,11 @@ export const Query: QueryResolvers<ApolloContext> = {
     } else {
       sql = spliceSQL(sql, `${joinHashtag} ${onHashtagName}`, 'GROUP BY')
     }
-
     values.push(hashtags)
 
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+    sql = applyPaginationAndSorting(sql, values, 'store', order, pagination)
 
+    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
     if (rowCount === 0) return null
 
     return storeORM(rows, columns)

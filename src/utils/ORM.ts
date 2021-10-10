@@ -1,5 +1,6 @@
-import { GraphQLResolveInfo } from 'graphql'
-import graphqlFields from 'graphql-fields'
+import { UserInputError } from 'apollo-server-core'
+
+import { Maybe, OrderDirection, Pagination } from '../graphql/generated/graphql'
 
 // export function selectColumnFromField(
 //   info: GraphQLResolveInfo,
@@ -98,4 +99,49 @@ export function buildSQL(sourceSQL: string, keyword: Keyword, insertingSQL: stri
     case 'FETCH':
       throw new Error('FETCH already existed on source SQL.')
   }
+}
+
+type Order = {
+  by?: unknown
+  direction?: Maybe<OrderDirection>
+}
+
+export function applyPaginationAndSorting(
+  sql: string,
+  values: unknown[],
+  tableName: string,
+  order: Maybe<Order> | undefined,
+  pagination: Pagination
+) {
+  // Pagination
+  if (pagination.lastId) {
+    const inequalitySign = order?.direction === OrderDirection.Asc ? '>' : '<'
+    if (pagination.lastValue) {
+      if (!order?.by)
+        throw new UserInputError('pagination.lastValue와 order.by가 모두 존재해야 합니다.')
+      const keysetPagination = `(${tableName}.${order.by}, ${tableName}.id) ${inequalitySign} ($1, $2)`
+      sql = buildSQL(sql, 'WHERE', keysetPagination)
+      values.push(pagination.lastValue, pagination.lastId)
+    } else {
+      const idPagination = `${tableName}.id ${inequalitySign} $1`
+      sql = buildSQL(sql, 'WHERE', idPagination)
+      values.push(pagination.lastId)
+    }
+  }
+
+  // ORDER BY
+  const orderDirection = order?.direction === OrderDirection.Asc ? '' : 'DESC'
+  if (order?.by) {
+    const columnOrdering = `${tableName}.${order.by} ${orderDirection}, ${tableName}.id ${orderDirection}`
+    sql = buildSQL(sql, 'ORDER BY', columnOrdering)
+  } else {
+    const idOrdering = `${tableName}.id ${orderDirection}`
+    sql = buildSQL(sql, 'ORDER BY', idOrdering)
+  }
+
+  // FETCH
+  sql = buildSQL(sql, 'FETCH', 'FIRST $1 ROWS ONLY')
+  values.push(pagination.limit)
+
+  return sql
 }
