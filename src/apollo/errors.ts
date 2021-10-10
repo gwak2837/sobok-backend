@@ -5,3 +5,9 @@ export class DatabaseQueryError extends ApolloError {
     super(message, 'DATABASE_QUERY_ERROR')
   }
 }
+
+export class NotImplementedError extends ApolloError {
+  constructor(message: string) {
+    super(message, 'NOT_IMPLEMENTED_ERROR')
+  }
+}
