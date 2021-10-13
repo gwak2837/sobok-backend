@@ -8,7 +8,6 @@ import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
 import { commentFieldColumnMapping } from '../comment/ORM'
 import type { Feed as GraphQLFeed } from '../generated/graphql'
 import { menuFieldColumnMapping } from '../menu/ORM'
-
 import { userFieldColumnMapping } from '../user/ORM'
 import feedList from './sql/feedList.sql'
 import joinComment from './sql/joinComment.sql'

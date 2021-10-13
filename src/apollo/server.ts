@@ -6,7 +6,9 @@ import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
 
 import { poolQuery } from '../database/postgres'
-import schema from '../graphql/schema'
+// import schema from '../graphql/schema'
+import typeDefs from '../graphql/generated/schema.graphql'
+import { resolvers } from '../graphql/schema'
 import { setPassportStrategies } from '../lib/passport'
 import { verifyJWT } from '../utils/jwt'
 import user from './sql/user.sql'
@@ -42,7 +44,8 @@ export async function startApolloServer() {
     },
     introspection: process.env.NODE_ENV === 'development',
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-    schema,
+    resolvers,
+    typeDefs,
   })
 
   // More required logic for integrating with Express
