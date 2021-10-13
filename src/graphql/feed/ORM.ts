@@ -4,11 +4,7 @@ import format from 'pg-format'
 
 import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import {
-  removeColumnWithAggregateFunction,
-  selectColumnFromField,
-  serializeParameters,
-} from '../../utils/ORM'
+import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
 import { commentFieldColumnMapping } from '../comment/ORM'
 import type { Feed as GraphQLFeed } from '../generated/graphql'
 import { menuFieldColumnMapping } from '../menu/ORM'
@@ -80,7 +76,9 @@ export async function buildBasicFeedQuery(
     const commentColumns = selectColumnFromField(
       feedFields.comments,
       commentFieldColumnMapping
-    ).map((column) => `array_agg(${column})`)
+    ).map((column) =>
+      column === 'comment.id' ? `array_agg(DISTINCT ${column})` : `array_agg(${column})`
+    )
 
     sql = `${sql} ${joinComment}`
     columns = [...columns, ...commentColumns]
@@ -89,7 +87,7 @@ export async function buildBasicFeedQuery(
 
   if (firstFeedFields.has('hashtags')) {
     sql = `${sql} ${joinHashtag}`
-    columns.push('array_agg(hashtag.name)')
+    columns.push('array_agg(DISTINCT hashtag.name)')
     groupBy = true
   }
 
@@ -103,11 +101,11 @@ export async function buildBasicFeedQuery(
     groupBy = true
   }
 
-  const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
+  // const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
 
-  if (groupBy && filteredColumns.length > 0) {
-    sql = `${sql} GROUP BY ${filteredColumns}`
-  }
+  // if (groupBy && filteredColumns.length > 0) {
+  //   sql = `${sql} GROUP BY ${filteredColumns}`
+  // }
 
   return [format(serializeParameters(sql), columns), columns, values] as const
 }

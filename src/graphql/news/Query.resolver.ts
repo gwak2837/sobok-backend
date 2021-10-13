@@ -28,14 +28,14 @@ export const Query: QueryResolvers<ApolloContext> = {
   },
 
   newsListByStore: async (_, { storeId, categories }, { userId }, info) => {
-    let encodedCategories
+    let encodedStoreCategories
 
     if (categories) {
       if (categories?.length === 0) throw new UserInputError('Invalid categories value')
 
-      encodedCategories = categories.map((category) => encodeCategory(category))
+      encodedStoreCategories = categories.map((category) => encodeCategory(category))
 
-      if (encodedCategories.some((encodeCategory) => encodeCategory === null))
+      if (encodedStoreCategories.some((encodeCategory) => encodeCategory === null))
         throw new UserInputError('Invalid categories value')
     }
 
@@ -43,7 +43,7 @@ export const Query: QueryResolvers<ApolloContext> = {
 
     if (categories) {
       sql = spliceSQL(sql, byStoreIdAndCategories, 'GROUP BY')
-      values.push(storeId, encodedCategories)
+      values.push(storeId, encodedStoreCategories)
     } else {
       sql = spliceSQL(sql, byStoreId, 'GROUP BY')
       values.push(storeId)

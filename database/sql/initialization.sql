@@ -30,11 +30,13 @@ CREATE TABLE "user" (
   gender int NOT NULL DEFAULT 0,
   is_email_verified boolean NOT NULL DEFAULT FALSE,
   is_star_user boolean NOT NULL DEFAULT FALSE,
-  --
   bio varchar(50),
   birth date,
   image_url text,
   nickname varchar(50),
+  feed_count int NOT NULL DEFAULT 0,
+  follower_count int NOT NULL DEFAULT 0,
+  following_count int NOT NULL DEFAULT 0,
   --
   google_oauth text UNIQUE,
   naver_oauth text UNIQUE,
@@ -53,13 +55,13 @@ CREATE TABLE store (
   address varchar(50) NOT NULL,
   point point NOT NULL,
   categories int [] NOT NULL,
-  --
   tel varchar(20) UNIQUE,
   registration_number char(10) UNIQUE,
   description text,
   business_hours text [],
   holidays date [],
   image_urls text [],
+  --
   user_id uuid REFERENCES "user" ON DELETE CASCADE,
   --
   UNIQUE (name, address)
@@ -120,11 +122,11 @@ CREATE TABLE "comment" (
   creation_time timestamptz NOT NULL DEFAULT NOW(),
   modification_time timestamptz NOT NULL DEFAULT NOW(),
   contents text [] NOT NULL,
-  user_id uuid NOT NULL REFERENCES "user" ON DELETE CASCADE,
-  feed_id bigint NOT NULL REFERENCES feed ON DELETE CASCADE,
-  --
   image_url text,
-  comment_id bigint REFERENCES "comment" ON DELETE CASCADE
+  --
+  comment_id bigint REFERENCES "comment" ON DELETE CASCADE,
+  feed_id bigint NOT NULL REFERENCES feed ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES "user" ON DELETE CASCADE
 );
 
 -- type: 0 = 매장, 1 = 메뉴

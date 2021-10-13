@@ -4,7 +4,7 @@ import format from 'pg-format'
 
 import { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
+import { selectColumnFromField } from '../../utils/ORM'
 import type { Bucket as GraphQLBucket } from '../generated/graphql'
 import { userFieldColumnMapping } from '../user/ORM'
 import fromBucket from './sql/fromBucket.sql'
@@ -41,35 +41,5 @@ export async function buildBasicBucketQuery(
     columns = [...columns, ...userColumns]
   }
 
-  return [format(serializeParameters(sql), columns), columns, values] as const
-}
-
-// Database records -> GraphQL fields
-export function bucketORM(rows: unknown[][], selectedColumns: string[]): GraphQLBucket[] {
-  return rows.map((row) => {
-    const graphQLBucket: any = {}
-
-    selectedColumns.forEach((selectedColumn, i) => {
-      const [_, __] = (selectedColumn.match(tableColumnRegEx) ?? [''])[0].split('.')
-      const tableName = removeQuotes(_)
-      const columnName = removeQuotes(__)
-      const camelTableName = snakeToCamel(tableName)
-      const camelColumnName = snakeToCamel(columnName)
-      const cell = row[i]
-
-      if (tableName === 'bucket') {
-        graphQLBucket[camelColumnName] = cell
-      }
-      //
-      else {
-        if (!graphQLBucket[camelTableName]) {
-          graphQLBucket[camelTableName] = {}
-        }
-
-        graphQLBucket[camelTableName][camelColumnName] = cell
-      }
-    })
-
-    return graphQLBucket
-  })
+  return [sql, columns, values] as const
 }

@@ -2,38 +2,19 @@ import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
 import format from 'pg-format'
 
+import { NotImplementedError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import type { user as DatabaseUser } from '../../database/sobok'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import {
-  removeColumnWithAggregateFunction,
-  selectColumnFromField,
-  serializeParameters,
-} from '../../utils/ORM'
+import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
 import { commentFieldColumnMapping } from '../comment/ORM'
 import { feedFieldColumnMapping } from '../feed/ORM'
 import type { User as GraphQLUser } from '../generated/graphql'
 import { Provider } from '../generated/graphql'
-import fromUser from './sql/fromUser.sql'
 import joinComment from './sql/joinComment.sql'
 import joinFeed from './sql/joinFeed.sql'
 import joinFollower from './sql/joinFollower.sql'
 import joinFollowing from './sql/joinFollowing.sql'
-
-const userFieldsFromOtherTable = new Set([
-  'comments',
-  'feed',
-  'followings',
-  'followers',
-  'likedComments',
-  'likedFeed',
-  'likedMenus',
-  'likedNews',
-  'likedStores',
-  'likedTrends',
-  'menuBuckets',
-  'storeBuckets',
-])
 
 const privateUserField = new Set([
   'creationTime',
@@ -45,73 +26,84 @@ const privateUserField = new Set([
   'providers',
 ])
 
+const fromOtherTable = new Set(['followerCount', 'followingCount'])
+
 // GraphQL fields -> Database columns
 export function userFieldColumnMapping(userField: keyof GraphQLUser) {
-  if (userField === 'providers') {
-    return ['"user".id', '"user".google_oauth', '"user".naver_oauth', '"user".kakao_oauth']
-  } else if (userFieldsFromOtherTable.has(userField)) {
-    return '"user".id'
-  } else if (privateUserField.has(userField)) {
+  if (privateUserField.has(userField)) {
     return ['"user".id', `"user".${camelToSnake(userField)}`]
+  } else if (fromOtherTable.has(userField)) {
+    return '"user".id'
   }
 
-  return `"user".${camelToSnake(userField)}`
+  switch (userField) {
+    case 'providers':
+      return ['"user".id', '"user".google_oauth', '"user".naver_oauth', '"user".kakao_oauth']
+    default:
+      return `"user".${camelToSnake(userField)}`
+  }
 }
 
-// GraphQL fields -> SQL
-export async function buildBasicUserQuery(
-  info: GraphQLResolveInfo,
-  userId: ApolloContext['userId'],
-  selectColumns = true
-) {
-  const userFields = graphqlFields(info) as Record<string, any>
-  const firstUserFields = new Set(Object.keys(userFields))
+// GraphQL request -> SQL request
+export function buildBasicUserQuery(info: GraphQLResolveInfo) {
+  let columns = selectColumnFromField(graphqlFields(info), userFieldColumnMapping)
 
-  let sql = fromUser
-  let columns = selectColumns ? selectColumnFromField(userFields, userFieldColumnMapping) : []
-  const values: unknown[] = []
-  let groupBy = false
+  return `SELECT ${columns} FROM "user"`
 
-  if (firstUserFields.has('comments')) {
-    const commentColumns = selectColumnFromField(
-      userFields.comments,
-      commentFieldColumnMapping
-    ).map((column) => `array_agg(${column})`)
+  // const firstUserFields = new Set(Object.keys(userFields))
+  // let sql = ''
+  // const values: unknown[] = []
 
-    sql = `${sql} ${joinComment}`
-    columns = [...columns, ...commentColumns]
-    groupBy = true
-  }
+  // return [`SELECT ${columns} FROM "user" ${serializeParameters(sql)}` as string, values] as const
 
-  if (firstUserFields.has('feed')) {
-    const feedColumns = selectColumnFromField(userFields.feed, feedFieldColumnMapping).map(
-      (column) => `array_agg(${column})`
-    )
+  // let groupBy = false
 
-    sql = `${sql} ${joinFeed}`
-    columns = [...columns, ...feedColumns]
-    groupBy = true
-  }
+  // if (firstUserFields.has('comments')) {
+  //   const commentColumns = selectColumnFromField(
+  //     userFields.comments,
+  //     commentFieldColumnMapping
+  //   ).map((column) => `array_agg(${column})`)
 
-  if (firstUserFields.has('followings')) {
-    const userColumns = selectColumnFromField(userFields.followings, userFieldColumnMapping).map(
-      (column) => `array_agg(DISTINCT following.${column})`
-    )
+  //   sql = `${sql} ${joinComment}`
+  //   columns = [...columns, ...commentColumns]
+  //   groupBy = true
+  // }
 
-    sql = `${sql} ${joinFollowing}`
-    columns = [...columns, ...userColumns]
-    groupBy = true
-  }
+  // if (firstUserFields.has('feed')) {
+  //   const feedColumns = selectColumnFromField(userFields.feed, feedFieldColumnMapping).map(
+  //     (tableColumn) => `array_agg(${tableColumn}) AS ${tableColumn}`
+  //   )
 
-  if (firstUserFields.has('followers')) {
-    const userColumns = selectColumnFromField(userFields.followers, userFieldColumnMapping).map(
-      (column) => `array_agg(DISTINCT follower.${column})`
-    )
+  //   sql = `${sql} ${joinFeed}`
+  //   columns = [...columns, ...feedColumns]
+  //   groupBy = true
+  // }
 
-    sql = `${sql} ${joinFollower}`
-    columns = [...columns, ...userColumns]
-    groupBy = true
-  }
+  // if (firstUserFields.has('followings')) {
+  //   const userColumns = selectColumnFromField(userFields.followings, userFieldColumnMapping).map(
+  //     (tableColumn) => {
+  //       const column = tableColumn.split('.')[1]
+  //       return `array_agg(following.${column}) AS followings__${column}`
+  //     }
+  //   )
+
+  //   sql = `${sql} ${joinFollowing}`
+  //   columns = [...columns, ...userColumns]
+  //   groupBy = true
+  // }
+
+  // if (firstUserFields.has('followers')) {
+  //   const userColumns = selectColumnFromField(userFields.followers, userFieldColumnMapping).map(
+  //     (tableColumn) => {
+  //       const column = tableColumn.split('.')[1]
+  //       return `array_agg(follower.${column}) AS followers__${column}`
+  //     }
+  //   )
+
+  //   sql = `${sql} ${joinFollower}`
+  //   columns = [...columns, ...userColumns]
+  //   groupBy = true
+  // }
 
   // if (firstUserFields.has('likedComments')) {
   //   const userColumns = selectColumnFromField(userFields.followers, userFieldColumnMapping).map(
@@ -133,67 +125,44 @@ export async function buildBasicUserQuery(
   //   groupBy = true
   // }
 
-  const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
+  // const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
 
-  if (groupBy && filteredColumns.length > 0) {
-    sql = `${sql} GROUP BY ${filteredColumns}`
-  }
-
-  return [format(serializeParameters(sql), columns), columns, values] as const
+  // if (groupBy && filteredColumns.length > 0) {
+  //   sql = `${sql} GROUP BY ${filteredColumns}`
+  // }
 }
 
-// Database records -> GraphQL fields
-export function userORM(rows: unknown[][], selectedColumns: string[]): GraphQLUser[] {
+// SQL response -> GraphQL response
+export function userORM(rows: Record<string, unknown>[]): GraphQLUser[] {
   return rows.map((row) => {
-    const graphQLUser: any = {}
+    const graphqlObject: any = {}
 
-    selectedColumns.forEach((selectedColumn, i) => {
-      const [_, __] = (selectedColumn.match(tableColumnRegEx) ?? [''])[0].split('.')
-      const tableName = removeQuotes(_)
-      const columnName = removeQuotes(__)
-      const camelTableName = snakeToCamel(tableName)
-      const camelColumnName = snakeToCamel(columnName)
-      const cell = row[i]
+    for (const column in row) {
+      const value = row[column]
 
-      if (tableName === 'user') {
-        graphQLUser[camelColumnName] = cell
-      }
-      //
-      else if (tableName === 'isInBuckeet') {
-        if (cell) {
-          graphQLUser.isInBucket = true
-        }
-      }
-      //
-      else if (tableName === 'user_x_liked_menu') {
-        if (cell) {
-          graphQLUser.isLiked = true
-        }
-      }
-      //
-      else if (tableName === 'hashtag') {
-        graphQLUser.hashtags = cell
-      }
-      //
-      else {
-        if (!graphQLUser[camelTableName]) {
-          graphQLUser[camelTableName] = {}
-        }
+      if (column.includes('__')) {
+        const [field, subField] = column.split('__')
+        const camelField = snakeToCamel(field)
 
-        graphQLUser[camelTableName][camelColumnName] = cell
-      }
-    })
+        if (Array.isArray(value))
+          throw new NotImplementedError(`구현되지 않은 필드입니다. ${column} ${value}`)
+        // if (!graphqlObject[camelField]) graphqlObject[camelField] = []
+        // for (let i = 0; i < value.length; i++) {
+        //   const arrayField = graphqlObject[camelField]
+        //   if (!arrayField[i]) arrayField[i] = {}
+        //   arrayField[i][subField] = value[i]
+        // }
 
-    return graphQLUser
+        if (!graphqlObject[camelField]) graphqlObject[camelField] = {}
+        graphqlObject[camelField][subField] = value
+      } else {
+        graphqlObject[snakeToCamel(column)] = value
+      }
+    }
+
+    return graphqlObject
   })
 }
-
-// export function userORM(user: Partial<DatabaseUser>): any {
-//   return {
-//     ...snakeKeyToCamelKey(user),
-//     providers: decodeProviders(user),
-//   }
-// }
 
 export function decodeProviders(user: Partial<DatabaseUser>) {
   const providers = []

@@ -3,11 +3,7 @@ import graphqlFields from 'graphql-fields'
 
 import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import {
-  removeColumnWithAggregateFunction,
-  selectColumnFromField,
-  serializeParameters,
-} from '../../utils/ORM'
+import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
 import type { Menu as GraphQLMenu } from '../generated/graphql'
 import { storeFieldColumnMapping } from '../store/ORM'
 import joinHashtag from './sql/joinHashtag.sql'
@@ -68,11 +64,11 @@ export async function buildBasicMenuQuery(
     groupBy = true
   }
 
-  const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
+  // const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
 
-  if (groupBy && filteredColumns.length > 0) {
-    sql = `${sql} GROUP BY ${filteredColumns}`
-  }
+  // if (groupBy && filteredColumns.length > 0) {
+  //   sql = `${sql} GROUP BY ${filteredColumns}`
+  // }
 
   return [
     `SELECT ${columns} FROM menu ${serializeParameters(sql)}` as string,

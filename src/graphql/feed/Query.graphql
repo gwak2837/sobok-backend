@@ -10,6 +10,12 @@ type Query {
 
   "해시태그로 메뉴 검색"
   searchFeedList(hashtags: [NonEmptyString!]!, order: FeedOrder, pagination: Pagination!): [Feed!]
+
+  "피드에 달린 댓글"
+  comments: [Comment!]
+
+  "피드에 태그된 메뉴 목록"
+  menus: [Menu!]
 }
 
 "기본값: 모든 사용자"

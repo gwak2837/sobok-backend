@@ -1,9 +1,10 @@
 import { UserInputError } from 'apollo-server-express'
 
 import { poolQuery } from '../../database/postgres'
-import { spliceSQL } from '../../utils/ORM'
+import { buildSQL, objectRelationMapping, spliceSQL } from '../../utils/ORM'
+
 import type { QueryResolvers } from '../generated/graphql'
-import { bucketORM, buildBasicBucketQuery } from './ORM'
+import { buildBasicBucketQuery } from './ORM'
 import byId from './sql/byId.sql'
 import byUserIdAndBucketType from './sql/byUserIdAndBucketType.sql'
 import joinUserOnUniqueNameAndBucketType from './sql/joinUserOnUniqueNameAndBucketType.sql'
@@ -15,14 +16,14 @@ export const Query: QueryResolvers = {
   bucket: async (_, { id }, { userId }, info) => {
     let [sql, columns, values] = await buildBasicBucketQuery(info, userId)
 
-    sql = spliceSQL(sql, byId, 'GROUP BY')
+    sql = buildSQL(sql, 'WHERE', byId)
     values.push(id)
 
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
 
     if (rowCount === 0) return null
 
-    return bucketORM(rows, columns)[0]
+    return objectRelationMapping(rows)[0]
   },
 
   buckets: async (_, { userUniqueName, type }, { userId }, info) => {
@@ -32,14 +33,14 @@ export const Query: QueryResolvers = {
     let [sql, columns, values] = await buildBasicBucketQuery(info, userId)
 
     if (userId) {
-      sql = spliceSQL(sql, byUserIdAndBucketType, 'GROUP BY')
+      sql = buildSQL(sql, 'WHERE', byUserIdAndBucketType)
       values.push(userId, type)
     } else {
       if (sql.includes('JOIN "user"')) {
         sql = spliceSQL(sql, onUniqueNameAndBucketType, joinUserOnUserId, true)
         values.push(userUniqueName, type)
       } else {
-        sql = spliceSQL(sql, joinUserOnUniqueNameAndBucketType, 'WHERE')
+        sql = buildSQL(sql, 'JOIN', joinUserOnUniqueNameAndBucketType)
         values.push(userUniqueName, type)
       }
     }
@@ -48,6 +49,6 @@ export const Query: QueryResolvers = {
 
     if (rowCount === 0) return null
 
-    return bucketORM(rows, columns)
+    return objectRelationMapping(rows)
   },
 }

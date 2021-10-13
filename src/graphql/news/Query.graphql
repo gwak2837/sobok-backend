@@ -1,11 +1,3 @@
-"기본값: ALL_STORE"
-enum NewsOptions {
-  "로그인 필요"
-  LIKED_STORE
-
-  ALL_STORE
-}
-
 type Query {
   "소식 상세"
   news(id: ID!): News
@@ -15,4 +7,12 @@ type Query {
 
   "옵션별 여러 매장 소식 목록"
   newsListByTown(town: NonEmptyString, option: NewsOptions, categories: [NonEmptyString!]): [News!]
+}
+
+"기본값: ALL_STORE"
+enum NewsOptions {
+  "로그인 필요"
+  LIKED_STORE
+
+  ALL_STORE
 }

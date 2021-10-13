@@ -1,14 +1,11 @@
+import { UserInputError } from 'apollo-server-errors'
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
 
 import { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import {
-  removeColumnWithAggregateFunction,
-  selectColumnFromField,
-  serializeParameters,
-} from '../../utils/ORM'
-import type { Store as GraphQLStore } from '../generated/graphql'
+import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
+import type { Store as GraphQLStore, QueryStoresByTownAndCategoryArgs } from '../generated/graphql'
 import { menuFieldColumnMapping } from '../menu/ORM'
 import { newsFieldColumnMapping } from '../news/ORM'
 import { userFieldColumnMapping } from '../user/ORM'
@@ -48,14 +45,14 @@ export async function buildBasicStoreQuery(
   userId: ApolloContext['userId']
 ) {
   const storeFields = graphqlFields(info) as Record<string, any>
-  const firstMenuFields = new Set(Object.keys(storeFields))
+  const storeFieldsSet = new Set(Object.keys(storeFields))
 
   let sql = ''
   let columns = selectColumnFromField(storeFields, storeFieldColumnMapping)
   const values: unknown[] = []
   let groupBy = false
 
-  if (firstMenuFields.has('isInBucket')) {
+  if (storeFieldsSet.has('isInBucket')) {
     if (userId) {
       sql = `${sql} ${joinStoreBucket}`
       columns.push('bucket.id')
@@ -63,7 +60,7 @@ export async function buildBasicStoreQuery(
     }
   }
 
-  if (firstMenuFields.has('isLiked')) {
+  if (storeFieldsSet.has('isLiked')) {
     if (userId) {
       sql = `${sql} ${joinLikedStore}`
       columns.push('user_x_liked_store.user_id')
@@ -71,7 +68,7 @@ export async function buildBasicStoreQuery(
     }
   }
 
-  if (firstMenuFields.has('menus')) {
+  if (storeFieldsSet.has('menus')) {
     const menuColumns = selectColumnFromField(storeFields.menus, menuFieldColumnMapping).map(
       (column) => `array_agg(DISTINCT ${column})`
     )
@@ -81,13 +78,13 @@ export async function buildBasicStoreQuery(
     groupBy = true
   }
 
-  if (firstMenuFields.has('hashtags')) {
+  if (storeFieldsSet.has('hashtags')) {
     sql = `${sql} ${joinHashtag}`
     columns.push('array_agg(DISTINCT hashtag.name)')
     groupBy = true
   }
 
-  if (firstMenuFields.has('news')) {
+  if (storeFieldsSet.has('news')) {
     const newsColumns = selectColumnFromField(storeFields.news, newsFieldColumnMapping).map(
       (column) => `array_agg(DISTINCT ${column})`
     )
@@ -97,20 +94,20 @@ export async function buildBasicStoreQuery(
     groupBy = true
   }
 
-  if (firstMenuFields.has('user')) {
+  if (storeFieldsSet.has('user')) {
     const userColumns = selectColumnFromField(storeFields.user, userFieldColumnMapping)
 
     sql = `${sql} ${joinUser}`
     columns = [...columns, ...userColumns]
   }
 
-  const filteredColumns = columns
-    .filter(removeColumnWithAggregateFunction)
-    .filter((column) => column !== 'store.point')
+  // const filteredColumns = columns
+  //   .filter(removeColumnWithAggregateFunction)
+  //   .filter((column) => column !== 'store.point')
 
-  if (groupBy && filteredColumns.length > 0) {
-    sql = `${sql} GROUP BY ${filteredColumns}`
-  }
+  // if (groupBy && filteredColumns.length > 0) {
+  //   sql = `${sql} GROUP BY ${filteredColumns}`
+  // }
 
   return [
     `SELECT ${columns} FROM store ${serializeParameters(sql)}` as string,
@@ -119,67 +116,16 @@ export async function buildBasicStoreQuery(
   ] as const
 }
 
-// Database records -> GraphQL fields
-export function storeORM(rows: any[][], selectedColumns: string[]): GraphQLStore[] {
-  return rows.map((row) => {
-    const graphQLStore: any = {}
-
-    for (let i = 0; i < selectedColumns.length; i++) {
-      const [_, __] = (selectedColumns[i].match(tableColumnRegEx) ?? [''])[0].split('.')
-      const tableName = removeQuotes(_)
-      const columnName = removeQuotes(__)
-      const camelTableName = snakeToCamel(tableName)
-      const camelColumnName = snakeToCamel(columnName)
-      const cell = row[i]
-
-      if (tableName === 'store') {
-        if (columnName === 'point') {
-          graphQLStore.latitude = cell.x
-          graphQLStore.longitude = cell.y
-        }
-        graphQLStore[camelColumnName] = cell
-      }
-      //
-      else if (tableName === 'user_x_liked_store') {
-        if (cell) {
-          graphQLStore.isLiked = true
-        }
-      }
-      //
-      else if (tableName === 'isInBuckeet') {
-        if (cell) {
-          graphQLStore.isLiked = true
-        }
-      }
-      //
-      else if (tableName === 'hashtag') {
-        graphQLStore.hashtags = cell
-      }
-      //
-      else if (tableName === 'menu') {
-        if (!graphQLStore.menus) {
-          graphQLStore.menus = []
-        }
-
-        const menusLength = cell.length
-        for (let j = 0; j < menusLength; j++) {
-          if (!graphQLStore.menus[j]) {
-            graphQLStore.menus[j] = {}
-          }
-          graphQLStore.menus[j][camelColumnName] = cell[j]
-        }
-      }
-      //
-      else {
-        if (!graphQLStore[camelTableName]) {
-          graphQLStore[camelTableName] = {}
-        }
-        graphQLStore[camelTableName][camelColumnName] = cell
-      }
-    }
-
-    return graphQLStore
-  })
+export function validateStoreCategories(
+  categories: QueryStoresByTownAndCategoryArgs['categories']
+) {
+  if (categories) {
+    if (categories.length === 0) throw new UserInputError('카테고리 배열은 비어있을 수 없습니다.')
+    const encodedCategories = encodeCategories(categories)
+    if (encodedCategories.some((encodeCategory) => encodeCategory === null))
+      throw new UserInputError('카테고리 값은 null이 될 수 없습니다.')
+    return encodedCategories
+  }
 }
 
 export function encodeCategories(categories: string[]) {

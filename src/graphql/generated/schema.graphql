@@ -18,24 +18,25 @@ enum BucketType {
 }
 
 type Comment {
-  """
-  from other table - nullable
-  """
-  comment: Comment
   contents: [NonEmptyString!]!
   creationTime: DateTime!
 
   """
-  from other table
+  이 댓글이 달린 피드
   """
   feed: Feed!
   id: ID!
-
-  """
-  nullable
-  """
   imageUrl: URL
   modificationTime: DateTime!
+
+  """
+  이 댓글의 상위 댓글
+  """
+  parentComment: Comment
+
+  """
+  댓글을 작성한 사용자
+  """
   user: User!
 }
 
@@ -47,11 +48,6 @@ scalar EmailAddress
 
 type Feed {
   commentCount: Int!
-
-  """
-  피드에 달린 댓글
-  """
-  comments: [Comment!]
   contents: [NonEmptyString!]!
   creationTime: DateTime!
 
@@ -67,11 +63,6 @@ type Feed {
   """
   isLiked: Boolean!
   likeCount: Int!
-
-  """
-  피드에 태그된 메뉴 목록
-  """
-  menus: [Menu!]
   modificationTime: DateTime!
   rating: NonEmptyString!
 
@@ -265,6 +256,16 @@ type Query {
   buckets(type: BucketType!, userUniqueName: NonEmptyString): [Bucket!]
 
   """
+  피드에 달린 댓글
+  """
+  comments: [Comment!]
+
+  """
+  특정 게시글에 달린 댓글
+  """
+  commentsByFeed(feedId: ID!): [Comment]
+
+  """
   피드 상세
   """
   feed(id: ID!): Feed
@@ -290,6 +291,36 @@ type Query {
   isUniqueNameUnique(uniqueName: NonEmptyString!): Boolean!
 
   """
+  좋아요 누른 댓글
+  """
+  likedComments: [Comment!]
+
+  """
+  좋아요 누른 피드
+  """
+  likedFeed: [Feed!]
+
+  """
+  좋아요 누른 메뉴
+  """
+  likedMenus: [Menu!]
+
+  """
+  좋아요 누른 소식
+  """
+  likedNews: [News!]
+
+  """
+  좋아요 누른 매장
+  """
+  likedStores: [Store!]
+
+  """
+  좋아요 누른 트렌드
+  """
+  likedTrends: [Trend!]
+
+  """
   인증 토큰과 같이 요청하면 사용자 정보를 반환
   """
   me: User!
@@ -305,6 +336,11 @@ type Query {
   menuByName(name: NonEmptyString!, storeId: ID!): Menu
 
   """
+  피드에 태그된 메뉴 목록
+  """
+  menus: [Menu!]
+
+  """
   특정 매장 메뉴 목록
   """
   menusByStore(storeId: ID!): [Menu!]
@@ -318,6 +354,41 @@ type Query {
   메뉴 버킷에서 메뉴 가져오기
   """
   menusInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Menu!]
+
+  """
+  내가 쓴 댓글
+  """
+  myComments: [Comment!]
+
+  """
+  나를 따르는 다른 사용자
+  """
+  myFollowers: [User!]
+
+  """
+  내가 따르고 있는 다른 사용자
+  """
+  myFollowings: [User!]
+
+  """
+  내 메뉴 버킷 리스트
+  """
+  myMenuBuckets: [Bucket!]
+
+  """
+  내 매장 버킷 리스트
+  """
+  myStoreBuckets: [Bucket!]
+
+  """
+  내가 소유한 매장
+  """
+  myStores: [Store!]
+
+  """
+  내가 쓴 피드
+  """
+  myfeed: [Feed!]
 
   """
   소식 상세
@@ -355,14 +426,36 @@ type Query {
   store(id: ID!): Store
 
   """
+  특정 매장 정보
+  """
+  storeInfo(id: ID!): Store
+
+  """
   동네 및 카테고리별 매장 목록
   """
-  storesByTownAndCategory(categories: [NonEmptyString!], town: NonEmptyString): [Store!]
+  storesByTownAndCategory(
+    """
+    categories 기본값: 전체
+    """
+    categories: [NonEmptyString!]
+    order: StoreOrder
+    pagination: Pagination!
+
+    """
+    town 기본값: 전국
+    """
+    town: NonEmptyString
+  ): [Store!]
 
   """
   매장 버킷에만 해당
   """
   storesInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Store!]
+
+  """
+  대댓글
+  """
+  subComments(id: ID!): [Comment]
 }
 
 input RegisterInput {
@@ -403,18 +496,8 @@ type Store {
   isLiked: Boolean!
   latitude: Latitude!
   longitude: Longitude!
-
-  """
-  매장에서 판매하는 메뉴 목록
-  """
-  menus: [Menu!]!
   modificationTime: DateTime!
   name: NonEmptyString!
-
-  """
-  매장에서 올린 소식 목록
-  """
-  news: [News!]
   registrationNumber: String
   tel: String
   town: NonEmptyString!
@@ -457,83 +540,21 @@ scalar UUID
 type User {
   bio: String
   birth: Date
-
-  """
-  내가 쓴 댓글
-  """
-  comments: [Comment!]
   creationTime: DateTime!
   email: EmailAddress!
-
-  """
-  내가 쓴 피드
-  """
-  feed: [Feed!]
-
-  """
-  사용자를 따르는 다른 사용자
-  """
-  followers: [User!]
-
-  """
-  사용자가 따르고 있는 다른 사용자
-  """
-  followings: [User!]
+  feedCount: Int!
+  followerCount: Int!
+  followingCount: Int!
   gender: Gender!
   id: UUID!
   imageUrl: URL
   isEmailVerified: Boolean!
   isStarUser: Boolean!
-
-  """
-  좋아요 누른 댓글
-  """
-  likedComments: [Comment!]
-
-  """
-  좋아요 누른 피드
-  """
-  likedFeed: [Feed!]
-
-  """
-  좋아요 누른 메뉴
-  """
-  likedMenus: [Menu!]
-
-  """
-  좋아요 누른 소식
-  """
-  likedNews: [News!]
-
-  """
-  좋아요 누른 매장
-  """
-  likedStores: [Store!]
-
-  """
-  좋아요 누른 트렌드
-  """
-  likedTrends: [Trend!]
-
-  """
-  내 메뉴 버킷 리스트
-  """
-  menuBuckets: [Bucket!]
   modificationTime: DateTime!
   name: NonEmptyString!
   nickname: String
   phone: NonEmptyString!
   providers: [Provider!]!
-
-  """
-  내 매장 버킷 리스트
-  """
-  storeBuckets: [Bucket!]
-
-  """
-  내가 소유한 매장
-  """
-  stores: [Store!]
   uniqueName: NonEmptyString!
 }
 

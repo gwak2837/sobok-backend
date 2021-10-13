@@ -18,8 +18,7 @@ import onTown from './sql/onTown.sql'
 const joinHashtagShort = 'JOIN hashtag ON hashtag.id = feed_x_hashtag.hashtag_id'
 
 export const FeedOrderBy = {
-  NAME: 'name',
-  PRICE: 'price',
+  CREATION_TIME: 'creation_time',
 }
 
 export const Query: QueryResolvers<ApolloContext> = {

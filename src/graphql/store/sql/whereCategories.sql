@@ -1,0 +1,1 @@
+store.categories && $1
