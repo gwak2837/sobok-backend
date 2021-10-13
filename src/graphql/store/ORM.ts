@@ -1,18 +1,19 @@
 import { UserInputError } from 'apollo-server-errors'
 
+import { store } from '../../database/sobok'
 import { snakeToCamel } from '../../utils'
 import type { QueryStoresByTownAndCategoryArgs } from '../generated/graphql'
 
 // Database records -> GraphQL fields
-export function storeORM(rows: Record<string, any>[]) {
+export function storeORM(rows: store[]) {
   return rows.map((row) => {
     const store: any = {}
     for (const column in row) {
       if (column === 'point') {
-        store.latitude = row[column].x
-        store.longitude = row[column].y
+        store.latitude = row.point.x
+        store.longitude = row.point.y
       } else {
-        store[snakeToCamel(column)] = row[column]
+        store[snakeToCamel(column)] = row[column as keyof store]
       }
     }
     return store
