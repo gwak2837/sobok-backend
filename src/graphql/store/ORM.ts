@@ -4,20 +4,18 @@ import { store } from '../../database/sobok'
 import { snakeToCamel } from '../../utils'
 import type { QueryStoresByTownAndCategoryArgs } from '../generated/graphql'
 
-// Database records -> GraphQL fields
-export function storeORM(rows: store[]) {
-  return rows.map((row) => {
-    const store: any = {}
-    for (const column in row) {
-      if (column === 'point') {
-        store.latitude = row.point.x
-        store.longitude = row.point.y
-      } else {
-        store[snakeToCamel(column)] = row[column as keyof store]
-      }
+// Database columns -> GraphQL fields
+export function storeORM(databaseStore: store) {
+  const graphqlStore: any = {}
+  for (const column in databaseStore) {
+    if (column === 'point') {
+      graphqlStore.latitude = databaseStore.point.x
+      graphqlStore.longitude = databaseStore.point.y
+    } else {
+      graphqlStore[snakeToCamel(column)] = databaseStore[column as keyof store]
     }
-    return store
-  })
+  }
+  return graphqlStore
 }
 
 export function validateStoreCategories(

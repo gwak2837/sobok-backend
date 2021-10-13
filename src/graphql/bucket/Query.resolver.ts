@@ -1,8 +1,7 @@
 import { UserInputError } from 'apollo-server-express'
 
 import { poolQuery } from '../../database/postgres'
-import { buildSQL, objectRelationMapping, spliceSQL } from '../../utils/ORM'
-
+import { basicORM, buildSQL, spliceSQL } from '../../utils/ORM'
 import type { QueryResolvers } from '../generated/graphql'
 import { buildBasicBucketQuery } from './ORM'
 import byId from './sql/byId.sql'
@@ -23,7 +22,7 @@ export const Query: QueryResolvers = {
 
     if (rowCount === 0) return null
 
-    return objectRelationMapping(rows)[0]
+    return basicORM(rows)[0]
   },
 
   buckets: async (_, { userUniqueName, type }, { userId }, info) => {
@@ -49,6 +48,6 @@ export const Query: QueryResolvers = {
 
     if (rowCount === 0) return null
 
-    return objectRelationMapping(rows)
+    return basicORM(rows)
   },
 }

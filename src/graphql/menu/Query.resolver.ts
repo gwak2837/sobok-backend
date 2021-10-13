@@ -1,18 +1,20 @@
 import { UserInputError } from 'apollo-server-express'
 
+import { NotFoundError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
 import { applyPaginationAndSorting, buildSQL, spliceSQL } from '../../utils/ORM'
 import { QueryResolvers } from '../generated/graphql'
-import { buildBasicMenuQuery, encodeCategory, menuORM } from './ORM'
+import { buildBasicMenuQuery, menuORM, validateMenuCategory } from './ORM'
 import joinHashtag from './sql/joinHashtag.sql'
 import joinMenuBucketOnMenuBucketId from './sql/joinMenuBucketOnMenuBucketId.sql'
-import joinStoreOnTown from './sql/joinStoreOnTown.sql'
-import joinStoreOnTownAndCategory from './sql/joinStoreOnTownAndCategory.sql'
+import menusByTownAndCategory from './sql/menusByTownAndCategory.sql'
 import verifyUserBucket from './sql/verifyUserBucket.sql'
+import whereCategory from './sql/whereCategory.sql'
+import whereTown from './sql/whereTown.sql'
+import whereTownAndCategory from './sql/whereTownAndCategory.sql'
 
 const joinHashtagShort = 'JOIN hashtag ON hashtag.id = menu_x_hashtag.hashtag_id'
-const joinStoreOnId = 'JOIN store ON store.id = menu.store_id'
 
 export const MenuOrderBy = {
   NAME: 'name',
@@ -26,10 +28,10 @@ export const Query: QueryResolvers<ApolloContext> = {
     sql = buildSQL(sql, 'WHERE', 'menu.id = $1')
     values.push(id)
 
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-    if (rowCount === 0) return null
+    const { rowCount, rows } = await poolQuery(sql, values)
+    if (rowCount === 0) throw new NotFoundError('해당 id의 매장을 찾을 수 없습니다.')
 
-    return menuORM(rows, columns)[0]
+    return menuORM(rows[0])
   },
 
   menuByName: async (_, { storeId, name }, { userId }, info) => {
@@ -38,44 +40,33 @@ export const Query: QueryResolvers<ApolloContext> = {
     sql = buildSQL(sql, 'WHERE', 'menu.store_id = $1 AND menu.name = $2')
     values.push(storeId, name)
 
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-    if (rowCount === 0) return null
+    const { rowCount, rows } = await poolQuery(sql, values)
+    if (rowCount === 0) throw new NotFoundError('해당 id의 매장을 찾을 수 없습니다.')
 
-    return menuORM(rows, columns)[0]
+    return menuORM(rows[0])
   },
 
-  menusByTownAndCategory: async (_, { town, category }, { userId }, info) => {
-    let encodedCategory
-    if (category) {
-      encodedCategory = encodeCategory(category)
-      if (encodedCategory === null) throw new UserInputError('카테고리 값을 잘못 입력했습니다.')
-    }
+  menusByTownAndCategory: async (_, { town, category }, { userId }) => {
+    const encodedCategory = validateMenuCategory(category)
 
-    let [sql, columns, values] = await buildBasicMenuQuery(info, userId)
+    let sql = menusByTownAndCategory
+    const values: unknown[] = [userId]
 
     if (town && category) {
-      if (sql.includes('JOIN store')) {
-        sql = spliceSQL(sql, 'AND store.town = $1 AND menu.category = $2', joinStoreOnId, true)
-      } else {
-        sql = buildSQL(sql, 'JOIN', joinStoreOnTownAndCategory)
-      }
+      sql = buildSQL(sql, 'WHERE', whereTownAndCategory)
       values.push(town, encodedCategory)
     } else if (town) {
-      if (sql.includes('JOIN store')) {
-        sql = spliceSQL(sql, 'AND store.town = $1', joinStoreOnId, true)
-      } else {
-        sql = buildSQL(sql, 'JOIN', joinStoreOnTown)
-      }
+      sql = buildSQL(sql, 'WHERE', whereTown)
       values.push(town)
     } else if (category) {
-      sql = buildSQL(sql, 'WHERE', 'menu.category = $1')
+      sql = buildSQL(sql, 'WHERE', whereCategory)
       values.push(encodedCategory)
     }
 
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-    if (rowCount === 0) return null
+    const { rowCount, rows } = await poolQuery(sql, values)
+    if (rowCount === 0) throw new NotFoundError('해당 id의 매장을 찾을 수 없습니다.')
 
-    return menuORM(rows, columns)
+    return rows.map((row) => menuORM(row))
   },
 
   menusByStore: async (_, { storeId }, { userId }, info) => {
@@ -87,7 +78,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
     if (rowCount === 0) return null
 
-    return menuORM(rows, columns)
+    return rows.map((row) => menuORM(row))
   },
 
   menusInBucket: async (_, { bucketId, userUniqueName }, { userId }, info) => {
@@ -114,7 +105,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
     if (rowCount === 0) return null
 
-    return menuORM(rows, columns)
+    return rows.map((row) => menuORM(row))
   },
 
   searchMenus: async (_, { hashtags, order, pagination }, { userId }, info) => {
@@ -138,6 +129,6 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
     if (rowCount === 0) return null
 
-    return menuORM(rows, columns)
+    return rows.map((row) => menuORM(row))
   },
 }

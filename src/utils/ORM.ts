@@ -89,11 +89,21 @@ export function buildSQL(sourceSQL: string, keyword: Keyword, insertingSQL: stri
 }
 
 // Database records -> GraphQL fields
-export function objectRelationMapping(rows: Record<string, unknown>[]) {
+export function basicORM(rows: Record<string, unknown>[]) {
   return rows.map((row) => {
     const graphqlObject: any = {}
     for (const column in row) {
-      graphqlObject[snakeToCamel(column)] = row[column]
+      if (column.includes('__')) {
+        if (row[column]) {
+          const [_, __] = column.split('__')
+          const camelTable = snakeToCamel(_)
+          const camelColumn = snakeToCamel(__)
+          if (!graphqlObject[camelTable]) graphqlObject[camelTable] = {}
+          graphqlObject[camelTable][camelColumn] = row[column]
+        }
+      } else {
+        graphqlObject[snakeToCamel(column)] = row[column]
+      }
     }
     return graphqlObject
   })

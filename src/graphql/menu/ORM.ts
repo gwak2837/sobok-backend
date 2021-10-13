@@ -1,7 +1,9 @@
+import { UserInputError } from 'apollo-server-errors'
 import { GraphQLResolveInfo } from 'graphql'
 import graphqlFields from 'graphql-fields'
 
 import type { ApolloContext } from '../../apollo/server'
+import { menu } from '../../database/sobok'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
 import type { Menu as GraphQLMenu } from '../generated/graphql'
@@ -76,50 +78,19 @@ export async function buildBasicMenuQuery(
   ] as const
 }
 
-// Database records -> GraphQL fields
-export function menuORM(rows: unknown[][], selectedColumns: string[]): GraphQLMenu[] {
-  return rows.map((row) => {
-    const graphQLMenu: any = {}
+// Database columns -> GraphQL fields
+export function menuORM(databaseMenu: menu) {
+  const graphQLMenu: any = {}
 
-    selectedColumns.forEach((selectedColumn, i) => {
-      const [_, __] = (selectedColumn.match(tableColumnRegEx) ?? [''])[0].split('.')
-      const tableName = removeQuotes(_)
-      const columnName = removeQuotes(__)
-      const camelTableName = snakeToCamel(tableName)
-      const camelColumnName = snakeToCamel(columnName)
-      const cell = row[i]
+  return graphQLMenu
+}
 
-      if (tableName === 'menu') {
-        graphQLMenu[camelColumnName] = cell
-      }
-      //
-      else if (tableName === 'isInBuckeet') {
-        if (cell) {
-          graphQLMenu.isInBucket = true
-        }
-      }
-      //
-      else if (tableName === 'user_x_liked_menu') {
-        if (cell) {
-          graphQLMenu.isLiked = true
-        }
-      }
-      //
-      else if (tableName === 'hashtag') {
-        graphQLMenu.hashtags = cell
-      }
-      //
-      else {
-        if (!graphQLMenu[camelTableName]) {
-          graphQLMenu[camelTableName] = {}
-        }
-
-        graphQLMenu[camelTableName][camelColumnName] = cell
-      }
-    })
-
-    return graphQLMenu
-  })
+export function validateMenuCategory(category: any) {
+  if (category) {
+    const encodedCategory = encodeCategory(category)
+    if (encodedCategory === null) throw new UserInputError('카테고리 값을 잘못 입력했습니다.')
+    return encodedCategory
+  }
 }
 
 export function encodeCategory(id: string) {
