@@ -8,7 +8,7 @@ import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
 import { commentFieldColumnMapping } from '../comment/ORM'
 import type { Feed as GraphQLFeed } from '../generated/graphql'
 import { menuFieldColumnMapping } from '../menu/ORM'
-import { storeFieldColumnMapping } from '../store/ORM'
+
 import { userFieldColumnMapping } from '../user/ORM'
 import feedList from './sql/feedList.sql'
 import joinComment from './sql/joinComment.sql'
@@ -58,12 +58,12 @@ export async function buildBasicFeedQuery(
     }
   }
 
-  if (firstFeedFields.has('store')) {
-    const storeColumns = selectColumnFromField(feedFields.store, storeFieldColumnMapping)
+  // if (firstFeedFields.has('store')) {
+  //   const storeColumns = selectColumnFromField(feedFields.store, storeFieldColumnMapping)
 
-    sql = `${sql} ${joinStore}`
-    columns = [...columns, ...storeColumns]
-  }
+  //   sql = `${sql} ${joinStore}`
+  //   columns = [...columns, ...storeColumns]
+  // }
 
   if (firstFeedFields.has('user')) {
     const userColumns = selectColumnFromField(feedFields.user, userFieldColumnMapping)

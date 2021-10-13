@@ -5,7 +5,6 @@ import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
 import type { Menu as GraphQLMenu } from '../generated/graphql'
-import { storeFieldColumnMapping } from '../store/ORM'
 import joinHashtag from './sql/joinHashtag.sql'
 import joinLikedMenu from './sql/joinLikedMenu.sql'
 import joinMenuBucket from './sql/joinMenuBucket.sql'
@@ -52,11 +51,11 @@ export async function buildBasicMenuQuery(
     }
   }
 
-  if (firstMenuFields.has('store')) {
-    const storeColumns = selectColumnFromField(menuFields.store, storeFieldColumnMapping)
-    sql = `${sql} ${joinStore}`
-    columns = [...columns, ...storeColumns]
-  }
+  // if (firstMenuFields.has('store')) {
+  //   const storeColumns = selectColumnFromField(menuFields.store, storeFieldColumnMapping)
+  //   sql = `${sql} ${joinStore}`
+  //   columns = [...columns, ...storeColumns]
+  // }
 
   if (firstMenuFields.has('hashtags')) {
     sql = `${sql} ${joinHashtag}`

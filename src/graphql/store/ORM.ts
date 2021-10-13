@@ -1,119 +1,22 @@
 import { UserInputError } from 'apollo-server-errors'
-import { GraphQLResolveInfo } from 'graphql'
-import graphqlFields from 'graphql-fields'
 
-import { ApolloContext } from '../../apollo/server'
-import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
-import type { Store as GraphQLStore, QueryStoresByTownAndCategoryArgs } from '../generated/graphql'
-import { menuFieldColumnMapping } from '../menu/ORM'
-import { newsFieldColumnMapping } from '../news/ORM'
-import { userFieldColumnMapping } from '../user/ORM'
-import joinHashtag from './sql/joinHashtag.sql'
-import joinLikedStore from './sql/joinLikedStore.sql'
-import joinMenu from './sql/joinMenu.sql'
-import joinNews from './sql/joinNews.sql'
-import joinStoreBucket from './sql/joinStoreBucket.sql'
-import joinUser from './sql/joinUser.sql'
+import { snakeToCamel } from '../../utils'
+import type { QueryStoresByTownAndCategoryArgs } from '../generated/graphql'
 
-const storeFieldsFromOtherTable = new Set([
-  'isInBucket',
-  'isLiked',
-  'menus',
-  'hashtags',
-  'news',
-  'user',
-])
-
-export function storeFieldColumnMapping(storeField: keyof GraphQLStore) {
-  if (storeFieldsFromOtherTable.has(storeField)) {
-    return 'store.id'
-  }
-
-  switch (storeField) {
-    case 'latitude':
-    case 'longitude':
-      return 'store.point'
-    default:
-      return `store.${camelToSnake(storeField)}`
-  }
-}
-
-// GraphQL fields -> SQL
-export async function buildBasicStoreQuery(
-  info: GraphQLResolveInfo,
-  userId: ApolloContext['userId']
-) {
-  const storeFields = graphqlFields(info) as Record<string, any>
-  const storeFieldsSet = new Set(Object.keys(storeFields))
-
-  let sql = ''
-  let columns = selectColumnFromField(storeFields, storeFieldColumnMapping)
-  const values: unknown[] = []
-  let groupBy = false
-
-  if (storeFieldsSet.has('isInBucket')) {
-    if (userId) {
-      sql = `${sql} ${joinStoreBucket}`
-      columns.push('bucket.id')
-      values.push(userId)
+// Database records -> GraphQL fields
+export function storeORM(rows: Record<string, any>[]) {
+  return rows.map((row) => {
+    const store: any = {}
+    for (const column in row) {
+      if (column === 'point') {
+        store.latitude = row[column].x
+        store.longitude = row[column].y
+      } else {
+        store[snakeToCamel(column)] = row[column]
+      }
     }
-  }
-
-  if (storeFieldsSet.has('isLiked')) {
-    if (userId) {
-      sql = `${sql} ${joinLikedStore}`
-      columns.push('user_x_liked_store.user_id')
-      values.push(userId)
-    }
-  }
-
-  if (storeFieldsSet.has('menus')) {
-    const menuColumns = selectColumnFromField(storeFields.menus, menuFieldColumnMapping).map(
-      (column) => `array_agg(DISTINCT ${column})`
-    )
-
-    sql = `${sql} ${joinMenu}`
-    columns = [...columns, ...menuColumns]
-    groupBy = true
-  }
-
-  if (storeFieldsSet.has('hashtags')) {
-    sql = `${sql} ${joinHashtag}`
-    columns.push('array_agg(DISTINCT hashtag.name)')
-    groupBy = true
-  }
-
-  if (storeFieldsSet.has('news')) {
-    const newsColumns = selectColumnFromField(storeFields.news, newsFieldColumnMapping).map(
-      (column) => `array_agg(DISTINCT ${column})`
-    )
-
-    sql = `${sql} ${joinNews}`
-    columns = [...columns, ...newsColumns]
-    groupBy = true
-  }
-
-  if (storeFieldsSet.has('user')) {
-    const userColumns = selectColumnFromField(storeFields.user, userFieldColumnMapping)
-
-    sql = `${sql} ${joinUser}`
-    columns = [...columns, ...userColumns]
-  }
-
-  // const filteredColumns = columns
-  //   .filter(removeColumnWithAggregateFunction)
-  //   .filter((column) => column !== 'store.point')
-
-  // if (groupBy && filteredColumns.length > 0) {
-  //   sql = `${sql} GROUP BY ${filteredColumns}`
-  // }
-
-  return [
-    `SELECT ${columns} FROM store ${serializeParameters(sql)}` as string,
-    columns,
-    values,
-  ] as const
+    return store
+  })
 }
 
 export function validateStoreCategories(

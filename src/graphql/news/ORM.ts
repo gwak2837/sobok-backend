@@ -6,7 +6,6 @@ import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
 import type { News as GraphQLNews } from '../generated/graphql'
-import { storeFieldColumnMapping } from '../store/ORM'
 import joinLikedNews from './sql/joinLikedNews.sql'
 import joinStore from './sql/joinStore.sql'
 import newsList from './sql/newsList.sql'
@@ -43,12 +42,12 @@ export async function buildBasicNewsQuery(
     }
   }
 
-  if (firstNewsFields.includes('store')) {
-    const storeColumns = selectColumnFromField(newsFields.store, storeFieldColumnMapping)
+  // if (firstNewsFields.includes('store')) {
+  //   const storeColumns = selectColumnFromField(newsFields.store, storeFieldColumnMapping)
 
-    sql = `${sql} ${joinStore}`
-    columns = [...columns, ...storeColumns]
-  }
+  //   sql = `${sql} ${joinStore}`
+  //   columns = [...columns, ...storeColumns]
+  // }
 
   return [format(serializeParameters(sql), columns), columns, values] as const
 }

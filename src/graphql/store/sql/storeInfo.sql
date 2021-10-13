@@ -3,6 +3,7 @@ SELECT store.id,
   store.address,
   store.business_hours,
   store.categories,
+  store.point,
   array_agg(hashtag.name) AS hashtags
 FROM store
   LEFT JOIN store_x_hashtag ON store_x_hashtag.store_id = store.id

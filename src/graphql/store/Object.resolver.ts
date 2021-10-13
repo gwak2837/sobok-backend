@@ -1,4 +1,3 @@
-import { NotImplementedError } from '../../apollo/errors'
 import type { StoreResolvers } from '../generated/graphql'
 import { decodeCategories } from './ORM'
 
