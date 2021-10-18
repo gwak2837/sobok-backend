@@ -1,100 +1,31 @@
-import { UserInputError } from 'apollo-server-errors'
-import { GraphQLResolveInfo } from 'graphql'
-import graphqlFields from 'graphql-fields'
+import { ApolloError, UserInputError } from 'apollo-server-errors'
 
-import type { ApolloContext } from '../../apollo/server'
-import { menu } from '../../database/sobok'
-import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
+import { camelToSnake } from '../../utils'
 import type { Menu as GraphQLMenu } from '../generated/graphql'
-import joinHashtag from './sql/joinHashtag.sql'
-import joinLikedMenu from './sql/joinLikedMenu.sql'
-import joinMenuBucket from './sql/joinMenuBucket.sql'
-import joinStore from './sql/joinStore.sql'
-
-const menuFieldsFromOtherTable = new Set(['isInBucket', 'isLiked', 'store', 'hashtags'])
 
 // GraphQL fields -> Database columns
 export function menuFieldColumnMapping(menuField: keyof GraphQLMenu) {
-  if (menuFieldsFromOtherTable.has(menuField)) {
-    return 'menu.id'
+  switch (menuField) {
+    case 'isInBucket':
+    case 'isLiked':
+    case 'store':
+    case 'hashtags':
+      return 'menu.id'
+    default:
+      return `menu.${camelToSnake(menuField)}`
   }
-
-  return `menu.${camelToSnake(menuField)}`
-}
-
-// GraphQL fields -> SQL
-export async function buildBasicMenuQuery(
-  info: GraphQLResolveInfo,
-  userId: ApolloContext['userId'],
-  selectColumns = true
-) {
-  const menuFields = graphqlFields(info) as Record<string, any>
-  const firstMenuFields = new Set(Object.keys(menuFields))
-
-  let sql = ''
-  let columns = selectColumns ? selectColumnFromField(menuFields, menuFieldColumnMapping) : []
-  const values: unknown[] = []
-  let groupBy = false
-
-  if (firstMenuFields.has('isInBucket')) {
-    if (userId) {
-      sql = `${sql} ${joinMenuBucket}`
-      columns.push('bucket.id')
-      values.push(userId)
-    }
-  }
-
-  if (firstMenuFields.has('isLiked')) {
-    if (userId) {
-      sql = `${sql} ${joinLikedMenu}`
-      columns.push('user_x_liked_menu.user_id')
-      values.push(userId)
-    }
-  }
-
-  // if (firstMenuFields.has('store')) {
-  //   const storeColumns = selectColumnFromField(menuFields.store, storeFieldColumnMapping)
-  //   sql = `${sql} ${joinStore}`
-  //   columns = [...columns, ...storeColumns]
-  // }
-
-  if (firstMenuFields.has('hashtags')) {
-    sql = `${sql} ${joinHashtag}`
-    columns.push('array_agg(DISTINCT hashtag.name)')
-    groupBy = true
-  }
-
-  // const filteredColumns = columns.filter(removeColumnWithAggregateFunction)
-
-  // if (groupBy && filteredColumns.length > 0) {
-  //   sql = `${sql} GROUP BY ${filteredColumns}`
-  // }
-
-  return [
-    `SELECT ${columns} FROM menu ${serializeParameters(sql)}` as string,
-    columns,
-    values,
-  ] as const
-}
-
-// Database columns -> GraphQL fields
-export function menuORM(databaseMenu: menu) {
-  const graphQLMenu: any = {}
-
-  return graphQLMenu
 }
 
 export function validateMenuCategory(category: any) {
   if (category) {
-    const encodedCategory = encodeCategory(category)
+    const encodedCategory = encodeMenuCategory(category)
     if (encodedCategory === null) throw new UserInputError('카테고리 값을 잘못 입력했습니다.')
     return encodedCategory
   }
 }
 
-export function encodeCategory(id: string) {
-  switch (id) {
+export function encodeMenuCategory(menuCategory: string) {
+  switch (menuCategory) {
     case '음료':
       return 0
     case '케이크':
@@ -110,12 +41,12 @@ export function encodeCategory(id: string) {
     case '브런치':
       return 6
     default:
-      return null
+      throw new UserInputError(`${menuCategory} 값을 잘못 입력했습니다.`)
   }
 }
 
-export function decodeCategory(id?: number) {
-  switch (id) {
+export function decodeMenuCategory(encodedCategory?: number) {
+  switch (encodedCategory) {
     case 0:
       return '음료'
     case 1:
@@ -131,6 +62,6 @@ export function decodeCategory(id?: number) {
     case 6:
       return '브런치'
     default:
-      return ''
+      throw new ApolloError(`\`${encodedCategory}\` 는 유효하지 않습니다.`)
   }
 }

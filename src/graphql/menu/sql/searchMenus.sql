@@ -13,7 +13,7 @@ FROM menu
   JOIN hashtag ON hashtag.id = menu_x_hashtag.hashtag_id
   LEFT JOIN user_x_liked_menu ON user_x_liked_menu.menu_id = menu.id
   AND user_x_liked_menu.user_id = $1
-WHERE menu.store_id = $2
+WHERE hashtag.name = ANY($2)
 GROUP BY menu.id,
   menu.name,
   menu.price,

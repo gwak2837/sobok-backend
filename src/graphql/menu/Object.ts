@@ -1,9 +1,9 @@
 import type { MenuResolvers } from '../generated/graphql'
-import { decodeCategory } from './ORM'
+import { decodeMenuCategory } from './ORM'
 
 export const Menu: MenuResolvers = {
   category: async ({ category }, __) => {
-    return decodeCategory(category)
+    return decodeMenuCategory(category)
   },
 
   isInBucket: ({ isInBucket }) => {
@@ -13,12 +13,4 @@ export const Menu: MenuResolvers = {
   isLiked: ({ isLiked }) => {
     return !!isLiked
   },
-
-  // store: async ({ storeId }, __, ___, info) => {
-  //   const columns = selectColumnFromField(info, storeFieldColumnMapping)
-
-  //   const { rows } = await poolQuery(format(await store, columns), [storeId])
-
-  //   return storeORM(rows[0])
-  // },
 }
