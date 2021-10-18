@@ -7,10 +7,10 @@ type Query {
 
   "동네 및 카테고리별 매장 목록"
   storesByTownAndCategory(
-    "town 기본값: 전국"
+    "기본값: 전국"
     town: NonEmptyString
 
-    "categories 기본값: 전체"
+    "기본값: 전체"
     categories: [NonEmptyString!]
 
     order: StoreOrder

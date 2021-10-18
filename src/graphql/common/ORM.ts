@@ -1,21 +1,22 @@
 import { UserInputError } from 'apollo-server-core'
 
-import { Maybe, OrderDirection, Pagination } from '../graphql/generated/graphql'
-import { snakeToCamel } from '.'
+import { feed, menu, store, user } from '../../database/sobok'
+import { snakeToCamel } from '../../utils'
+import { Maybe, OrderDirection, Pagination } from '../generated/graphql'
 
 /**
  * 선택된 GraphQL 필드를 처리하기 위해 필요한 데이터베이스 테이블 컬럼 목록을 반환한다.
- * @param subFields
+ * @param fields
  * @param fieldColumnMapping GraphQL 필드 이름과 선택할 테이블 컬럼 이름의 맵핑 함수
  * @returns 데이터베이스에서 선택할 컬럼 이름 배열
  */
 export function selectColumnFromField(
-  subFields: Record<string, unknown>,
+  fields: Record<string, unknown>,
   fieldColumnMapping: (field: any) => string | string[]
 ) {
   return [
     ...new Set(
-      Object.keys(subFields)
+      Object.keys(fields)
         .filter((field) => field !== '__typename')
         .map(fieldColumnMapping)
         .filter((field) => field !== '')
@@ -88,25 +89,66 @@ export function buildSQL(sourceSQL: string, keyword: Keyword, insertingSQL: stri
   }
 }
 
-// Database records -> GraphQL fields
-export function basicORM(rows: Record<string, unknown>[]) {
-  return rows.map((row) => {
-    const graphqlObject: any = {}
-    for (const column in row) {
-      if (column.includes('__')) {
-        if (row[column]) {
-          const [_, __] = column.split('__')
-          const camelTable = snakeToCamel(_)
-          const camelColumn = snakeToCamel(__)
-          if (!graphqlObject[camelTable]) graphqlObject[camelTable] = {}
-          graphqlObject[camelTable][camelColumn] = row[column]
-        }
+export const orm: Record<string, any> = {
+  store: (databaseStore: store) => {
+    const graphqlStore: Record<string, any> = {}
+    for (const column in databaseStore) {
+      if (column === 'point') {
+        graphqlStore.latitude = databaseStore.point.x
+        graphqlStore.longitude = databaseStore.point.y
       } else {
-        graphqlObject[snakeToCamel(column)] = row[column]
+        graphqlStore[snakeToCamel(column)] = databaseStore[column as keyof store]
       }
     }
-    return graphqlObject
-  })
+    return graphqlStore
+  },
+  menu: (databaseMenu: menu) => {
+    const graphQLMenu: Record<string, unknown> = {}
+    for (const column in databaseMenu) {
+      graphQLMenu[snakeToCamel(column)] = databaseMenu[column as keyof menu]
+    }
+    return graphQLMenu
+  },
+  feed: (databaseFeed: feed) => {
+    const graphQLMenu: Record<string, unknown> = {}
+    for (const column in databaseFeed) {
+      graphQLMenu[snakeToCamel(column)] = databaseFeed[column as keyof feed]
+    }
+    return graphQLMenu
+  },
+  user: (databaseUser: user) => {
+    const graphQLMenu: Record<string, unknown> = {}
+    for (const column in databaseUser) {
+      graphQLMenu[snakeToCamel(column)] = databaseUser[column as keyof user]
+    }
+    return graphQLMenu
+  },
+}
+
+/** Database columns -> GraphQL fields */
+export function columnFieldMapping(databaseRow: Record<string, unknown>) {
+  const graphqlObject: any = {}
+
+  for (const column in databaseRow) {
+    const value = databaseRow[column]
+    if (column.includes('__')) {
+      if (value) {
+        const [snakeTable, snakeColumn] = column.split('__')
+        const camelTable = snakeToCamel(snakeTable)
+        const camelColumn = snakeToCamel(snakeColumn)
+        if (!graphqlObject[camelTable]) graphqlObject[camelTable] = {}
+        graphqlObject[camelTable][camelColumn] = value
+      }
+    } else {
+      graphqlObject[snakeToCamel(column)] = value
+    }
+  }
+
+  for (const field in graphqlObject) {
+    if (orm[field]) graphqlObject[field] = orm[field](graphqlObject[field])
+  }
+
+  return graphqlObject
 }
 
 type Order = {
