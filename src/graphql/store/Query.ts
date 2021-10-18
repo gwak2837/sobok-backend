@@ -3,9 +3,14 @@ import { UserInputError } from 'apollo-server-core'
 import { NotFoundError } from '../../apollo/errors'
 import { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { applyPaginationAndSorting, buildSQL, validatePaginationAndSorting } from '../../utils/ORM'
+import {
+  applyPaginationAndSorting,
+  buildSQL,
+  columnFieldMapping,
+  validatePaginationAndSorting,
+} from '../common/ORM'
 import { QueryResolvers } from '../generated/graphql'
-import { storeORM, validateStoreCategories } from './ORM'
+import { validateStoreCategories } from './ORM'
 import searchStores from './sql/searchStores.sql'
 import store from './sql/store.sql'
 import storeInfo from './sql/storeInfo.sql'
@@ -28,17 +33,17 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 id의 매장을 찾을 수 없습니다.')
 
-    return storeORM(rows[0])
+    return columnFieldMapping(rows[0])
   },
 
-  storeInfo: async (_, { id }) => {
+  storeInfo: async (_, { id }, ___) => {
     let sql = storeInfo
     const values = [id]
 
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 id의 매장을 찾을 수 없습니다.')
 
-    return storeORM(rows[0])
+    return columnFieldMapping(rows[0])
   },
 
   storesByTownAndCategory: async (_, { town, categories, order, pagination }, { userId }) => {
@@ -64,10 +69,10 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당하는 매장을 찾을 수 없습니다.')
 
-    return rows.map((row) => storeORM(row))
+    return rows.map((row) => columnFieldMapping(row))
   },
 
-  storesInBucket: async (_, { bucketId, userUniqueName }, { userId }, info) => {
+  storesInBucket: async (_, { bucketId, userUniqueName }, { userId }) => {
     const response = await poolQuery(verifyUserBucket, [bucketId, userUniqueName, userId])
 
     const result = response.rows[0].verify_user_bucket
@@ -85,10 +90,10 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 id의 버킷에 매장이 존재하지 않습니다.')
 
-    return rows.map((row) => storeORM(row))
+    return rows.map((row) => columnFieldMapping(row))
   },
 
-  searchStores: async (_, { hashtags, order, pagination }, { userId }, info) => {
+  searchStores: async (_, { hashtags, order, pagination }, { userId }) => {
     if (hashtags.length === 0) throw new UserInputError('hashtags 배열은 비어있을 수 없습니다.')
     validatePaginationAndSorting(order, pagination)
 
@@ -98,8 +103,8 @@ export const Query: QueryResolvers<ApolloContext> = {
     sql = applyPaginationAndSorting(sql, values, 'store', order, pagination)
 
     const { rowCount, rows } = await poolQuery(sql, values)
-    if (rowCount === 0) throw new NotFoundError('hashtags가 포함된 매장을 찾을 수 없습니다.')
+    if (rowCount === 0) throw new NotFoundError('해당 hashtags가 포함된 매장을 찾을 수 없습니다.')
 
-    return rows.map((row) => storeORM(row))
+    return rows.map((row) => columnFieldMapping(row))
   },
 }

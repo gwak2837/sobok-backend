@@ -1,37 +1,18 @@
-import { UserInputError } from 'apollo-server-errors'
+import { ApolloError, UserInputError } from 'apollo-server-errors'
 
-import { store } from '../../database/sobok'
-import { snakeToCamel } from '../../utils'
 import type { QueryStoresByTownAndCategoryArgs } from '../generated/graphql'
-
-// Database columns -> GraphQL fields
-export function storeORM(databaseStore: store) {
-  const graphqlStore: any = {}
-  for (const column in databaseStore) {
-    if (column === 'point') {
-      graphqlStore.latitude = databaseStore.point.x
-      graphqlStore.longitude = databaseStore.point.y
-    } else {
-      graphqlStore[snakeToCamel(column)] = databaseStore[column as keyof store]
-    }
-  }
-  return graphqlStore
-}
 
 export function validateStoreCategories(
   categories: QueryStoresByTownAndCategoryArgs['categories']
 ) {
   if (categories) {
-    if (categories.length === 0) throw new UserInputError('카테고리 배열은 비어있을 수 없습니다.')
-    const encodedCategories = encodeCategories(categories)
-    if (encodedCategories.some((encodeCategory) => encodeCategory === null))
-      throw new UserInputError('카테고리 값은 null이 될 수 없습니다.')
-    return encodedCategories
+    if (categories.length === 0) throw new UserInputError('categories 배열은 비어있을 수 없습니다.')
+    return encodeStoreCategories(categories)
   }
 }
 
-export function encodeCategories(categories: string[]) {
-  return categories.map((category) => {
+export function encodeStoreCategories(storeCategories: string[]) {
+  return storeCategories.map((category) => {
     switch (category) {
       case '콘센트':
         return 0
@@ -56,14 +37,14 @@ export function encodeCategories(categories: string[]) {
       case '포장 전용':
         return 10
       default:
-        return null
+        throw new UserInputError(`categories 배열 항목 중 \`${category}\` 는 유효하지 않습니다.`)
     }
   })
 }
 
-export function decodeCategories(ids: number[]) {
-  return ids.map((id) => {
-    switch (id) {
+export function decodeStoreCategories(encodedStoreCategories: number[]) {
+  return encodedStoreCategories.map((encodedStoreCategory) => {
+    switch (encodedStoreCategory) {
       case 0:
         return '콘센트'
       case 1:
@@ -87,7 +68,9 @@ export function decodeCategories(ids: number[]) {
       case 10:
         return '포장 전용'
       default:
-        return ''
+        throw new ApolloError(
+          `encodedCategories 배열 항목 중 \`${encodedStoreCategory}\` 는 유효하지 않습니다.`
+        )
     }
   })
 }

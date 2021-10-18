@@ -1,9 +1,9 @@
 import type { StoreResolvers } from '../generated/graphql'
-import { decodeCategories } from './ORM'
+import { decodeStoreCategories } from './ORM'
 
 export const Store: StoreResolvers = {
   categories: ({ categories }, __) => {
-    return decodeCategories(categories)
+    return decodeStoreCategories(categories)
   },
 
   isInBucket: ({ isInBucket }) => {
