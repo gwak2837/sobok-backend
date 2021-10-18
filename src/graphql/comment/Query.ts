@@ -2,7 +2,7 @@ import { UserInputError } from 'apollo-server-express'
 
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { applyPaginationAndSorting, basicORM, buildSQL, spliceSQL } from '../../utils/ORM'
+import { applyPaginationAndSorting, buildSQL, columnFieldMapping, spliceSQL } from '../common/ORM'
 import { QueryResolvers } from '../generated/graphql'
 import { buildBasicMenuQuery } from '../menu/ORM'
 import { buildBasicCommentQuery } from './ORM'
@@ -32,7 +32,7 @@ export const Query: QueryResolvers<ApolloContext> = {
 
     console.log('👀 - rows', rows)
 
-    return basicORM(rows)
+    return columnFieldMapping(rows)
     // return commentORM(rows)[0]
   },
 

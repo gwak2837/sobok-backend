@@ -2,7 +2,7 @@ import { AuthenticationError, UserInputError } from 'apollo-server-express'
 
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { applyPaginationAndSorting, spliceSQL } from '../../utils/ORM'
+import { applyPaginationAndSorting, spliceSQL } from '../common/ORM'
 import { FeedOptions, QueryResolvers } from '../generated/graphql'
 import { buildBasicFeedQuery, feedORM } from './ORM'
 import byId from './sql/byId.sql'

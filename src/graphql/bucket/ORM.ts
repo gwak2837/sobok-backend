@@ -4,7 +4,7 @@ import format from 'pg-format'
 
 import { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import { selectColumnFromField } from '../../utils/ORM'
+import { selectColumnFromField } from '../common/ORM'
 import type { Bucket as GraphQLBucket } from '../generated/graphql'
 import { userFieldColumnMapping } from '../user/ORM'
 import fromBucket from './sql/fromBucket.sql'

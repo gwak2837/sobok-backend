@@ -14,6 +14,8 @@ type User {
   birth: Date
   imageUrl: URL
   nickname: String
+
+  # 통계
   feedCount: Int!
   followerCount: Int!
   followingCount: Int!

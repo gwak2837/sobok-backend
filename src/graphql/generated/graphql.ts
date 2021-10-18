@@ -332,6 +332,8 @@ export type QueryMenusByStoreArgs = {
 
 export type QueryMenusByTownAndCategoryArgs = {
   category?: Maybe<Scalars['NonEmptyString']>
+  order?: Maybe<MenuOrder>
+  pagination: Pagination
   town?: Maybe<Scalars['NonEmptyString']>
 }
 
@@ -872,7 +874,7 @@ export type QueryResolvers<
     Maybe<Array<ResolversTypes['Menu']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryMenusByTownAndCategoryArgs, never>
+    RequireFields<QueryMenusByTownAndCategoryArgs, 'pagination'>
   >
   menusInBucket?: Resolver<
     Maybe<Array<ResolversTypes['Menu']>>,

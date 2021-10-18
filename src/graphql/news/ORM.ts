@@ -4,7 +4,7 @@ import format from 'pg-format'
 
 import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import { selectColumnFromField, serializeParameters } from '../../utils/ORM'
+import { selectColumnFromField, serializeParameters } from '../common/ORM'
 import type { News as GraphQLNews } from '../generated/graphql'
 import joinLikedNews from './sql/joinLikedNews.sql'
 import joinStore from './sql/joinStore.sql'

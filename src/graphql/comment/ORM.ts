@@ -3,7 +3,7 @@ import graphqlFields from 'graphql-fields'
 
 import type { comment } from '../../database/sobok'
 import { camelToSnake, snakeKeyToCamelKey } from '../../utils'
-import { buildSQL, selectColumnFromField, serializeParameters } from '../../utils/ORM'
+import { buildSQL, selectColumnFromField, serializeParameters } from '../common/ORM'
 import type { Comment } from '../generated/graphql'
 import { userFieldColumnMapping } from '../user/ORM'
 import parentComment from './sql/parentComment.sql'
