@@ -5,7 +5,7 @@ import format from 'pg-format'
 import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
 import { commentFieldColumnMapping } from '../comment/ORM'
-import { selectColumnFromField, serializeParameters } from '../common/ORM'
+import { getColumnsFromFields, serializeParameters } from '../common/ORM'
 import type { Feed as GraphQLFeed } from '../generated/graphql'
 import { menuFieldColumnMapping } from '../menu/ORM'
 import { userFieldColumnMapping } from '../user/ORM'
@@ -45,7 +45,7 @@ export async function buildBasicFeedQuery(
   const firstFeedFields = new Set(Object.keys(feedFields))
 
   let sql = feedList
-  let columns = selectColumns ? selectColumnFromField(feedFields, feedFieldColumnMapping) : []
+  let columns = selectColumns ? getColumnsFromFields(feedFields, feedFieldColumnMapping) : []
   const values: unknown[] = []
   let groupBy = false
 
@@ -65,18 +65,16 @@ export async function buildBasicFeedQuery(
   // }
 
   if (firstFeedFields.has('user')) {
-    const userColumns = selectColumnFromField(feedFields.user, userFieldColumnMapping)
+    const userColumns = getColumnsFromFields(feedFields.user, userFieldColumnMapping)
 
     sql = `${sql} ${joinUser}`
     columns = [...columns, ...userColumns]
   }
 
   if (firstFeedFields.has('comments')) {
-    const commentColumns = selectColumnFromField(
-      feedFields.comments,
-      commentFieldColumnMapping
-    ).map((column) =>
-      column === 'comment.id' ? `array_agg(DISTINCT ${column})` : `array_agg(${column})`
+    const commentColumns = getColumnsFromFields(feedFields.comments, commentFieldColumnMapping).map(
+      (column) =>
+        column === 'comment.id' ? `array_agg(DISTINCT ${column})` : `array_agg(${column})`
     )
 
     sql = `${sql} ${joinComment}`
@@ -91,7 +89,7 @@ export async function buildBasicFeedQuery(
   }
 
   if (firstFeedFields.has('menus')) {
-    const menuColumns = selectColumnFromField(feedFields.menus, menuFieldColumnMapping).map(
+    const menuColumns = getColumnsFromFields(feedFields.menus, menuFieldColumnMapping).map(
       (column) => `array_agg(${column})`
     )
 

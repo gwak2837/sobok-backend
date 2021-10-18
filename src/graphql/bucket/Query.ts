@@ -22,7 +22,7 @@ export const Query: QueryResolvers = {
 
     if (rowCount === 0) return null
 
-    return columnFieldMapping(rows)[0]
+    return columnFieldMapping(rows[0])
   },
 
   buckets: async (_, { userUniqueName, type }, { userId }, info) => {
@@ -48,6 +48,6 @@ export const Query: QueryResolvers = {
 
     if (rowCount === 0) return null
 
-    return columnFieldMapping(rows)
+    return rows.map((row) => columnFieldMapping(row))
   },
 }

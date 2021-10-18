@@ -3,7 +3,7 @@ import graphqlFields from 'graphql-fields'
 
 import type { comment } from '../../database/sobok'
 import { camelToSnake, snakeKeyToCamelKey } from '../../utils'
-import { buildSQL, selectColumnFromField, serializeParameters } from '../common/ORM'
+import { buildSQL, getColumnsFromFields, serializeParameters } from '../common/ORM'
 import type { Comment } from '../generated/graphql'
 import { userFieldColumnMapping } from '../user/ORM'
 import parentComment from './sql/parentComment.sql'
@@ -26,11 +26,11 @@ export function buildBasicCommentQuery(info: GraphQLResolveInfo) {
   const commentFieldsSet = new Set(Object.keys(commentFields))
 
   let sql = ''
-  let columns = selectColumnFromField(commentFields, commentFieldColumnMapping)
+  let columns = getColumnsFromFields(commentFields, commentFieldColumnMapping)
   const values: unknown[] = []
 
   if (commentFieldsSet.has('parentComment')) {
-    const commentColumns = selectColumnFromField(
+    const commentColumns = getColumnsFromFields(
       commentFields.parentComment,
       commentFieldColumnMapping
     ).map((tableColumn) => {
@@ -46,7 +46,7 @@ export function buildBasicCommentQuery(info: GraphQLResolveInfo) {
   // }
 
   if (commentFieldsSet.has('user')) {
-    const userColumns = selectColumnFromField(commentFields.user, userFieldColumnMapping)
+    const userColumns = getColumnsFromFields(commentFields.user, userFieldColumnMapping)
     sql = buildSQL(sql, 'JOIN', user)
     columns = [...columns, ...userColumns]
   }

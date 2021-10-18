@@ -4,7 +4,6 @@ import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
 import { applyPaginationAndSorting, buildSQL, columnFieldMapping, spliceSQL } from '../common/ORM'
 import { QueryResolvers } from '../generated/graphql'
-import { buildBasicMenuQuery } from '../menu/ORM'
 import { buildBasicCommentQuery } from './ORM'
 import joinHashtag from './sql/joinHashtag.sql'
 import joinMenuBucketOnMenuBucketId from './sql/joinMenuBucketOnMenuBucketId.sql'
@@ -32,8 +31,7 @@ export const Query: QueryResolvers<ApolloContext> = {
 
     console.log('👀 - rows', rows)
 
-    return columnFieldMapping(rows)
-    // return commentORM(rows)[0]
+    return rows.map((row) => columnFieldMapping(row))
   },
 
   myComments: async (_, __, { userId }, info) => {

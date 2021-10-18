@@ -10,7 +10,7 @@ import { Maybe, OrderDirection, Pagination } from '../generated/graphql'
  * @param fieldColumnMapping GraphQL 필드 이름과 선택할 테이블 컬럼 이름의 맵핑 함수
  * @returns 데이터베이스에서 선택할 컬럼 이름 배열
  */
-export function selectColumnFromField(
+export function getColumnsFromFields(
   fields: Record<string, unknown>,
   fieldColumnMapping: (field: any) => string | string[]
 ) {

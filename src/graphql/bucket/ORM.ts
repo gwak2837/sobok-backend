@@ -4,7 +4,7 @@ import format from 'pg-format'
 
 import { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import { selectColumnFromField } from '../common/ORM'
+import { getColumnsFromFields } from '../common/ORM'
 import type { Bucket as GraphQLBucket } from '../generated/graphql'
 import { userFieldColumnMapping } from '../user/ORM'
 import fromBucket from './sql/fromBucket.sql'
@@ -31,11 +31,11 @@ export async function buildBasicBucketQuery(
   const firstBucketFields = new Set(Object.keys(bucketFields))
 
   let sql = fromBucket
-  let columns = selectColumns ? selectColumnFromField(bucketFields, bucketFieldColumnMapping) : []
+  let columns = selectColumns ? getColumnsFromFields(bucketFields, bucketFieldColumnMapping) : []
   const values: any[] = []
 
   if (firstBucketFields.has('user')) {
-    const userColumns = selectColumnFromField(bucketFields.user, userFieldColumnMapping)
+    const userColumns = getColumnsFromFields(bucketFields.user, userFieldColumnMapping)
 
     sql = `${sql} ${joinUser}`
     columns = [...columns, ...userColumns]

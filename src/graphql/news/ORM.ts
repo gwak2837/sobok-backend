@@ -4,7 +4,7 @@ import format from 'pg-format'
 
 import type { ApolloContext } from '../../apollo/server'
 import { camelToSnake, removeQuotes, snakeToCamel, tableColumnRegEx } from '../../utils'
-import { selectColumnFromField, serializeParameters } from '../common/ORM'
+import { getColumnsFromFields, serializeParameters } from '../common/ORM'
 import type { News as GraphQLNews } from '../generated/graphql'
 import joinLikedNews from './sql/joinLikedNews.sql'
 import joinStore from './sql/joinStore.sql'
@@ -31,7 +31,7 @@ export async function buildBasicNewsQuery(
   const firstNewsFields = Object.keys(newsFields)
 
   let sql = newsList
-  let columns = selectColumns ? selectColumnFromField(newsFields, newsFieldColumnMapping) : []
+  let columns = selectColumns ? getColumnsFromFields(newsFields, newsFieldColumnMapping) : []
   const values: unknown[] = []
 
   if (firstNewsFields.includes('isLiked')) {
