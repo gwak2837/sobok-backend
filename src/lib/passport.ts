@@ -1,10 +1,12 @@
+import querystring from 'querystring'
+
 import { Express } from 'express'
+import passport from 'passport'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
-import { generateJWT } from '../utils/jwt'
-import passport from 'passport'
+
 import { poolQuery } from '../database/postgres'
-import querystring from 'querystring'
+import { generateJWT } from '../utils/jwt'
 import socialLogin from './sql/socialLogin.sql'
 
 export function setPassportStrategies(app: Express) {
@@ -19,7 +21,7 @@ export function setPassportStrategies(app: Express) {
       },
       async (accessToken, refreshToken, profile, done) => {
         if (profile.emails && (profile.emails[0] as any).verified) {
-          const { rows } = await poolQuery(await socialLogin, [
+          const { rows } = await poolQuery(socialLogin, [
             profile.emails[0].value,
             profile.displayName,
             null,

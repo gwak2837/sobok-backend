@@ -1,4 +1,4 @@
-import { Pool, QueryArrayConfig } from 'pg'
+import { Pool } from 'pg'
 
 import { DatabaseQueryError } from '../apollo/errors'
 import { formatDate } from '../utils'
@@ -10,13 +10,10 @@ export const pool = new Pool({
   database: process.env.POSTGRES_DB,
 })
 
-export async function poolQuery(query: string | QueryArrayConfig<any[]>, values?: unknown[]) {
+export async function poolQuery(query: string, values?: unknown[]) {
   if (process.env.NODE_ENV !== 'production') {
-    if (typeof query === 'object') {
-      console.log(formatDate(new Date()), '-', query.text, query.values)
-    } else {
-      console.log(formatDate(new Date()), '-', query, values)
-    }
+    // eslint-disable-next-line no-console
+    console.log(formatDate(new Date()), '-', query, values)
   }
 
   return pool.query(query, values).catch((error) => {

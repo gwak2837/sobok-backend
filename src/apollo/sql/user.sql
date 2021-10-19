@@ -1,4 +1,4 @@
 SELECT id
 FROM "user"
 WHERE id = $1
-  AND logout_time < $2;
+  AND logout_time < $2

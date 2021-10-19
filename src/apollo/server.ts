@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import http from 'http'
 
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core'
@@ -7,7 +6,6 @@ import express from 'express'
 
 import { poolQuery } from '../database/postgres'
 import { resolvers } from '../graphql'
-// import schema from '../graphql/schema'
 import typeDefs from '../graphql/generated/schema.graphql'
 import { setPassportStrategies } from '../lib/passport'
 import { verifyJWT } from '../utils/jwt'
