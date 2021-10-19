@@ -201,8 +201,6 @@ export enum Provider {
 
 export type Query = {
   __typename?: 'Query'
-  /** 버켓 상세 정보 */
-  bucket?: Maybe<Bucket>
   /** 메뉴 또는 매장 버킷 리스트를 반환, 로그인 상태 또는 userId를 입력해야 함 */
   buckets?: Maybe<Array<Bucket>>
   /** 피드에 달린 댓글 */
@@ -281,10 +279,6 @@ export type Query = {
   storesInBucket?: Maybe<Array<Store>>
   /** 대댓글 */
   subComments?: Maybe<Array<Maybe<Comment>>>
-}
-
-export type QueryBucketArgs = {
-  id: Scalars['ID']
 }
 
 export type QueryBucketsArgs = {
@@ -795,12 +789,6 @@ export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']
 > = {
-  bucket?: Resolver<
-    Maybe<ResolversTypes['Bucket']>,
-    ParentType,
-    ContextType,
-    RequireFields<QueryBucketArgs, 'id'>
-  >
   buckets?: Resolver<
     Maybe<Array<ResolversTypes['Bucket']>>,
     ParentType,
