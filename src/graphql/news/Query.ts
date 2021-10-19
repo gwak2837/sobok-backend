@@ -1,101 +1,73 @@
-import { AuthenticationError, UserInputError } from 'apollo-server-express'
+import { AuthenticationError } from 'apollo-server-express'
 
+import { NotFoundError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { spliceSQL } from '../common/ORM'
+import { buildSQL, columnFieldMapping } from '../common/ORM'
 import { NewsOptions, QueryResolvers } from '../generated/graphql'
-import { buildBasicNewsQuery, encodeCategory, newsORM } from './ORM'
-import byCategories from './sql/byCategories.sql'
-import byId from './sql/byId.sql'
-import byStoreId from './sql/byStoreId.sql'
-import byStoreIdAndCategories from './sql/byStoreIdAndCategories.sql'
+import { validateStoreCategories } from '../store/ORM'
 import joinLikedStore from './sql/joinLikedStore.sql'
-import joinStoreOnTown from './sql/joinStoreOnTown.sql'
-import onTown from './sql/onTown.sql'
+import newsListByStore from './sql/newsListByStore.sql'
+import newsListByTown from './sql/newsListByTown.sql'
+import whereNewsCategory from './sql/whereNewsCategory.sql'
+import whereStoreCategories from './sql/whereStoreCategories.sql'
+import whereStoreTown from './sql/whereStoreTown.sql'
 
 export const Query: QueryResolvers<ApolloContext> = {
-  news: async (_, { id }, { userId }, info) => {
-    let [sql, columns, values] = await buildBasicNewsQuery(info, userId)
+  news: async (_, { id }, { userId }) => {
+    let sql = ''
+    const values = [userId, id]
 
-    sql = spliceSQL(sql, byId, 'GROUP BY')
-    values.push(id)
+    const { rowCount, rows } = await poolQuery(sql, values)
+    if (rowCount === 0) throw new NotFoundError('해당 id의 소식을 찾을 수 없습니다.')
 
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
-    if (rowCount === 0) return null
-
-    return newsORM(rows, columns)[0]
+    return columnFieldMapping(rows[0])
   },
 
-  newsListByStore: async (_, { storeId, categories }, { userId }, info) => {
-    let encodedStoreCategories
+  newsListByStore: async (_, { storeId, categories }) => {
+    const encodedStoreCategories = validateStoreCategories(categories)
+
+    let sql = newsListByStore
+    const values: unknown[] = [storeId]
 
     if (categories) {
-      if (categories?.length === 0) throw new UserInputError('Invalid categories value')
-
-      encodedStoreCategories = categories.map((category) => encodeCategory(category))
-
-      if (encodedStoreCategories.some((encodeCategory) => encodeCategory === null))
-        throw new UserInputError('Invalid categories value')
+      sql = buildSQL(sql, 'WHERE', whereNewsCategory)
+      values.push(encodedStoreCategories)
     }
 
-    let [sql, columns, values] = await buildBasicNewsQuery(info, userId)
+    const { rowCount, rows } = await poolQuery(sql, values)
+    if (rowCount === 0) throw new NotFoundError('해당 조건의 피드를 찾을 수 없습니다.')
 
-    if (categories) {
-      sql = spliceSQL(sql, byStoreIdAndCategories, 'GROUP BY')
-      values.push(storeId, encodedStoreCategories)
-    } else {
-      sql = spliceSQL(sql, byStoreId, 'GROUP BY')
-      values.push(storeId)
-    }
-
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
-    if (rowCount === 0) return null
-
-    return newsORM(rows, columns)
+    return rows.map((row) => columnFieldMapping(row))
   },
 
-  newsListByTown: async (_, { town, option, categories }, { userId }, info) => {
-    let encodedCategories
+  newsListByTown: async (_, { town, option, categories }, { userId }) => {
+    const encodedStoreCategories = validateStoreCategories(categories)
 
-    if (categories) {
-      if (categories?.length === 0) throw new UserInputError('Invalid categories value')
-
-      encodedCategories = categories.map((category) => encodeCategory(category))
-
-      if (encodedCategories.some((encodeCategory) => encodeCategory === null))
-        throw new UserInputError('Invalid categories value')
-    }
-
-    let [sql, columns, values] = await buildBasicNewsQuery(info, userId)
+    let sql = newsListByTown
+    const values: unknown[] = []
 
     if (town) {
-      if (sql.includes('JOIN store')) {
-        sql = spliceSQL(sql, onTown, 'JOIN store ON store.id = news.store_id', true)
-      } else {
-        sql = spliceSQL(sql, joinStoreOnTown, 'WHERE')
-      }
+      sql = buildSQL(sql, 'WHERE', whereStoreTown)
       values.push(town)
     }
 
     if (option === NewsOptions.LikedStore) {
       if (!userId)
-        throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
+        throw new AuthenticationError('찜한 매장의 소식을 보고 싶다면 로그인 후 시도해주세요.')
 
-      sql = spliceSQL(sql, joinLikedStore, 'WHERE')
+      sql = buildSQL(sql, 'JOIN', joinLikedStore)
       values.push(userId)
     }
 
     if (categories) {
-      sql = spliceSQL(sql, byCategories, 'GROUP BY')
-      values.push(encodedCategories)
+      sql = buildSQL(sql, 'WHERE', whereStoreCategories)
+      values.push(encodedStoreCategories)
     }
 
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
+    const { rowCount, rows } = await poolQuery(sql, values)
+    if (rowCount === 0) throw new NotFoundError('해당 조건의 피드를 찾을 수 없습니다.')
 
-    if (rowCount === 0) return null
-
-    return newsORM(rows, columns)
+    return rows.map((row) => columnFieldMapping(row))
   },
 }

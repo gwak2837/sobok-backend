@@ -1,1 +1,0 @@
-WHERE news.id = $1
