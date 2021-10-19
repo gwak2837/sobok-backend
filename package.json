@@ -16,7 +16,7 @@
     "dev": "NODE_ENV=development concurrently \"webpack\" \"nodemon -r dotenv/config dist/index.js dotenv_config_path=.env.development --trace-warnings\"",
     "build": "rm -rf dist && yarn generate && NODE_ENV=production webpack",
     "start": "NODE_ENV=production node -r dotenv/config dist/index.js",
-    "test": "NODE_ENV=test ts-node -r dotenv/config test/index.ts dotenv_config_path=.env.test --trace-warnings --watch test",
+    "test": "NODE_ENV=test jest",
     "format": "prettier . --write --ignore-path .gitignore",
     "lint": "eslint . --fix --ignore-path .gitignore",
     "type": "tsc --pretty --noEmit",
@@ -45,6 +45,9 @@
     "redis": "^3.1.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.15.8",
+    "@babel/preset-env": "^7.15.8",
+    "@babel/preset-typescript": "^7.15.0",
     "@graphql-codegen/add": "^3.1.0",
     "@graphql-codegen/cli": "2.2.1",
     "@graphql-codegen/schema-ast": "^2.2.0",
@@ -65,6 +68,7 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "@vramework/schemats": "^0.0.10",
+    "babel-jest": "^27.3.1",
     "concurrently": "^6.3.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
