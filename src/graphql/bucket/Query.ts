@@ -1,52 +1,31 @@
 import { UserInputError } from 'apollo-server-express'
 
+import { NotFoundError } from '../../apollo/errors'
 import { poolQuery } from '../../database/postgres'
-import { buildSQL, columnFieldMapping, spliceSQL } from '../common/ORM'
+import { buildSQL, columnFieldMapping } from '../common/ORM'
 import type { QueryResolvers } from '../generated/graphql'
-import { buildBasicBucketQuery } from './ORM'
-import byId from './sql/byId.sql'
-import byUserIdAndBucketType from './sql/byUserIdAndBucketType.sql'
+import buckets from './sql/buckets.sql'
 import joinUserOnUniqueNameAndBucketType from './sql/joinUserOnUniqueNameAndBucketType.sql'
-import onUniqueNameAndBucketType from './sql/onUniqueNameAndBucketType.sql'
-
-const joinUserOnUserId = 'JOIN "user" ON "user".id = bucket.user_id'
+import whereUserIdAndBucketType from './sql/whereUserIdAndBucketType.sql'
 
 export const Query: QueryResolvers = {
-  bucket: async (_, { id }, { userId }, info) => {
-    let [sql, columns, values] = await buildBasicBucketQuery(info, userId)
-
-    sql = buildSQL(sql, 'WHERE', byId)
-    values.push(id)
-
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
-    if (rowCount === 0) return null
-
-    return columnFieldMapping(rows[0])
-  },
-
-  buckets: async (_, { userUniqueName, type }, { userId }, info) => {
+  buckets: async (_, { userUniqueName, type }, { userId }) => {
     if (!userId && !userUniqueName)
       throw new UserInputError('로그인 하거나 사용자 고유 이름을 입력해주세요')
 
-    let [sql, columns, values] = await buildBasicBucketQuery(info, userId)
+    let sql = buckets
+    const values = []
 
     if (userId) {
-      sql = buildSQL(sql, 'WHERE', byUserIdAndBucketType)
+      sql = buildSQL(sql, 'WHERE', whereUserIdAndBucketType)
       values.push(userId, type)
     } else {
-      if (sql.includes('JOIN "user"')) {
-        sql = spliceSQL(sql, onUniqueNameAndBucketType, joinUserOnUserId, true)
-        values.push(userUniqueName, type)
-      } else {
-        sql = buildSQL(sql, 'JOIN', joinUserOnUniqueNameAndBucketType)
-        values.push(userUniqueName, type)
-      }
+      sql = buildSQL(sql, 'JOIN', joinUserOnUniqueNameAndBucketType)
+      values.push(userUniqueName, type)
     }
 
-    const { rowCount, rows } = await poolQuery({ text: sql, values, rowMode: 'array' })
-
-    if (rowCount === 0) return null
+    const { rowCount, rows } = await poolQuery(sql, values)
+    if (rowCount === 0) throw new NotFoundError('해당 조건의 버킷을 찾을 수 없습니다.')
 
     return rows.map((row) => columnFieldMapping(row))
   },

@@ -1,7 +1,4 @@
 type Query {
-  "버켓 상세 정보"
-  bucket(id: ID!): Bucket
-
   "메뉴 또는 매장 버킷 리스트를 반환, 로그인 상태 또는 userId를 입력해야 함"
   buckets(type: BucketType!, userUniqueName: NonEmptyString): [Bucket!]
 }
