@@ -15,7 +15,4 @@ FROM store
   AND bucket.type = 0
   AND bucket.id = $2
 GROUP BY store.id,
-  store.image_urls,
-  store.name,
-  store.categories,
   user_x_liked_store.user_id

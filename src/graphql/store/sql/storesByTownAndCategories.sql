@@ -11,7 +11,4 @@ FROM store
   LEFT JOIN user_x_liked_store ON user_x_liked_store.store_id = store.id
   AND user_x_liked_store.user_id = $1
 GROUP BY store.id,
-  store.image_urls,
-  store.name,
-  store.categories,
   user_x_liked_store.user_id

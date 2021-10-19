@@ -15,9 +15,5 @@ FROM menu
   AND user_x_liked_menu.user_id = $1
 WHERE hashtag.name = ANY($2)
 GROUP BY menu.id,
-  menu.name,
-  menu.price,
-  menu.image_urls,
   store.id,
-  store.name,
   user_x_liked_menu.user_id

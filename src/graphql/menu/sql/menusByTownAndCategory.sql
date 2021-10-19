@@ -14,9 +14,5 @@ FROM menu
   LEFT JOIN user_x_liked_menu ON user_x_liked_menu.menu_id = menu.id
   AND user_x_liked_menu.user_id = $1
 GROUP BY menu.id,
-  menu.name,
-  menu.price,
-  menu.image_urls,
   store.id,
-  store.name,
   user_x_liked_menu.user_id

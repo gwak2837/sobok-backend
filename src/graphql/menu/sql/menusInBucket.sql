@@ -16,9 +16,5 @@ FROM menu
 WHERE bucket.type = 1
   AND bucket.id = $2
 GROUP BY menu.id,
-  menu.name,
-  menu.price,
-  menu.image_urls,
   store.id,
-  store.name,
   user_x_liked_menu.user_id
