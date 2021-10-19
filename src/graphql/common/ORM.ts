@@ -30,27 +30,6 @@ export function serializeParameters(sql: string) {
   return sql.replace(/\$\d+/g, () => `$${i++}`)
 }
 
-/**
- * `sql`의 `targetString` 시작 (또는 끝) 지점에 `sql2`를 끼워 넣는다.
- */
-export function spliceSQL(
-  sourceSQL: string,
-  insertingSQL: string,
-  targetString?: string,
-  endIndex = false
-) {
-  let foundIndex
-  if (targetString) {
-    const found = sourceSQL.indexOf(targetString)
-    foundIndex = found !== -1 ? (endIndex ? found + targetString.length : found) : sourceSQL.length
-  } else {
-    foundIndex = sourceSQL.length
-  }
-  let parameterStartNumber = (sourceSQL.match(/\$\d+/g)?.length ?? 0) + 1
-  const formattedSQL = insertingSQL.replace(/\$\d+/g, () => `$${parameterStartNumber++}`)
-  return `${sourceSQL.slice(0, foundIndex)} ${formattedSQL} ${sourceSQL.slice(foundIndex)}`
-}
-
 const keywords = ['JOIN', 'WHERE', 'GROUP BY', 'ORDER BY', 'FETCH'] as const
 type Keyword = typeof keywords[number]
 
@@ -89,6 +68,7 @@ export function buildSQL(sourceSQL: string, keyword: Keyword, insertingSQL: stri
   }
 }
 
+// 각 파일로 분리시키기
 export const orm: Record<string, any> = {
   store: (databaseStore: store) => {
     const graphqlStore: Record<string, any> = {}
