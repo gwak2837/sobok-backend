@@ -1,18 +1,9 @@
-import { UserInputError } from 'apollo-server-express'
-
+import { NotFoundError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { applyPaginationAndSorting, buildSQL, columnFieldMapping, spliceSQL } from '../common/ORM'
+import { columnFieldMapping } from '../common/ORM'
 import { QueryResolvers } from '../generated/graphql'
-import { buildBasicCommentQuery } from './ORM'
-import joinHashtag from './sql/joinHashtag.sql'
-import joinMenuBucketOnMenuBucketId from './sql/joinMenuBucketOnMenuBucketId.sql'
-import joinStoreOnTown from './sql/joinStoreOnTown.sql'
-import joinStoreOnTownAndCategory from './sql/joinStoreOnTownAndCategory.sql'
-import verifyUserBucket from './sql/verifyUserBucket.sql'
-
-const joinHashtagShort = 'JOIN hashtag ON hashtag.id = menu_x_hashtag.hashtag_id'
-const joinStoreOnId = 'JOIN store ON store.id = menu.store_id'
+import commentsByFeed from './sql/commentsByFeed.sql'
 
 export const MenuOrderBy = {
   NAME: 'name',
@@ -20,21 +11,18 @@ export const MenuOrderBy = {
 }
 
 export const Query: QueryResolvers<ApolloContext> = {
-  commentsByFeed: async (_, { feedId }, { userId }, info) => {
-    let [sql, values] = buildBasicCommentQuery(info)
-
-    sql = buildSQL(sql, 'WHERE', 'WHERE "comment".feed_id = $1')
-    values.push(feedId)
+  commentsByFeed: async (_, { feedId }) => {
+    let sql = commentsByFeed
+    const values = [feedId]
 
     const { rowCount, rows } = await poolQuery(sql, values)
-    if (rowCount === 0) return null
-
-    console.log('👀 - rows', rows)
+    if (rowCount === 0)
+      throw new NotFoundError('해당 id의 피드를 찾을 수 없거나 해당 피드에 댓글이 없습니다.')
 
     return rows.map((row) => columnFieldMapping(row))
   },
 
-  myComments: async (_, __, { userId }, info) => {
+  myComments: async (_, __, { userId }) => {
     return []
   },
 }
