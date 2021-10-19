@@ -1,0 +1,1 @@
+LEFT JOIN "comment" AS parent_comment ON parent_comment.id = "comment".comment_id

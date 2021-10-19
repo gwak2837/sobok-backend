@@ -1,0 +1,1 @@
+news.category = ANY($1)

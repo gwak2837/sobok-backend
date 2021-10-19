@@ -1,3 +1,26 @@
+type User {
+  id: UUID!
+  creationTime: DateTime!
+  modificationTime: DateTime!
+  uniqueName: NonEmptyString!
+  email: EmailAddress!
+  name: NonEmptyString!
+  phone: NonEmptyString!
+  gender: Gender!
+  isEmailVerified: Boolean!
+  isStarUser: Boolean!
+  providers: [Provider!]!
+  bio: String
+  birth: Date
+  imageUrl: URL
+  nickname: String
+
+  # 통계
+  feedCount: Int!
+  followerCount: Int!
+  followingCount: Int!
+}
+
 "OAuth 공급자"
 enum Provider {
   SOBOK
@@ -11,64 +34,4 @@ enum Gender {
   OTHER
   MALE
   FEMALE
-}
-
-type User {
-  id: UUID!
-  creationTime: DateTime!
-  modificationTime: DateTime!
-  uniqueName: NonEmptyString!
-  email: EmailAddress!
-  name: NonEmptyString!
-  phone: NonEmptyString!
-  gender: Gender!
-  isEmailVerified: Boolean!
-  isStarUser: Boolean!
-  providers: [Provider!]!
-
-  # nullable
-  bio: String
-  birth: Date
-  imageUrl: URL
-  nickname: String
-
-  # from other table
-  "내가 쓴 댓글"
-  comments: [Comment!]
-
-  "내가 쓴 피드"
-  feed: [Feed!]
-
-  "내가 소유한 매장"
-  stores: [Store!]
-
-  "사용자가 따르고 있는 다른 사용자"
-  followings: [User!]
-
-  "사용자를 따르는 다른 사용자"
-  followers: [User!]
-
-  "좋아요 누른 댓글"
-  likedComments: [Comment!]
-
-  "좋아요 누른 피드"
-  likedFeed: [Feed!]
-
-  "좋아요 누른 메뉴"
-  likedMenus: [Menu!]
-
-  "좋아요 누른 소식"
-  likedNews: [News!]
-
-  "좋아요 누른 매장"
-  likedStores: [Store!]
-
-  "좋아요 누른 트렌드"
-  likedTrends: [Trend!]
-
-  "내 메뉴 버킷 리스트"
-  menuBuckets: [Bucket!]
-
-  "내 매장 버킷 리스트"
-  storeBuckets: [Bucket!]
 }

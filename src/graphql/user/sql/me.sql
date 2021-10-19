@@ -1,3 +1,3 @@
-SELECT %I
+SELECT %s
 FROM "user"
-WHERE id = $1;
+WHERE id = $1

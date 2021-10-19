@@ -6,7 +6,16 @@ type Query {
   menuByName(storeId: ID!, name: NonEmptyString!): Menu
 
   "특정 동네 및 특정 카테고리 피드 목록"
-  menusByTownAndCategory(town: NonEmptyString, category: NonEmptyString): [Menu!]
+  menusByTownAndCategory(
+    "기본값: 전국"
+    town: NonEmptyString
+
+    "기본값: 전체"
+    category: NonEmptyString
+
+    order: MenuOrder
+    pagination: Pagination!
+  ): [Menu!]
 
   "특정 매장 메뉴 목록"
   menusByStore(storeId: ID!): [Menu!]

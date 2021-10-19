@@ -1,1 +1,0 @@
-WHERE feed.id = $1
