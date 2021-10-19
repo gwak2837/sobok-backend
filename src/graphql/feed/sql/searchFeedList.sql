@@ -6,7 +6,7 @@ SELECT feed.id,
   feed.comment_count,
   "user".id AS user__id,
   "user".nickname AS user__nickname,
-  "user".image_url AS user__image_urls,
+  "user".image_url AS user__image_url,
   user_x_liked_feed.user_id AS is_liked
 FROM feed
   JOIN "user" ON feed.user_id = "user".id
