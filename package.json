@@ -20,7 +20,7 @@
     "format": "prettier . --write --ignore-path .gitignore",
     "lint": "eslint . --fix --ignore-path .gitignore",
     "type": "tsc --pretty --noEmit",
-    "pre-push": "yarn format && yarn lint && yarn type",
+    "pre-push": "yarn test && yarn format && yarn lint && yarn type",
     "generate": "rm -rf src/graphql/generated && graphql-codegen --config codegen.yml",
     "generate-db": "schemats postgres postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB} -o src/database/${POSTGRES_DB}.ts && prettier src/database/${POSTGRES_DB}.ts --write",
     "postinstall": "[ -d '.husky' ] && husky install || true"
