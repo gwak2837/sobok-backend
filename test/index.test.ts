@@ -1,14 +1,12 @@
 /* eslint-disable prefer-promise-reject-errors */
-import fs from 'fs'
-import path from 'path'
-
 import dotenv from 'dotenv'
 
-import { requestGraphql } from './utils'
+import { readFileSynchronously, requestGraphql } from './utils'
 
 dotenv.config({ path: '.env.test' })
 
-const feed = fs.readFileSync(path.join(__dirname, './graphql/feed.graphql')).toString('utf-8')
+const feed = readFileSynchronously(__dirname, './graphql/feed.graphql')
+const store = readFileSynchronously(__dirname, './graphql/store.graphql')
 
 test('adds 1 + 2 to equal 3', () => {
   expect(1 + 2).toBe(3)
@@ -32,7 +30,12 @@ test('the fetch fails with an error', async () => {
 
 test('requestGraphql feed', async () => {
   const { data } = await requestGraphql(feed, { feedId: '1' })
-  console.log('👀 - data', data)
+
+  return expect(data).not.toBeNull()
+})
+
+test('requestGraphql store', async () => {
+  const { data } = await requestGraphql(store, { storeId: '1' })
 
   return expect(data).not.toBeNull()
 })
