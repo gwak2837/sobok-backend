@@ -3,11 +3,8 @@ import path from 'path'
 
 import axios from 'axios'
 
-export async function requestGraphql<Result extends any>(
-  query: string,
-  variables: Record<string, unknown>
-) {
-  const { data } = await axios.post<Result>(`${process.env.BACKEND_URL}/graphql`, {
+export async function requestGraphql<T = any>(query: string, variables: Record<string, unknown>) {
+  const { data } = await axios.post<T>(`${process.env.BACKEND_URL}/graphql`, {
     query,
     variables,
   })
