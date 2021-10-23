@@ -4,7 +4,7 @@ import { NotFoundError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
 import { applyPaginationAndSorting, buildSQL } from '../../utils/sql'
-import { columnFieldMapping } from '../common/ORM'
+import { graphqlRelationMapping } from '../common/ORM'
 import { FeedOptions, QueryResolvers } from '../generated/graphql'
 import feed from './sql/feed.sql'
 import feedListByStore from './sql/feedListByStore.sql'
@@ -26,7 +26,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 id의 피드를 찾을 수 없습니다.')
 
-    return columnFieldMapping(rows[0], 'feed')
+    return graphqlRelationMapping(rows[0], 'feed')
   },
 
   feedListByStore: async (_, { storeId }, { userId }) => {
@@ -39,7 +39,7 @@ export const Query: QueryResolvers<ApolloContext> = {
         'storeId의 매장이 존재하지 않거나 해당 매장에 피드가 존재하지 않습니다.'
       )
 
-    return rows.map((row) => columnFieldMapping(row, 'feed'))
+    return rows.map((row) => graphqlRelationMapping(row, 'feed'))
   },
 
   feedListByTown: async (_, { town, option }, { userId }) => {
@@ -66,7 +66,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당하는 피드를 찾을 수 없습니다.')
 
-    return rows.map((row) => columnFieldMapping(row, 'feed'))
+    return rows.map((row) => graphqlRelationMapping(row, 'feed'))
   },
 
   searchFeedList: async (_, { hashtags, order, pagination }, { userId }, info) => {
@@ -80,6 +80,6 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 hashtags가 포함된 피드를 찾을 수 없습니다.')
 
-    return rows.map((row) => columnFieldMapping(row, 'feed'))
+    return rows.map((row) => graphqlRelationMapping(row, 'feed'))
   },
 }

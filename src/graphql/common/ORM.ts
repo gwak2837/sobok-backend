@@ -1,9 +1,9 @@
 import { store } from '../../database/sobok'
 import { snakeToCamel } from '../../utils'
 
-type ColumnFieldMapping = (a: any) => Record<string, unknown>
+type ObjectRelationMapping = (a: any) => Record<string, unknown>
 
-const orm: Record<string, ColumnFieldMapping> = {
+const orm: Record<string, ObjectRelationMapping> = {
   store: (storeRow: store) => {
     const graphqlStore: Record<string, unknown> = {}
     for (const column in storeRow) {
@@ -26,7 +26,7 @@ const orm: Record<string, ColumnFieldMapping> = {
 }
 
 /** Database columns -> GraphQL fields */
-export function columnFieldMapping(row: Record<string, unknown>, tableName: string) {
+export function graphqlRelationMapping(row: Record<string, unknown>, tableName: string) {
   let selfTable: Record<string, unknown> = {}
   const otherTables: Record<string, Record<string, unknown>> = {}
 
@@ -34,12 +34,10 @@ export function columnFieldMapping(row: Record<string, unknown>, tableName: stri
     const value = row[column]
     if (column.includes('__')) {
       const [snakeTable, snakeColumn] = column.split('__')
-      const camelTable = snakeToCamel(snakeTable)
-      const camelColumn = snakeToCamel(snakeColumn)
-      if (!otherTables[camelTable]) otherTables[camelTable] = {}
-      otherTables[camelTable][camelColumn] = value
+      if (!otherTables[snakeTable]) otherTables[snakeTable] = {}
+      otherTables[snakeTable][snakeColumn] = value
     } else {
-      selfTable[snakeToCamel(column)] = value
+      selfTable[column] = value
     }
   }
 

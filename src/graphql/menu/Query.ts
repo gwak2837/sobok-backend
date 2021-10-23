@@ -4,7 +4,7 @@ import { NotFoundError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
 import { applyPaginationAndSorting, buildSQL, validatePaginationAndSorting } from '../../utils/sql'
-import { columnFieldMapping } from '../common/ORM'
+import { graphqlRelationMapping } from '../common/ORM'
 import { QueryResolvers } from '../generated/graphql'
 import { validateMenuCategory } from './ORM'
 import menu from './sql/menu.sql'
@@ -31,7 +31,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 id의 메뉴를 찾을 수 없습니다.')
 
-    return columnFieldMapping(rows[0], 'menu')
+    return graphqlRelationMapping(rows[0], 'menu')
   },
 
   menuByName: async (_, { storeId, name }, { userId }) => {
@@ -41,7 +41,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 이름의 메뉴를 찾을 수 없습니다.')
 
-    return columnFieldMapping(rows[0], 'menu')
+    return graphqlRelationMapping(rows[0], 'menu')
   },
 
   menusByStore: async (_, { storeId }, { userId }) => {
@@ -52,7 +52,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     if (rowCount === 0)
       throw new NotFoundError('storeId의 매장이 없거나 해당 매장에 메뉴가 존재하지 않습니다.')
 
-    return rows.map((row) => columnFieldMapping(row, 'menu'))
+    return rows.map((row) => graphqlRelationMapping(row, 'menu'))
   },
 
   menusByTownAndCategory: async (_, { town, category, order, pagination }, { userId }) => {
@@ -78,7 +78,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당하는 메뉴를 찾을 수 없습니다.')
 
-    return rows.map((row) => columnFieldMapping(row, 'menu'))
+    return rows.map((row) => graphqlRelationMapping(row, 'menu'))
   },
 
   menusInBucket: async (_, { bucketId, userUniqueName }, { userId }) => {
@@ -99,7 +99,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 id의 버킷에 메뉴가 존재하지 않습니다.')
 
-    return rows.map((row) => columnFieldMapping(row, 'menu'))
+    return rows.map((row) => graphqlRelationMapping(row, 'menu'))
   },
 
   searchMenus: async (_, { hashtags, order, pagination }, { userId }) => {
@@ -114,6 +114,6 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 hashtags가 포함된 메뉴를 찾을 수 없습니다.')
 
-    return rows.map((row) => columnFieldMapping(row, 'menu'))
+    return rows.map((row) => graphqlRelationMapping(row, 'menu'))
   },
 }

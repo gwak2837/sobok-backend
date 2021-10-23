@@ -1,7 +1,7 @@
 import { NotFoundError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { columnFieldMapping } from '../common/ORM'
+import { graphqlRelationMapping } from '../common/ORM'
 import { QueryResolvers } from '../generated/graphql'
 import commentsByFeed from './sql/commentsByFeed.sql'
 
@@ -19,7 +19,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     if (rowCount === 0)
       throw new NotFoundError('해당 id의 피드를 찾을 수 없거나 해당 피드에 댓글이 없습니다.')
 
-    return rows.map((row) => columnFieldMapping(row, 'comment'))
+    return rows.map((row) => graphqlRelationMapping(row, 'comment'))
   },
 
   myComments: async (_, __, { userId }) => {

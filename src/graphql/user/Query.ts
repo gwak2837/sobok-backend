@@ -1,7 +1,7 @@
 import { AuthenticationError } from 'apollo-server-express'
 
 import { poolQuery } from '../../database/postgres'
-import { columnFieldMapping } from '../common/ORM'
+import { graphqlRelationMapping } from '../common/ORM'
 import { QueryResolvers } from '../generated/graphql'
 import isEmailUnique from './sql/isEmailUnique.sql'
 import isUniqueNameUnique from './sql/isUniqueNameUnique.sql'
@@ -16,7 +16,7 @@ export const Query: QueryResolvers = {
 
     const { rows } = await poolQuery(sql, values)
 
-    return columnFieldMapping(rows[0], 'user')
+    return graphqlRelationMapping(rows[0], 'user')
   },
 
   isEmailUnique: async (_, { email }) => {

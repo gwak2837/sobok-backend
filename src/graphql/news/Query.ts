@@ -4,7 +4,7 @@ import { NotFoundError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
 import { buildSQL } from '../../utils/sql'
-import { columnFieldMapping } from '../common/ORM'
+import { graphqlRelationMapping } from '../common/ORM'
 import { NewsOptions, QueryResolvers } from '../generated/graphql'
 import { validateStoreCategories } from '../store/ORM'
 import joinLikedStore from './sql/joinLikedStore.sql'
@@ -22,7 +22,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 id의 소식을 찾을 수 없습니다.')
 
-    return columnFieldMapping(rows[0], 'news')
+    return graphqlRelationMapping(rows[0], 'news')
   },
 
   newsListByStore: async (_, { storeId, categories }) => {
@@ -39,7 +39,7 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 조건의 피드를 찾을 수 없습니다.')
 
-    return rows.map((row) => columnFieldMapping(row, 'news'))
+    return rows.map((row) => graphqlRelationMapping(row, 'news'))
   },
 
   newsListByTown: async (_, { town, option, categories }, { userId }) => {
@@ -69,6 +69,6 @@ export const Query: QueryResolvers<ApolloContext> = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 조건의 피드를 찾을 수 없습니다.')
 
-    return rows.map((row) => columnFieldMapping(row, 'news'))
+    return rows.map((row) => graphqlRelationMapping(row, 'news'))
   },
 }
