@@ -1,7 +1,7 @@
 SELECT store.id,
-  store.image_urls,
   store.name,
   store.categories,
+  store.image_urls,
   store.point,
   user_x_liked_store.user_id AS is_liked,
   array_agg(hashtag.name) AS hashtags

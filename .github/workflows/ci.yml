@@ -1,9 +1,9 @@
-name: Docker Image Build
+name: Continous Integration
 
 on: [pull_request]
 
 jobs:
-  build:
+  docker-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

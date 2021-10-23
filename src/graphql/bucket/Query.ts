@@ -2,7 +2,8 @@ import { UserInputError } from 'apollo-server-express'
 
 import { NotFoundError } from '../../apollo/errors'
 import { poolQuery } from '../../database/postgres'
-import { buildSQL, columnFieldMapping } from '../common/ORM'
+import { buildSQL } from '../../utils/sql'
+import { graphqlRelationMapping } from '../common/ORM'
 import type { QueryResolvers } from '../generated/graphql'
 import buckets from './sql/buckets.sql'
 import joinUserOnUniqueNameAndBucketType from './sql/joinUserOnUniqueNameAndBucketType.sql'
@@ -27,6 +28,6 @@ export const Query: QueryResolvers = {
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당 조건의 버킷을 찾을 수 없습니다.')
 
-    return rows.map((row) => columnFieldMapping(row))
+    return rows.map((row) => graphqlRelationMapping(row, 'bucket'))
   },
 }

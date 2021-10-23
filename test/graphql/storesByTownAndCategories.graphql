@@ -1,0 +1,22 @@
+query StoresByTownAndCategories(
+  $town: NonEmptyString
+  $categories: [NonEmptyString!]
+  $order: StoreOrder
+  $pagination: Pagination!
+) {
+  storesByTownAndCategories(
+    town: $town
+    categories: $categories
+    order: $order
+    pagination: $pagination
+  ) {
+    id
+    name
+    categories
+    imageUrls
+    latitude
+    longitude
+    isLiked
+    hashtags
+  }
+}

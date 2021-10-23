@@ -274,7 +274,7 @@ export type Query = {
   /** 특정 매장 정보 */
   storeInfo?: Maybe<Store>
   /** 동네 및 카테고리별 매장 목록 */
-  storesByTownAndCategory?: Maybe<Array<Store>>
+  storesByTownAndCategories?: Maybe<Array<Store>>
   /** 매장 버킷에만 해당 */
   storesInBucket?: Maybe<Array<Store>>
   /** 대댓글 */
@@ -377,7 +377,7 @@ export type QueryStoreInfoArgs = {
   id: Scalars['ID']
 }
 
-export type QueryStoresByTownAndCategoryArgs = {
+export type QueryStoresByTownAndCategoriesArgs = {
   categories?: Maybe<Array<Scalars['NonEmptyString']>>
   order?: Maybe<StoreOrder>
   pagination: Pagination
@@ -925,11 +925,11 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryStoreInfoArgs, 'id'>
   >
-  storesByTownAndCategory?: Resolver<
+  storesByTownAndCategories?: Resolver<
     Maybe<Array<ResolversTypes['Store']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryStoresByTownAndCategoryArgs, 'pagination'>
+    RequireFields<QueryStoresByTownAndCategoriesArgs, 'pagination'>
   >
   storesInBucket?: Resolver<
     Maybe<Array<ResolversTypes['Store']>>,
