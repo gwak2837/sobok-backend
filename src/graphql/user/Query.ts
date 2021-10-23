@@ -1,25 +1,22 @@
 import { AuthenticationError } from 'apollo-server-express'
-import graphqlFields from 'graphql-fields'
-import format from 'pg-format'
 
 import { poolQuery } from '../../database/postgres'
-import { columnFieldMapping, getColumnsFromFields } from '../common/ORM'
+import { columnFieldMapping } from '../common/ORM'
 import { QueryResolvers } from '../generated/graphql'
-import { userFieldColumnMapping } from './ORM'
 import isEmailUnique from './sql/isEmailUnique.sql'
 import isUniqueNameUnique from './sql/isUniqueNameUnique.sql'
 import me from './sql/me.sql'
 
 export const Query: QueryResolvers = {
-  me: async (_, __, { userId }, info) => {
+  me: async (_, __, { userId }) => {
     if (!userId) throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
 
-    const sql = format(me, getColumnsFromFields(graphqlFields(info), userFieldColumnMapping))
+    const sql = me
     const values = [userId]
 
     const { rows } = await poolQuery(sql, values)
 
-    return columnFieldMapping(rows[0])
+    return columnFieldMapping(rows[0], 'user')
   },
 
   isEmailUnique: async (_, { email }) => {
