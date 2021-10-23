@@ -26,7 +26,8 @@ test('the fetch fails with an error', async () => {
 })
 
 const feed = readFileSynchronously(__dirname, './graphql/feed.graphql')
-test('requestGraphql feed', async () => {
+
+test('graphql request feed', async () => {
   const feed0 = await requestGraphql(feed, { feedId: '0' })
   expect(feed0.errors).toBeDefined()
 
@@ -35,10 +36,26 @@ test('requestGraphql feed', async () => {
 })
 
 const store = readFileSynchronously(__dirname, './graphql/store.graphql')
-test('requestGraphql store', async () => {
+
+test('graphql request store', async () => {
   const store0 = await requestGraphql(store, { storeId: '0' })
   expect(store0.errors).not.toBeNull()
 
   const store1 = await requestGraphql(store, { storeId: '1' })
+  expect(store1.data).not.toBeNull()
+})
+
+const storesByTownAndCategories = readFileSynchronously(
+  __dirname,
+  './graphql/StoresByTownAndCategories.graphql'
+)
+
+test('graphql request storesByTownAndCategories', async () => {
+  await expect(requestGraphql(storesByTownAndCategories, {})).rejects.toThrow()
+
+  const store1 = await requestGraphql(storesByTownAndCategories, {
+    town: '흑석동',
+    pagination: { limit: 10 },
+  })
   expect(store1.data).not.toBeNull()
 })
