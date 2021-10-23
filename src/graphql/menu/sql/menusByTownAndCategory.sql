@@ -1,6 +1,7 @@
 SELECT menu.id,
   menu.name,
   menu.price,
+  menu.is_sold_out,
   menu.image_urls,
   store.id AS store__id,
   store.name AS store__name,
