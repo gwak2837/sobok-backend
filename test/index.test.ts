@@ -9,7 +9,7 @@ test('NODE_ENV', () => {
 })
 
 test('POSTGRES_HOST', () => {
-  expect(process.env.POSTGRES_HOST).toBe('localhost')
+  expect(process.env.BACKEND_URL).toBeDefined()
 })
 
 test('the data is peanut butter', async () => {
