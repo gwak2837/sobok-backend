@@ -2,8 +2,6 @@
 
 소소한 행복 :)
 
-2021년 8월 11일 (수) ~ ing
-
 ## Requires
 
 - macOS 11.5
@@ -137,4 +135,4 @@ PostgreSQL 데이터베이스 구조를 바탕으로 TypeScript 기반 자료형
 
 ### `yarn test`
 
-실행 중인 GraphQL 서버에 테스트용 GraphQL 쿼리를 요청하고 응답을 검사합니다. 이 스크립트를 실행 하기 전에 `localhost` 또는 원격에서 GraphQL 서버를 실행해야 합니다.
+실행 중인 GraphQL 서버에 테스트용 GraphQL 쿼리를 요청하고 응답을 검사합니다. 이 스크립트를 실행 하기 전에 `localhost` 또는 원격에서 GraphQL API 서버를 실행해야 합니다.

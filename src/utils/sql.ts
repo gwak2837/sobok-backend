@@ -46,21 +46,18 @@ type Order = {
   direction?: Maybe<OrderDirection>
 }
 
-export function validatePaginationAndSorting(
-  order: Maybe<Order> | undefined,
-  pagination: Pagination
-) {
+export function validatePaginationAndSorting(order: Maybe<Order>, pagination: Pagination) {
   if (order && !order.by && !order.direction)
     throw new UserInputError('order 객체는 비어있을 수 없습니다.')
   if (!pagination.lastId && pagination.lastValue)
-    throw new UserInputError('pagination.lastId가 존재해야 합니다.')
+    throw new UserInputError('pagination.lastId를 입력해주세요.')
 }
 
 export function applyPaginationAndSorting(
   sql: string,
   values: unknown[],
   tableName: string,
-  order: Maybe<Order> | undefined,
+  order: Maybe<Order>,
   pagination: Pagination
 ) {
   // Pagination
