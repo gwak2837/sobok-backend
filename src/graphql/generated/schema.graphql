@@ -440,7 +440,7 @@ type Query {
   """
   동네 및 카테고리별 매장 목록
   """
-  storesByTownAndCategory(
+  storesByTownAndCategories(
     """
     기본값: 전체
     """

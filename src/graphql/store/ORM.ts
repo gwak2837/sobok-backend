@@ -1,9 +1,9 @@
 import { ApolloError, UserInputError } from 'apollo-server-errors'
 
-import type { QueryStoresByTownAndCategoryArgs } from '../generated/graphql'
+import type { QueryStoresByTownAndCategoriesArgs } from '../generated/graphql'
 
 export function validateStoreCategories(
-  categories: QueryStoresByTownAndCategoryArgs['categories']
+  categories: QueryStoresByTownAndCategoriesArgs['categories']
 ) {
   if (categories) {
     if (categories.length === 0) throw new UserInputError('categories 배열은 비어있을 수 없습니다.')
