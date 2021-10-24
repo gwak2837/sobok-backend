@@ -268,12 +268,21 @@ type Query {
   """
   특정 매장 피드 목록
   """
-  feedListByStore(storeId: ID!): [Feed!]
+  feedListByStore(order: FeedOrder, pagination: Pagination!, storeId: ID!): [Feed!]
 
   """
   특정 동네 피드 목록
   """
-  feedListByTown(option: FeedOptions, town: NonEmptyString): [Feed!]
+  feedListByTown(
+    option: FeedOptions
+    order: FeedOrder
+    pagination: Pagination!
+
+    """
+    기본값: 전국
+    """
+    town: NonEmptyString
+  ): [Feed!]
 
   """
   이메일 중복 여부 검사

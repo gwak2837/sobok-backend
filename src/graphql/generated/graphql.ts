@@ -295,11 +295,15 @@ export type QueryFeedArgs = {
 }
 
 export type QueryFeedListByStoreArgs = {
+  order?: Maybe<FeedOrder>
+  pagination: Pagination
   storeId: Scalars['ID']
 }
 
 export type QueryFeedListByTownArgs = {
   option?: Maybe<FeedOptions>
+  order?: Maybe<FeedOrder>
+  pagination: Pagination
   town?: Maybe<Scalars['NonEmptyString']>
 }
 
@@ -812,13 +816,13 @@ export type QueryResolvers<
     Maybe<Array<ResolversTypes['Feed']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryFeedListByStoreArgs, 'storeId'>
+    RequireFields<QueryFeedListByStoreArgs, 'pagination' | 'storeId'>
   >
   feedListByTown?: Resolver<
     Maybe<Array<ResolversTypes['Feed']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryFeedListByTownArgs, never>
+    RequireFields<QueryFeedListByTownArgs, 'pagination'>
   >
   isEmailUnique?: Resolver<
     ResolversTypes['Boolean'],
