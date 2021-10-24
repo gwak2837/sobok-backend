@@ -3,7 +3,7 @@ import { AuthenticationError, UserInputError } from 'apollo-server-express'
 import { NotFoundError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { applyPaginationAndSorting, buildSQL } from '../../utils/sql'
+import { applyPaginationAndSorting, buildSQL, validatePaginationAndSorting } from '../../utils/sql'
 import { graphqlRelationMapping } from '../common/ORM'
 import { FeedOptions, QueryResolvers } from '../generated/graphql'
 import feed from './sql/feed.sql'
@@ -29,9 +29,13 @@ export const Query: QueryResolvers<ApolloContext> = {
     return graphqlRelationMapping(rows[0], 'feed')
   },
 
-  feedListByStore: async (_, { storeId }, { userId }) => {
+  feedListByStore: async (_, { storeId, order, pagination }, { userId }) => {
+    validatePaginationAndSorting(order, pagination)
+
     let sql = feedListByStore
     const values = [userId, storeId]
+
+    sql = applyPaginationAndSorting(sql, values, 'feed', order, pagination)
 
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0)
@@ -42,11 +46,12 @@ export const Query: QueryResolvers<ApolloContext> = {
     return rows.map((row) => graphqlRelationMapping(row, 'feed'))
   },
 
-  feedListByTown: async (_, { town, option }, { userId }) => {
-    if (option === FeedOptions.FollowingUser || option === FeedOptions.StarUser) {
+  feedListByTown: async (_, { town, option, order, pagination }, { userId }) => {
+    if (option === FeedOptions.FollowingUser) {
       if (!userId)
         throw new AuthenticationError('로그인되어 있지 않습니다. 로그인 후 시도해주세요.')
     }
+    validatePaginationAndSorting(order, pagination)
 
     let sql = feedListByTown
     const values = [userId]
@@ -63,14 +68,17 @@ export const Query: QueryResolvers<ApolloContext> = {
       sql = buildSQL(sql, 'JOIN', joinStarUser)
     }
 
+    sql = applyPaginationAndSorting(sql, values, 'feed', order, pagination)
+
     const { rowCount, rows } = await poolQuery(sql, values)
     if (rowCount === 0) throw new NotFoundError('해당하는 피드를 찾을 수 없습니다.')
 
     return rows.map((row) => graphqlRelationMapping(row, 'feed'))
   },
 
-  searchFeedList: async (_, { hashtags, order, pagination }, { userId }, info) => {
+  searchFeedList: async (_, { hashtags, order, pagination }, { userId }) => {
     if (hashtags.length === 0) throw new UserInputError('해시태그 배열은 비어있을 수 없습니다.')
+    validatePaginationAndSorting(order, pagination)
 
     let sql = searchFeedList
     const values: unknown[] = [userId, hashtags]

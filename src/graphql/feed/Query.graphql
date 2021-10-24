@@ -3,10 +3,17 @@ type Query {
   feed(id: ID!): Feed
 
   "특정 매장 피드 목록"
-  feedListByStore(storeId: ID!): [Feed!]
+  feedListByStore(storeId: ID!, order: FeedOrder, pagination: Pagination!): [Feed!]
 
   "특정 동네 피드 목록"
-  feedListByTown(town: NonEmptyString, option: FeedOptions): [Feed!]
+  feedListByTown(
+    "기본값: 전국"
+    town: NonEmptyString
+
+    option: FeedOptions
+    order: FeedOrder
+    pagination: Pagination!
+  ): [Feed!]
 
   "해시태그로 메뉴 검색"
   searchFeedList(hashtags: [NonEmptyString!]!, order: FeedOrder, pagination: Pagination!): [Feed!]
