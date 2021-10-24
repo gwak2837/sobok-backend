@@ -180,6 +180,16 @@ export enum NewsOptions {
   LikedStore = 'LIKED_STORE',
 }
 
+export type NewsOrder = {
+  by?: Maybe<NewsOrderBy>
+  direction?: Maybe<OrderDirection>
+}
+
+/** 기본값: id */
+export enum NewsOrderBy {
+  Name = 'NAME',
+}
+
 /** 기본값: 내림차순 */
 export enum OrderDirection {
   Asc = 'ASC',
@@ -261,7 +271,7 @@ export type Query = {
   news?: Maybe<News>
   /** 특정 매장 소식 목록 */
   newsListByStore?: Maybe<Array<News>>
-  /** 옵션별 여러 매장 소식 목록 */
+  /** 동네별 매장 소식 목록 */
   newsListByTown?: Maybe<Array<News>>
   /** 해시태그로 메뉴 검색 */
   searchFeedList?: Maybe<Array<Feed>>
@@ -346,12 +356,16 @@ export type QueryNewsArgs = {
 
 export type QueryNewsListByStoreArgs = {
   categories?: Maybe<Array<Scalars['NonEmptyString']>>
+  order?: Maybe<NewsOrder>
+  pagination: Pagination
   storeId: Scalars['ID']
 }
 
 export type QueryNewsListByTownArgs = {
   categories?: Maybe<Array<Scalars['NonEmptyString']>>
   option?: Maybe<NewsOptions>
+  order?: Maybe<NewsOrder>
+  pagination: Pagination
   town?: Maybe<Scalars['NonEmptyString']>
 }
 
@@ -592,6 +606,8 @@ export type ResolversTypes = {
   Mutation: ResolverTypeWrapper<{}>
   News: ResolverTypeWrapper<News>
   NewsOptions: NewsOptions
+  NewsOrder: NewsOrder
+  NewsOrderBy: NewsOrderBy
   NonEmptyString: ResolverTypeWrapper<Scalars['NonEmptyString']>
   OrderDirection: OrderDirection
   Pagination: Pagination
@@ -629,6 +645,7 @@ export type ResolversParentTypes = {
   MenuOrder: MenuOrder
   Mutation: {}
   News: News
+  NewsOrder: NewsOrder
   NonEmptyString: Scalars['NonEmptyString']
   Pagination: Pagination
   PositiveInt: Scalars['PositiveInt']
@@ -891,13 +908,13 @@ export type QueryResolvers<
     Maybe<Array<ResolversTypes['News']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryNewsListByStoreArgs, 'storeId'>
+    RequireFields<QueryNewsListByStoreArgs, 'pagination' | 'storeId'>
   >
   newsListByTown?: Resolver<
     Maybe<Array<ResolversTypes['News']>>,
     ParentType,
     ContextType,
-    RequireFields<QueryNewsListByTownArgs, never>
+    RequireFields<QueryNewsListByTownArgs, 'pagination'>
   >
   searchFeedList?: Resolver<
     Maybe<Array<ResolversTypes['Feed']>>,

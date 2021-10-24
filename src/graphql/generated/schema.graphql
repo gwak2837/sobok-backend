@@ -217,6 +217,18 @@ enum NewsOptions {
   LIKED_STORE
 }
 
+input NewsOrder {
+  by: NewsOrderBy
+  direction: OrderDirection
+}
+
+"""
+기본값: id
+"""
+enum NewsOrderBy {
+  NAME
+}
+
 scalar NonEmptyString
 
 """
@@ -414,12 +426,33 @@ type Query {
   """
   특정 매장 소식 목록
   """
-  newsListByStore(categories: [NonEmptyString!], storeId: ID!): [News!]
+  newsListByStore(
+    """
+    기본값: 전체
+    """
+    categories: [NonEmptyString!]
+    order: NewsOrder
+    pagination: Pagination!
+    storeId: ID!
+  ): [News!]
 
   """
-  옵션별 여러 매장 소식 목록
+  동네별 매장 소식 목록
   """
-  newsListByTown(categories: [NonEmptyString!], option: NewsOptions, town: NonEmptyString): [News!]
+  newsListByTown(
+    """
+    기본값: 전체
+    """
+    categories: [NonEmptyString!]
+    option: NewsOptions
+    order: NewsOrder
+    pagination: Pagination!
+
+    """
+    기본값: 전국
+    """
+    town: NonEmptyString
+  ): [News!]
 
   """
   해시태그로 메뉴 검색
