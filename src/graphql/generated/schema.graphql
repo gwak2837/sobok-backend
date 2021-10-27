@@ -113,6 +113,8 @@ enum Gender {
 
 scalar JWT
 
+scalar LastValue
+
 scalar Latitude
 
 scalar Longitude
@@ -240,7 +242,7 @@ enum OrderDirection {
 
 input Pagination {
   lastId: ID
-  lastValue: NonEmptyString
+  lastValue: LastValue
   limit: PositiveInt!
 }
 

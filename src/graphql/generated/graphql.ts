@@ -18,6 +18,7 @@ export type Scalars = {
   DateTime: any
   EmailAddress: any
   JWT: any
+  LastValue: any
   Latitude: any
   Longitude: any
   NonEmptyString: any
@@ -197,7 +198,7 @@ export enum OrderDirection {
 
 export type Pagination = {
   lastId?: Maybe<Scalars['ID']>
-  lastValue?: Maybe<Scalars['NonEmptyString']>
+  lastValue?: Maybe<Scalars['LastValue']>
   limit: Scalars['PositiveInt']
 }
 
@@ -598,6 +599,7 @@ export type ResolversTypes = {
   ID: ResolverTypeWrapper<Scalars['ID']>
   Int: ResolverTypeWrapper<Scalars['Int']>
   JWT: ResolverTypeWrapper<Scalars['JWT']>
+  LastValue: ResolverTypeWrapper<Scalars['LastValue']>
   Latitude: ResolverTypeWrapper<Scalars['Latitude']>
   Longitude: ResolverTypeWrapper<Scalars['Longitude']>
   Menu: ResolverTypeWrapper<Menu>
@@ -639,6 +641,7 @@ export type ResolversParentTypes = {
   ID: Scalars['ID']
   Int: Scalars['Int']
   JWT: Scalars['JWT']
+  LastValue: Scalars['LastValue']
   Latitude: Scalars['Latitude']
   Longitude: Scalars['Longitude']
   Menu: Menu
@@ -727,6 +730,11 @@ export type FeedResolvers<
 
 export interface JwtScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JWT'], any> {
   name: 'JWT'
+}
+
+export interface LastValueScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes['LastValue'], any> {
+  name: 'LastValue'
 }
 
 export interface LatitudeScalarConfig
@@ -1055,6 +1063,7 @@ export type Resolvers<ContextType = any> = {
   EmailAddress?: GraphQLScalarType
   Feed?: FeedResolvers<ContextType>
   JWT?: GraphQLScalarType
+  LastValue?: GraphQLScalarType
   Latitude?: GraphQLScalarType
   Longitude?: GraphQLScalarType
   Menu?: MenuResolvers<ContextType>
