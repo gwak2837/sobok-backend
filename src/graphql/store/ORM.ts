@@ -16,9 +16,9 @@ export function encodeStoreCategories(storeCategories: string[]) {
     switch (category) {
       case '콘센트':
         return 0
-      case '넓은테이블':
+      case '큰 테이블':
         return 1
-      case '편한의자':
+      case '편한 의자':
         return 2
       case '애견동반':
         return 3
@@ -26,7 +26,7 @@ export function encodeStoreCategories(storeCategories: string[]) {
         return 4
       case '흡연실':
         return 5
-      case '노키즈존':
+      case '노키즈':
         return 6
       case '주차장':
         return 7
@@ -48,9 +48,9 @@ export function decodeStoreCategories(encodedStoreCategories: number[]) {
       case 0:
         return '콘센트'
       case 1:
-        return '넓은테이블'
+        return '큰 테이블'
       case 2:
-        return '편한의자'
+        return '편한 의자'
       case 3:
         return '애견동반'
       case 4:
@@ -58,7 +58,7 @@ export function decodeStoreCategories(encodedStoreCategories: number[]) {
       case 5:
         return '흡연실'
       case 6:
-        return '노키즈존'
+        return '노키즈'
       case 7:
         return '주차장'
       case 8:
