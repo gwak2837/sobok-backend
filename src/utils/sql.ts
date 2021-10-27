@@ -14,7 +14,7 @@ function findInsertingPosition(sourceSQL: string, keyword: Keyword) {
   return sourceSQL.length
 }
 
-export function buildSQL(sourceSQL: string, keyword: Keyword, insertingSQL: string) {
+export function buildSelect(sourceSQL: string, keyword: Keyword, insertingSQL: string) {
   let parameterIndex = (sourceSQL.match(/\$\d+/g)?.length ?? 0) + 1
   const formattedSQL = insertingSQL.replace(/\$\d+/g, () => `$${parameterIndex++}`)
 
@@ -67,11 +67,11 @@ export function applyPaginationAndSorting(
       if (!order?.by)
         throw new UserInputError('pagination.lastValue와 order.by가 모두 존재해야 합니다.')
       const keysetPagination = `(${tableName}.${order.by}, ${tableName}.id) ${inequalitySign} ($1, $2)`
-      sql = buildSQL(sql, 'WHERE', keysetPagination)
+      sql = buildSelect(sql, 'WHERE', keysetPagination)
       values.push(pagination.lastValue, pagination.lastId)
     } else {
       const idPagination = `${tableName}.id ${inequalitySign} $1`
-      sql = buildSQL(sql, 'WHERE', idPagination)
+      sql = buildSelect(sql, 'WHERE', idPagination)
       values.push(pagination.lastId)
     }
   }
@@ -80,14 +80,14 @@ export function applyPaginationAndSorting(
   const orderDirection = order?.direction === OrderDirection.Asc ? '' : 'DESC'
   if (order?.by) {
     const columnOrdering = `${tableName}.${order.by} ${orderDirection}, ${tableName}.id ${orderDirection}`
-    sql = buildSQL(sql, 'ORDER BY', columnOrdering)
+    sql = buildSelect(sql, 'ORDER BY', columnOrdering)
   } else {
     const idOrdering = `${tableName}.id ${orderDirection}`
-    sql = buildSQL(sql, 'ORDER BY', idOrdering)
+    sql = buildSelect(sql, 'ORDER BY', idOrdering)
   }
 
   // FETCH
-  sql = buildSQL(sql, 'FETCH', 'FIRST $1 ROWS ONLY')
+  sql = buildSelect(sql, 'FETCH', 'FIRST $1 ROWS ONLY')
   values.push(pagination.limit)
 
   return sql

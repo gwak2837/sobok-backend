@@ -314,7 +314,7 @@ SELECT create_store (
     ARRAY ['2024-01-14'::date, '2024-04-12', '2024-05-05', '2024-06-10', '2024-09-12'],
     ARRAY ['https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=https%3A%2F%2Fmyplace-phinf.pstatic.net%2F20200812_81%2F1597223302326skrLs_JPEG%2Fupload_888e4e8977d7c4b98da4365f06c75852.jpeg', 'https://search.pstatic.net/common/?autoRotate=true&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20200901_111%2F1598947940824eIdD3_JPEG%2F77tjOTxyABizz9LznvZS3a5T.jpg', 'https://search.pstatic.net/common/?autoRotate=true&quality=95&type=w750&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20200901_114%2F1598947896591784R0_JPEG%2FAvlUhB3gdz55x-nQuVguaRgK.jpg'],
     NULL,
-    ARRAY ['분위기가 좋은', '디저트 맛집', '통유리']
+    ARRAY ['분위기 좋은', '디저트 맛집', '통유리']
   ),
   create_menu (
     '아메리카노',
@@ -862,7 +862,7 @@ SELECT create_store (
     ARRAY [50],
     ARRAY [50],
     ARRAY [1],
-    ARRAY ['오이', '실망', '양많음', '분위기좋음']
+    ARRAY ['오이', '실망', '양많음', '분위기 좋음']
   ),
   create_feed (
     2,

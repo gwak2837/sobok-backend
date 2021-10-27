@@ -3,7 +3,11 @@ import { AuthenticationError, UserInputError } from 'apollo-server-express'
 import { NotFoundError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { applyPaginationAndSorting, buildSQL, validatePaginationAndSorting } from '../../utils/sql'
+import {
+  applyPaginationAndSorting,
+  buildSelect,
+  validatePaginationAndSorting,
+} from '../../utils/sql'
 import { graphqlRelationMapping } from '../common/ORM'
 import { FeedOptions, QueryResolvers } from '../generated/graphql'
 import feed from './sql/feed.sql'
@@ -57,15 +61,15 @@ export const Query: QueryResolvers<ApolloContext> = {
     const values = [userId]
 
     if (town) {
-      sql = buildSQL(sql, 'JOIN', joinStoreTown)
+      sql = buildSelect(sql, 'JOIN', joinStoreTown)
       values.push(town)
     }
 
     if (option === FeedOptions.FollowingUser) {
-      sql = buildSQL(sql, 'JOIN', joinFollowingUser)
+      sql = buildSelect(sql, 'JOIN', joinFollowingUser)
       values.push(userId)
     } else if (option === FeedOptions.StarUser) {
-      sql = buildSQL(sql, 'JOIN', joinStarUser)
+      sql = buildSelect(sql, 'JOIN', joinStarUser)
     }
 
     sql = applyPaginationAndSorting(sql, values, 'feed', order, pagination)

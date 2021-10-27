@@ -2,7 +2,7 @@ import { UserInputError } from 'apollo-server-express'
 
 import { NotFoundError } from '../../apollo/errors'
 import { poolQuery } from '../../database/postgres'
-import { buildSQL } from '../../utils/sql'
+import { buildSelect } from '../../utils/sql'
 import { graphqlRelationMapping } from '../common/ORM'
 import type { QueryResolvers } from '../generated/graphql'
 import buckets from './sql/buckets.sql'
@@ -18,10 +18,10 @@ export const Query: QueryResolvers = {
     const values = []
 
     if (userId) {
-      sql = buildSQL(sql, 'WHERE', whereUserIdAndBucketType)
+      sql = buildSelect(sql, 'WHERE', whereUserIdAndBucketType)
       values.push(userId, type)
     } else {
-      sql = buildSQL(sql, 'JOIN', joinUserOnUniqueNameAndBucketType)
+      sql = buildSelect(sql, 'JOIN', joinUserOnUniqueNameAndBucketType)
       values.push(userUniqueName, type)
     }
 

@@ -3,7 +3,11 @@ import { UserInputError } from 'apollo-server-errors'
 import { NotFoundError } from '../../apollo/errors'
 import type { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { applyPaginationAndSorting, buildSQL, validatePaginationAndSorting } from '../../utils/sql'
+import {
+  applyPaginationAndSorting,
+  buildSelect,
+  validatePaginationAndSorting,
+} from '../../utils/sql'
 import { graphqlRelationMapping } from '../common/ORM'
 import { QueryResolvers } from '../generated/graphql'
 import { validateMenuCategory } from './ORM'
@@ -63,13 +67,13 @@ export const Query: QueryResolvers<ApolloContext> = {
     const values: unknown[] = [userId]
 
     if (town && category) {
-      sql = buildSQL(sql, 'WHERE', whereTownAndCategory)
+      sql = buildSelect(sql, 'WHERE', whereTownAndCategory)
       values.push(town, encodedCategory)
     } else if (town) {
-      sql = buildSQL(sql, 'WHERE', whereTown)
+      sql = buildSelect(sql, 'WHERE', whereTown)
       values.push(town)
     } else if (category) {
-      sql = buildSQL(sql, 'WHERE', whereCategory)
+      sql = buildSelect(sql, 'WHERE', whereCategory)
       values.push(encodedCategory)
     }
 
