@@ -13,6 +13,7 @@ type News {
   # from other table
   "뉴스 좋아요 여부 (로그인 필요)"
   isLiked: Boolean!
+
   "이 소식을 올린 매장"
   store: Store!
 }

@@ -7,4 +7,38 @@ type Query {
 
   "사용자 고유 이름 중복 여부 검사"
   isUniqueNameUnique(uniqueName: NonEmptyString!): Boolean!
+
+  # from other table
+  "내가 쓴 피드"
+  myfeed: [Feed!]
+
+  "나를 따르는 다른 사용자"
+  myFollowers: [User!]
+
+  "내가 따르고 있는 다른 사용자"
+  myFollowings: [User!]
+
+  "내 메뉴 버킷 리스트"
+  myMenuBuckets: [Bucket!]
+
+  "내가 소유한 매장"
+  myStores: [Store!]
+
+  "내 매장 버킷 리스트"
+  myStoreBuckets: [Bucket!]
+
+  "좋아요 누른 피드"
+  likedFeed: [Feed!]
+
+  "좋아요 누른 메뉴"
+  likedMenus: [Menu!]
+
+  "좋아요 누른 소식"
+  likedNews: [News!]
+
+  "좋아요 누른 매장"
+  likedStores: [Store!]
+
+  "좋아요 누른 트렌드"
+  likedTrends: [Trend!]
 }

@@ -1,23 +1,44 @@
-"기본값: ALL_USER"
-enum FeedOptions {
-  STAR_USER
-
-  "로그인 필요"
-  FOLLOWING_USER
-
-  ALL_USER
-}
-
 type Query {
   "피드 상세"
   feed(id: ID!): Feed
 
   "특정 매장 피드 목록"
-  feedListByStore(storeId: ID!): [Feed!]
+  feedListByStore(storeId: ID!, order: FeedOrder, pagination: Pagination!): [Feed!]
 
   "특정 동네 피드 목록"
-  feedListByTown(town: NonEmptyString, option: FeedOptions): [Feed!]
+  feedListByTown(
+    "기본값: 전국"
+    town: NonEmptyString
+
+    option: FeedOptions
+    order: FeedOrder
+    pagination: Pagination!
+  ): [Feed!]
 
   "해시태그로 메뉴 검색"
-  searchFeedList(hashtags: [NonEmptyString!]!): [Feed!]
+  searchFeedList(hashtags: [NonEmptyString!]!, order: FeedOrder, pagination: Pagination!): [Feed!]
+
+  "피드에 달린 댓글"
+  comments: [Comment!]
+
+  "피드에 태그된 메뉴 목록"
+  menus: [Menu!]
+}
+
+"기본값: 모든 사용자"
+enum FeedOptions {
+  STAR_USER
+
+  "로그인 필요"
+  FOLLOWING_USER
+}
+
+input FeedOrder {
+  by: FeedOrderBy
+  direction: OrderDirection
+}
+
+"기본값: id"
+enum FeedOrderBy {
+  CREATION_TIME
 }

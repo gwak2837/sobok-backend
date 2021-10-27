@@ -2,15 +2,13 @@
 
 소소한 행복 :)
 
-2021년 8월 11일 (수) ~ ing
-
 ## Requires
 
 - macOS 11.5
 - [Git](https://git-scm.com/downloads) 2.32
 - [Node](https://hub.docker.com/_/node) 16 Alpine
 - [Yarn](https://yarnpkg.com/getting-started/install#about-global-installs) berry
-- [Visual Studio Code](https://code.visualstudio.com/Download) 1.58
+- [Visual Studio Code](https://code.visualstudio.com/Download) 1.61
 - [PostgreSQL](https://hub.docker.com/_/postgres) 14 Alpine
 - [Docker](https://www.docker.com/get-started) 20.10
 - Docker Compose 1.29
@@ -32,12 +30,12 @@ $ docker-compose --version
 
 ## Quick start
 
-### 프로젝트 다운로드
+### Download codes
 
 ```bash
-$ git clone 프로젝트-주소
-$ cd 프로젝트-폴더
-$ git checkout 브랜치-이름
+$ git clone https://github.com/teamsindy20/sobok-backend.git
+$ cd sobok-backend
+$ git checkout main
 $ yarn
 ```
 
@@ -45,7 +43,7 @@ $ yarn
 
 그리고 프로젝트 폴더에서 VSCode를 실행하면 오른쪽 아래에 '권장 확장 프로그램 설치' 알림이 뜨는데, 프로젝트에서 권장하는 확장 프로그램(ESLint, Prettier 등)을 모두 설치합니다.
 
-### PostgreSQL 서버 실행
+### Start PostgreSQL server
 
 ```bash
 $ docker volume create {도커볼륨이름}
@@ -71,21 +69,6 @@ $ psql --host={호스트주소} --user={DB계정이름} --dbname={DB이름}
 ```
 
 그리고 PostgreSQL 서버에 접속해서 [`database/sql/initialization.sql`](database/sql/initialization.sql)에 있는 SQL DDL을 실행합니다.
-
-### Redis 서버 실행
-
-```bash
-$ docker run \
-  -d \
-  -p 6379:6379 \
-  --name redis \
-  --restart=always \
-  redis:alpine
-```
-
-GraphQL API 서버를 로컬 Node.js 환경에서 실행하는 경우에만 Redis 서버를 컨테이너 환경에서 따로 실행해줍니다.
-
-반면 GraphQL API 서버를 [컨테이너 환경](#배포-모드-컨테이너)에서 실행하는 경우에는 Redis 서버를 따로 실행하지 않아도 됩니다.
 
 ### Create environment variables
 
@@ -135,13 +118,13 @@ $ docker-compose up --detach --build --force-recreate
 
 (Cloud Run 환경과 동일한) Docker 환경에서 Node.js 서버를 실행합니다.
 
-### Cloud Run 배포
+### Deploy to Cloud Run
 
 Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문에 GitHub로 commit을 push할 때마다 Cloud Run에 자동으로 배포됩니다.
 
 ## Scripts
 
-### `yarn generate-db`
+### `generate-db`
 
 ```bash
 $ export $(grep -v '^#' .env.development | xargs)
@@ -149,3 +132,7 @@ $ yarn generate-db
 ```
 
 PostgreSQL 데이터베이스 구조를 바탕으로 TypeScript 기반 자료형이 담긴 파일을 생성합니다.
+
+### `test`
+
+실행 중인 GraphQL 서버에 테스트용 GraphQL 쿼리를 요청하고 응답을 검사합니다. 이 스크립트를 실행 하기 전에 `localhost` 또는 원격에서 GraphQL API 서버를 실행해야 합니다.

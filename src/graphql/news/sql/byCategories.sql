@@ -1,1 +1,0 @@
-WHERE news.category = ANY($1)

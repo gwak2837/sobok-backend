@@ -8,6 +8,7 @@ scalar NonEmptyString
 scalar PositiveInt
 scalar URL
 scalar UUID
+scalar LastValue
 
 "기본값: 내림차순"
 enum OrderDirection {
@@ -16,6 +17,6 @@ enum OrderDirection {
 
 input Pagination {
   lastId: ID
-  lastValue: NonEmptyString
+  lastValue: LastValue
   limit: PositiveInt!
 }

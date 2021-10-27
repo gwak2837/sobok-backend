@@ -2,12 +2,34 @@ type Query {
   "특정 매장 정보"
   store(id: ID!): Store
 
+  "특정 매장 정보"
+  storeInfo(id: ID!): Store
+
   "동네 및 카테고리별 매장 목록"
-  storesByTownAndCategory(town: NonEmptyString, categories: [NonEmptyString!]): [Store!]
+  storesByTownAndCategories(
+    "기본값: 전국"
+    town: NonEmptyString
+
+    "기본값: 전체"
+    categories: [NonEmptyString!]
+
+    order: StoreOrder
+    pagination: Pagination!
+  ): [Store!]
 
   "매장 버킷에만 해당"
   storesInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Store!]
 
   "해시태그로 매장 검색"
-  searchStores(hashtags: [NonEmptyString!]!): [Store!]
+  searchStores(hashtags: [NonEmptyString!]!, order: StoreOrder, pagination: Pagination!): [Store!]
+}
+
+input StoreOrder {
+  by: StoreOrderBy
+  direction: OrderDirection
+}
+
+"기본값: id"
+enum StoreOrderBy {
+  NAME
 }

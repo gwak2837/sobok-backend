@@ -1,1 +1,0 @@
-WHERE store.town = $1

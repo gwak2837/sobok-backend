@@ -18,24 +18,25 @@ enum BucketType {
 }
 
 type Comment {
-  """
-  from other table - nullable
-  """
-  comment: Comment
   contents: [NonEmptyString!]!
   creationTime: DateTime!
 
   """
-  from other table
+  이 댓글이 달린 피드
   """
   feed: Feed!
   id: ID!
-
-  """
-  nullable
-  """
   imageUrl: URL
   modificationTime: DateTime!
+
+  """
+  이 댓글의 상위 댓글
+  """
+  parentComment: Comment
+
+  """
+  댓글을 작성한 사용자
+  """
   user: User!
 }
 
@@ -47,11 +48,6 @@ scalar EmailAddress
 
 type Feed {
   commentCount: Int!
-
-  """
-  피드에 달린 댓글
-  """
-  comments: [Comment!]
   contents: [NonEmptyString!]!
   creationTime: DateTime!
 
@@ -67,11 +63,6 @@ type Feed {
   """
   isLiked: Boolean!
   likeCount: Int!
-
-  """
-  피드에 태그된 메뉴 목록
-  """
-  menus: [Menu!]
   modificationTime: DateTime!
   rating: NonEmptyString!
 
@@ -89,16 +80,26 @@ type Feed {
 }
 
 """
-기본값: ALL_USER
+기본값: 모든 사용자
 """
 enum FeedOptions {
-  ALL_USER
-
   """
   로그인 필요
   """
   FOLLOWING_USER
   STAR_USER
+}
+
+input FeedOrder {
+  by: FeedOrderBy
+  direction: OrderDirection
+}
+
+"""
+기본값: id
+"""
+enum FeedOrderBy {
+  CREATION_TIME
 }
 
 """
@@ -111,6 +112,8 @@ enum Gender {
 }
 
 scalar JWT
+
+scalar LastValue
 
 scalar Latitude
 
@@ -216,6 +219,18 @@ enum NewsOptions {
   LIKED_STORE
 }
 
+input NewsOrder {
+  by: NewsOrderBy
+  direction: OrderDirection
+}
+
+"""
+기본값: id
+"""
+enum NewsOrderBy {
+  NAME
+}
+
 scalar NonEmptyString
 
 """
@@ -227,7 +242,7 @@ enum OrderDirection {
 
 input Pagination {
   lastId: ID
-  lastValue: NonEmptyString
+  lastValue: LastValue
   limit: PositiveInt!
 }
 
@@ -245,14 +260,19 @@ enum Provider {
 
 type Query {
   """
-  버켓 상세 정보
-  """
-  bucket(id: ID!): Bucket
-
-  """
   메뉴 또는 매장 버킷 리스트를 반환, 로그인 상태 또는 userId를 입력해야 함
   """
   buckets(type: BucketType!, userUniqueName: NonEmptyString): [Bucket!]
+
+  """
+  피드에 달린 댓글
+  """
+  comments: [Comment!]
+
+  """
+  특정 게시글에 달린 댓글
+  """
+  commentsByFeed(feedId: ID!): [Comment]
 
   """
   피드 상세
@@ -262,12 +282,21 @@ type Query {
   """
   특정 매장 피드 목록
   """
-  feedListByStore(storeId: ID!): [Feed!]
+  feedListByStore(order: FeedOrder, pagination: Pagination!, storeId: ID!): [Feed!]
 
   """
   특정 동네 피드 목록
   """
-  feedListByTown(option: FeedOptions, town: NonEmptyString): [Feed!]
+  feedListByTown(
+    option: FeedOptions
+    order: FeedOrder
+    pagination: Pagination!
+
+    """
+    기본값: 전국
+    """
+    town: NonEmptyString
+  ): [Feed!]
 
   """
   이메일 중복 여부 검사
@@ -278,6 +307,36 @@ type Query {
   사용자 고유 이름 중복 여부 검사
   """
   isUniqueNameUnique(uniqueName: NonEmptyString!): Boolean!
+
+  """
+  좋아요 누른 댓글
+  """
+  likedComments: [Comment!]
+
+  """
+  좋아요 누른 피드
+  """
+  likedFeed: [Feed!]
+
+  """
+  좋아요 누른 메뉴
+  """
+  likedMenus: [Menu!]
+
+  """
+  좋아요 누른 소식
+  """
+  likedNews: [News!]
+
+  """
+  좋아요 누른 매장
+  """
+  likedStores: [Store!]
+
+  """
+  좋아요 누른 트렌드
+  """
+  likedTrends: [Trend!]
 
   """
   인증 토큰과 같이 요청하면 사용자 정보를 반환
@@ -295,6 +354,11 @@ type Query {
   menuByName(name: NonEmptyString!, storeId: ID!): Menu
 
   """
+  피드에 태그된 메뉴 목록
+  """
+  menus: [Menu!]
+
+  """
   특정 매장 메뉴 목록
   """
   menusByStore(storeId: ID!): [Menu!]
@@ -302,12 +366,59 @@ type Query {
   """
   특정 동네 및 특정 카테고리 피드 목록
   """
-  menusByTownAndCategory(category: NonEmptyString, town: NonEmptyString): [Menu!]
+  menusByTownAndCategory(
+    """
+    기본값: 전체
+    """
+    category: NonEmptyString
+    order: MenuOrder
+    pagination: Pagination!
+
+    """
+    기본값: 전국
+    """
+    town: NonEmptyString
+  ): [Menu!]
 
   """
   메뉴 버킷에서 메뉴 가져오기
   """
   menusInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Menu!]
+
+  """
+  내가 쓴 댓글
+  """
+  myComments: [Comment!]
+
+  """
+  나를 따르는 다른 사용자
+  """
+  myFollowers: [User!]
+
+  """
+  내가 따르고 있는 다른 사용자
+  """
+  myFollowings: [User!]
+
+  """
+  내 메뉴 버킷 리스트
+  """
+  myMenuBuckets: [Bucket!]
+
+  """
+  내 매장 버킷 리스트
+  """
+  myStoreBuckets: [Bucket!]
+
+  """
+  내가 소유한 매장
+  """
+  myStores: [Store!]
+
+  """
+  내가 쓴 피드
+  """
+  myfeed: [Feed!]
 
   """
   소식 상세
@@ -317,17 +428,38 @@ type Query {
   """
   특정 매장 소식 목록
   """
-  newsListByStore(categories: [NonEmptyString!], storeId: ID!): [News!]
+  newsListByStore(
+    """
+    기본값: 전체
+    """
+    categories: [NonEmptyString!]
+    order: NewsOrder
+    pagination: Pagination!
+    storeId: ID!
+  ): [News!]
 
   """
-  옵션별 여러 매장 소식 목록
+  동네별 매장 소식 목록
   """
-  newsListByTown(categories: [NonEmptyString!], option: NewsOptions, town: NonEmptyString): [News!]
+  newsListByTown(
+    """
+    기본값: 전체
+    """
+    categories: [NonEmptyString!]
+    option: NewsOptions
+    order: NewsOrder
+    pagination: Pagination!
+
+    """
+    기본값: 전국
+    """
+    town: NonEmptyString
+  ): [News!]
 
   """
   해시태그로 메뉴 검색
   """
-  searchFeedList(hashtags: [NonEmptyString!]!): [Feed!]
+  searchFeedList(hashtags: [NonEmptyString!]!, order: FeedOrder, pagination: Pagination!): [Feed!]
 
   """
   해시태그로 메뉴 검색
@@ -337,7 +469,7 @@ type Query {
   """
   해시태그로 매장 검색
   """
-  searchStores(hashtags: [NonEmptyString!]!): [Store!]
+  searchStores(hashtags: [NonEmptyString!]!, order: StoreOrder, pagination: Pagination!): [Store!]
 
   """
   특정 매장 정보
@@ -345,14 +477,36 @@ type Query {
   store(id: ID!): Store
 
   """
+  특정 매장 정보
+  """
+  storeInfo(id: ID!): Store
+
+  """
   동네 및 카테고리별 매장 목록
   """
-  storesByTownAndCategory(categories: [NonEmptyString!], town: NonEmptyString): [Store!]
+  storesByTownAndCategories(
+    """
+    기본값: 전체
+    """
+    categories: [NonEmptyString!]
+    order: StoreOrder
+    pagination: Pagination!
+
+    """
+    기본값: 전국
+    """
+    town: NonEmptyString
+  ): [Store!]
 
   """
   매장 버킷에만 해당
   """
   storesInBucket(bucketId: ID!, userUniqueName: NonEmptyString!): [Store!]
+
+  """
+  대댓글
+  """
+  subComments(id: ID!): [Comment]
 }
 
 input RegisterInput {
@@ -393,18 +547,8 @@ type Store {
   isLiked: Boolean!
   latitude: Latitude!
   longitude: Longitude!
-
-  """
-  매장에서 판매하는 메뉴 목록
-  """
-  menus: [Menu!]!
   modificationTime: DateTime!
   name: NonEmptyString!
-
-  """
-  매장에서 올린 소식 목록
-  """
-  news: [News!]
   registrationNumber: String
   tel: String
   town: NonEmptyString!
@@ -414,6 +558,18 @@ type Store {
   """
   user: User
   userId: ID!
+}
+
+input StoreOrder {
+  by: StoreOrderBy
+  direction: OrderDirection
+}
+
+"""
+기본값: id
+"""
+enum StoreOrderBy {
+  NAME
 }
 
 type Trend {
@@ -435,83 +591,21 @@ scalar UUID
 type User {
   bio: String
   birth: Date
-
-  """
-  내가 쓴 댓글
-  """
-  comments: [Comment!]
   creationTime: DateTime!
   email: EmailAddress!
-
-  """
-  내가 쓴 피드
-  """
-  feed: [Feed!]
-
-  """
-  사용자를 따르는 다른 사용자
-  """
-  followers: [User!]
-
-  """
-  사용자가 따르고 있는 다른 사용자
-  """
-  followings: [User!]
+  feedCount: Int!
+  followerCount: Int!
+  followingCount: Int!
   gender: Gender!
   id: UUID!
   imageUrl: URL
   isEmailVerified: Boolean!
   isStarUser: Boolean!
-
-  """
-  좋아요 누른 댓글
-  """
-  likedComments: [Comment!]
-
-  """
-  좋아요 누른 피드
-  """
-  likedFeed: [Feed!]
-
-  """
-  좋아요 누른 메뉴
-  """
-  likedMenus: [Menu!]
-
-  """
-  좋아요 누른 소식
-  """
-  likedNews: [News!]
-
-  """
-  좋아요 누른 매장
-  """
-  likedStores: [Store!]
-
-  """
-  좋아요 누른 트렌드
-  """
-  likedTrends: [Trend!]
-
-  """
-  내 메뉴 버킷 리스트
-  """
-  menuBuckets: [Bucket!]
   modificationTime: DateTime!
   name: NonEmptyString!
   nickname: String
   phone: NonEmptyString!
   providers: [Provider!]!
-
-  """
-  내 매장 버킷 리스트
-  """
-  storeBuckets: [Bucket!]
-
-  """
-  내가 소유한 매장
-  """
-  stores: [Store!]
   uniqueName: NonEmptyString!
 }
 

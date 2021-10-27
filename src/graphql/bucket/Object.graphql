@@ -1,8 +1,3 @@
-enum BucketType {
-  STORE
-  MENU
-}
-
 type Bucket {
   id: ID!
   creationTime: DateTime!
@@ -14,4 +9,9 @@ type Bucket {
   # from other table
   "버킷 소유자"
   user: User!
+}
+
+enum BucketType {
+  STORE
+  MENU
 }

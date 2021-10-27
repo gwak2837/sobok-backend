@@ -1,3 +1,31 @@
+type Query {
+  "소식 상세"
+  news(id: ID!): News
+
+  "특정 매장 소식 목록"
+  newsListByStore(
+    "기본값: 전체"
+    categories: [NonEmptyString!]
+
+    order: NewsOrder
+    pagination: Pagination!
+    storeId: ID!
+  ): [News!]
+
+  "동네별 매장 소식 목록"
+  newsListByTown(
+    "기본값: 전체"
+    categories: [NonEmptyString!]
+
+    option: NewsOptions
+    order: NewsOrder
+    pagination: Pagination!
+
+    "기본값: 전국"
+    town: NonEmptyString
+  ): [News!]
+}
+
 "기본값: ALL_STORE"
 enum NewsOptions {
   "로그인 필요"
@@ -6,13 +34,12 @@ enum NewsOptions {
   ALL_STORE
 }
 
-type Query {
-  "소식 상세"
-  news(id: ID!): News
+input NewsOrder {
+  by: NewsOrderBy
+  direction: OrderDirection
+}
 
-  "특정 매장 소식 목록"
-  newsListByStore(storeId: ID!, categories: [NonEmptyString!]): [News!]
-
-  "옵션별 여러 매장 소식 목록"
-  newsListByTown(town: NonEmptyString, option: NewsOptions, categories: [NonEmptyString!]): [News!]
+"기본값: id"
+enum NewsOrderBy {
+  NAME
 }

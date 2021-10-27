@@ -1,0 +1,13 @@
+type Query {
+  "특정 게시글에 달린 댓글"
+  commentsByFeed(feedId: ID!): [Comment]
+
+  "대댓글"
+  subComments(id: ID!): [Comment]
+
+  "내가 쓴 댓글"
+  myComments: [Comment!]
+
+  "좋아요 누른 댓글"
+  likedComments: [Comment!]
+}

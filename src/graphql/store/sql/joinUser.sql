@@ -1,1 +1,0 @@
-JOIN "user" ON "user".id = store.user_id
