@@ -22,7 +22,9 @@
     "type": "tsc --pretty --noEmit",
     "pre-push": "yarn test && yarn format && yarn type",
     "generate": "rm -rf src/graphql/generated && graphql-codegen --config codegen.yml",
-    "generate-db": "schemats postgres postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB} -o src/database/${POSTGRES_DB}.ts && prettier src/database/${POSTGRES_DB}.ts --write",
+    "generate-db": "database/generate",
+    "export-db": "database/export",
+    "import-db": "database/import",
     "postinstall": "[ -d '.husky' ] && husky install || true"
   },
   "dependencies": {

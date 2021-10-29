@@ -124,15 +124,22 @@ Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문�
 
 ## Scripts
 
+### `test`
+
+실행 중인 GraphQL 서버에 테스트용 GraphQL 쿼리를 요청하고 응답을 검사합니다. 이 스크립트를 실행 하기 전에 `localhost` 또는 원격에서 GraphQL API 서버를 실행해야 합니다.
+
 ### `generate-db`
 
 ```bash
-$ export $(grep -v '^#' .env.development | xargs)
-$ yarn generate-db
+$ yarn generate-db {환경 변수 파일 위치}
 ```
 
 PostgreSQL 데이터베이스 구조를 바탕으로 TypeScript 기반 자료형이 담긴 파일을 생성합니다.
 
-### `test`
+### `export-db`
 
-실행 중인 GraphQL 서버에 테스트용 GraphQL 쿼리를 요청하고 응답을 검사합니다. 이 스크립트를 실행 하기 전에 `localhost` 또는 원격에서 GraphQL API 서버를 실행해야 합니다.
+```bash
+$ yarn export-db {환경 변수 파일 위치}
+```
+
+PostgreSQL 데이터베이스에 있는 모든 스키마의 모든 테이블을 CSV 파일로 저장합니다.
