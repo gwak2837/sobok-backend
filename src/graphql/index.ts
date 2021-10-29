@@ -11,6 +11,7 @@ import * as menuObjectResolver from './menu/Object'
 import * as menuQueryResolver from './menu/Query'
 import * as newsObjectResolver from './news/Object'
 import * as newsQueryResolver from './news/Query'
+import * as storeMutationResolver from './store/Mutation'
 import * as storeObjectResolver from './store/Object'
 import * as storeQueryResolver from './store/Query'
 import * as userMutationResolver from './user/Mutation'
@@ -28,6 +29,7 @@ const resolversArray = [
   menuQueryResolver,
   newsObjectResolver,
   newsQueryResolver,
+  storeMutationResolver,
   storeObjectResolver,
   storeQueryResolver,
   userMutationResolver,

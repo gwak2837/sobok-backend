@@ -1,0 +1,4 @@
+type Mutation {
+  "해당 매장을 찜하거나 이미 찜한 매장을 해제합니다."
+  toggleLikedStore(id: ID!): Store
+}
