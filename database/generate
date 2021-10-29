@@ -1,0 +1,8 @@
+#!/bin/sh
+export $(grep -v '^#' $1 | xargs)
+
+CONNECTION_STRING="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}"
+echo $CONNECTION_STRING
+
+schemats postgres $CONNECTION_STRING -o src/database/${POSTGRES_DB}.ts
+prettier src/database/${POSTGRES_DB}.ts --write
