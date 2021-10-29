@@ -2,7 +2,7 @@ import { AuthenticationError } from 'apollo-server-errors'
 
 import { ApolloContext } from '../../apollo/server'
 import { poolQuery } from '../../database/postgres'
-import { MutationResolvers } from '../generated/graphql'
+import { MutationResolvers, Store } from '../generated/graphql'
 import toggleLikedStore from './sql/toggleLikedStore.sql'
 
 export const Mutation: MutationResolvers<ApolloContext> = {
@@ -11,6 +11,6 @@ export const Mutation: MutationResolvers<ApolloContext> = {
 
     const { rows } = await poolQuery(toggleLikedStore, [userId, id])
 
-    return rows[0].result
+    return { id, isLiked: rows[0].result } as Store
   },
 }

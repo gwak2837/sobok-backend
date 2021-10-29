@@ -1,4 +1,4 @@
 type Mutation {
-  "해당 매장을 찜하거나 이미 찜한 매장을 헤제합니다. `True`: 찜 성공, `False`: 찜 해제"
-  toggleLikedStore(id: ID!): Boolean!
+  "해당 매장을 찜하거나 이미 찜한 매장을 해제합니다."
+  toggleLikedStore(id: ID!): Store
 }
