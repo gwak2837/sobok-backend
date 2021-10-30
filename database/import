@@ -1,5 +1,12 @@
 #!/bin/sh
-export $(grep -v '^#' ${1-.env.development} | xargs)
+ENV_FILE_PATH=${1-.env.development}
+
+if [ ! -f $ENV_FILE_PATH ]; then
+  echo "$ENV_FILE_PATH 파일이 존재하지 않습니다. $ENV_FILE_PATH 파일을 생성한 후 다시 시도해주세요."
+  exit 1
+fi
+
+export $(grep -v '^#' $ENV_FILE_PATH | xargs)
 
 CONNECTION_STRING="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}"
 echo $CONNECTION_STRING
