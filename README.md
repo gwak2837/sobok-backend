@@ -118,9 +118,15 @@ $ docker-compose up --detach --build --force-recreate
 
 (Cloud Run 환경과 동일한) Docker 환경에서 Node.js 서버를 실행합니다.
 
-### Deploy to Cloud Run
+## Deploy to Cloud Run
 
 Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문에 GitHub로 commit을 push할 때마다 Cloud Run에 자동으로 배포됩니다.
+
+### Connect to Oracle Instance
+
+```shell
+$ ssh -i {비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}
+```
 
 ## Scripts
 
