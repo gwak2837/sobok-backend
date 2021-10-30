@@ -1,1 +1,1 @@
-id;creation_time;modification_time;name;registration_number;town;address;tel;description;business_hours;holidays;image_urls;user_id
+id,creation_time,modification_time,name,registration_number,town,address,tel,description,business_hours,holidays,image_urls,user_id
