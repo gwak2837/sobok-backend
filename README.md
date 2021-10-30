@@ -65,10 +65,10 @@ $ docker run \
 도커 명령어를 통해 PostgreSQL 서버 컨테이너와 볼륨을 생성합니다.
 
 ```bash
-$ psql --host={DB서버주소} --user={DB계정이름} --dbname={DB이름}
+$ yarn import-db {환경 변수 파일 위치}
 ```
 
-` 그리고 PostgreSQL 서버에 접속해서 [`database/sql/initialization.sql`](database/sql/initialization.sql)에 있는 SQL DDL을 실행합니다.
+그리고 PostgreSQL 서버에 접속해서 [`database/initialization.sql`](database/initialization.sql)에 있는 SQL DDL을 실행하고 CSV 파일로 되어 있는 더미데이터를 넣어줍니다.
 
 ### Create environment variables
 
@@ -143,3 +143,11 @@ $ yarn export-db {환경 변수 파일 위치}
 ```
 
 PostgreSQL 데이터베이스에 있는 모든 스키마의 모든 테이블을 CSV 파일로 저장합니다.
+
+### `import-db`
+
+```bash
+$ yarn import-db {환경 변수 파일 위치}
+```
+
+CSV 파일을 PostgreSQL 데이터베이스에 삽입합니다.
