@@ -6,6 +6,7 @@ echo $CONNECTION_STRING
 
 psql $CONNECTION_STRING -f database/initialization.sql
 
+# 테이블 순서 중요
 public_tables=(
   public.user
   public.leader_user_x_follower_user
@@ -32,6 +33,7 @@ public_tables=(
   public.user_x_liked_trend
 )
 
+# 테이블 순서 중요
 deleted_tables=(
   deleted.user
   deleted.hashtag
