@@ -148,7 +148,7 @@ PostgreSQL 데이터베이스 구조를 바탕으로 TypeScript 기반 자료형
 $ yarn export-db {환경 변수 파일 위치}
 ```
 
-PostgreSQL 데이터베이스에 있는 모든 스키마의 모든 테이블을 CSV 파일로 저장합니다.
+PostgreSQL 데이터베이스에 있는 모든 스키마의 모든 테이블을 CSV 파일로 저장합니다. 더미 데이터 CSV 파일을 변경하기 전에 수행합니다.
 
 ### `import-db`
 
