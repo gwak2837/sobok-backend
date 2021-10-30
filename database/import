@@ -4,7 +4,7 @@ export $(grep -v '^#' ${1-.env.development} | xargs)
 CONNECTION_STRING="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}"
 echo $CONNECTION_STRING
 
-psql $CONNECTION_STRING -f database/schema.sql
+psql $CONNECTION_STRING -f database/initialization.sql
 
 public_tables=(
   public.user
