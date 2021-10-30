@@ -7,12 +7,12 @@ echo $CONNECTION_STRING
 rm -r database/schema
 mkdir database/schema
 
-psql $CONNECTION_STRING -Atc "SELECT schema_name FROM information_schema.schemata" |\
-while read SCHEMA; do
-  if [[ "$SCHEMA" != "pg_catalog" && "$SCHEMA" != "information_schema" ]]; then
-    psql $CONNECTION_STRING -Atc "SELECT tablename FROM pg_tables WHERE schemaname='$SCHEMA'" |\
-    while read TBL; do
-      psql $CONNECTION_STRING -c "COPY $SCHEMA.$TBL TO STDOUT WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" > database/schema/$SCHEMA.$TBL.csv
-    done
-  fi
-done
+psql $CONNECTION_STRING -Atc "SELECT schema_name FROM information_schema.schemata" |
+  while read SCHEMA; do
+    if [[ "$SCHEMA" != "pg_catalog" && "$SCHEMA" != "information_schema" ]]; then
+      psql $CONNECTION_STRING -Atc "SELECT tablename FROM pg_tables WHERE schemaname='$SCHEMA'" |
+        while read TBL; do
+          psql $CONNECTION_STRING -c "COPY $SCHEMA.$TBL TO STDOUT WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" >database/schema/$SCHEMA.$TBL.csv
+        done
+    fi
+  done
