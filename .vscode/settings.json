@@ -29,5 +29,13 @@
   "sqltools.format": {
     "reservedWordCase": "upper",
     "linesBetweenQueries": 2
+  },
+
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+
+  "[dockerfile]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
   }
 }

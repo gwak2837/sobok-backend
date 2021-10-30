@@ -1,0 +1,52 @@
+#!/bin/sh
+export $(grep -v '^#' ${1-.env.development} | xargs)
+
+CONNECTION_STRING="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}"
+echo $CONNECTION_STRING
+
+psql $CONNECTION_STRING -f database/initialization.sql
+
+public_tables=(
+  public.user
+  public.leader_user_x_follower_user
+  public.hashtag
+  public.store
+  public.store_x_hashtag
+  public.menu
+  public.menu_x_hashtag
+  public.news
+  public.news_x_tagged_menu
+  public.trend
+  public.feed
+  public.feed_x_hashtag
+  public.feed_x_rated_menu
+  public.comment
+  public.bucket
+  public.bucket_x_menu
+  public.bucket_x_store
+  public.user_x_liked_comment
+  public.user_x_liked_feed
+  public.user_x_liked_menu
+  public.user_x_liked_news
+  public.user_x_liked_store
+  public.user_x_liked_trend
+)
+
+deleted_tables=(
+  deleted.user
+  deleted.hashtag
+  deleted.store
+  deleted.menu
+  deleted.news
+  deleted.feed
+  deleted.comment
+  deleted.bucket
+)
+
+for public_table in "${public_tables[@]}"; do
+  psql $CONNECTION_STRING -c "COPY ${public_table} FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/schema/${public_table}.csv
+done
+
+for deleted_table in "${deleted_tables[@]}"; do
+  psql $CONNECTION_STRING -c "COPY ${deleted_table} FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/schema/${deleted_table}.csv
+done
