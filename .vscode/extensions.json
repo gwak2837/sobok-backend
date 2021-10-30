@@ -8,6 +8,7 @@
     "ms-azuretools.vscode-docker",
     "mtxr.sqltools",
     "arcanis.vscode-zipfs",
-    "amatiasq.sort-imports"
+    "amatiasq.sort-imports",
+    "foxundermoon.shell-format"
   ]
 }
