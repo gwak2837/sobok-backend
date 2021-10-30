@@ -44,9 +44,13 @@ deleted_tables=(
 )
 
 for public_table in "${public_tables[@]}"; do
-  psql $CONNECTION_STRING -c "COPY ${public_table} FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/schema/${public_table}.csv
+  echo ${public_table}
+  columns=$(head -1 database/data/${public_table}.csv)
+  psql $CONNECTION_STRING -c "COPY ${public_table}(${columns}) FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/data/${public_table}.csv
 done
 
 for deleted_table in "${deleted_tables[@]}"; do
-  psql $CONNECTION_STRING -c "COPY ${deleted_table} FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/schema/${deleted_table}.csv
+  echo ${deleted_table}
+  columns=$(head -1 database/data/${deleted_table}.csv)
+  psql $CONNECTION_STRING -c "COPY ${deleted_table}(${columns}) FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/data/${deleted_table}.csv
 done
