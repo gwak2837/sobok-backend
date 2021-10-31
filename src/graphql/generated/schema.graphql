@@ -181,6 +181,11 @@ type Mutation {
   register(input: RegisterInput!): UserAuthentication
 
   """
+  해당 매장을 찜하거나 이미 찜한 매장을 해제합니다.
+  """
+  toggleLikedStore(id: ID!): Store
+
+  """
   회원탈퇴 시 사용자 정보가 모두 초기화됩
   """
   unregister: Boolean!

@@ -4,10 +4,12 @@ import { DatabaseQueryError } from '../apollo/errors'
 import { formatDate } from '../utils'
 
 export const pool = new Pool({
-  host: process.env.POSTGRES_HOST,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  database: process.env.POSTGRES_DB,
+  connectionString: process.env.CONNECTION_STRING,
+  ...(process.env.NODE_ENV === 'production' && {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  }),
 })
 
 export async function poolQuery(query: string, values?: unknown[]) {

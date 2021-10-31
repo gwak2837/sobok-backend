@@ -1,0 +1,13 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+CURRENT_BRANCH_NAME=$(git branch --show-current)
+
+if [ $CURRENT_BRANCH_NAME == "database" ]; then
+  if [ -f .env ]; then
+    yarn export-db .env
+  else
+    echo "Error: .env 파일이 존재하지 않습니다. .env 파일을 생성한 후 'git checkout database'를 다시 실행해주세요."
+    exit 1
+  fi
+fi

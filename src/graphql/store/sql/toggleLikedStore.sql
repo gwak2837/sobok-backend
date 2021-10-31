@@ -1,0 +1,1 @@
+CALL toggle_liked_store($1, $2);
