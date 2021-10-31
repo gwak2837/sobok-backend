@@ -5,9 +5,11 @@ import { formatDate } from '../utils'
 
 export const pool = new Pool({
   connectionString: process.env.CONNECTION_STRING,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ...(process.env.NODE_ENV === 'production' && {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  }),
 })
 
 export async function poolQuery(query: string, values?: unknown[]) {
