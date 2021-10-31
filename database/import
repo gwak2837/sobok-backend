@@ -1,11 +1,18 @@
 #!/bin/sh
-export $(grep -v '^#' ${1-.env.development} | xargs)
+ENV_FILE_PATH=${1-.env.development}
 
-CONNECTION_STRING="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}"
+if [ ! -f $ENV_FILE_PATH ]; then
+  echo "$ENV_FILE_PATH 파일이 존재하지 않습니다. $ENV_FILE_PATH 파일을 생성한 후 다시 시도해주세요."
+  exit 1
+fi
+
+export $(grep -v '^#' $ENV_FILE_PATH | xargs)
+
 echo $CONNECTION_STRING
 
 psql $CONNECTION_STRING -f database/initialization.sql
 
+# 테이블 순서 중요
 public_tables=(
   public.user
   public.leader_user_x_follower_user
@@ -32,6 +39,7 @@ public_tables=(
   public.user_x_liked_trend
 )
 
+# 테이블 순서 중요
 deleted_tables=(
   deleted.user
   deleted.hashtag
@@ -44,9 +52,13 @@ deleted_tables=(
 )
 
 for public_table in "${public_tables[@]}"; do
-  psql $CONNECTION_STRING -c "COPY ${public_table} FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/schema/${public_table}.csv
+  echo ${public_table}
+  columns=$(head -1 database/data/${public_table}.csv)
+  psql $CONNECTION_STRING -c "COPY ${public_table}(${columns}) FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/data/${public_table}.csv
 done
 
 for deleted_table in "${deleted_tables[@]}"; do
-  psql $CONNECTION_STRING -c "COPY ${deleted_table} FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/schema/${deleted_table}.csv
+  echo ${deleted_table}
+  columns=$(head -1 database/data/${deleted_table}.csv)
+  psql $CONNECTION_STRING -c "COPY ${deleted_table}(${columns}) FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/data/${deleted_table}.csv
 done

@@ -145,7 +145,7 @@ export type Mutation = {
   logout: Scalars['Boolean']
   /** 회원가입에 필요한 정보를 주면 성공했을 때 인증 토큰을 반환함 */
   register?: Maybe<UserAuthentication>
-  /** 해당 매장을 찜하거나 이미 찜한 매장을 헤제합니다. `True`: 찜 성공, `False`: 찜 해제 */
+  /** 해당 매장을 찜하거나 이미 찜한 매장을 해제합니다. */
   toggleLikedStore?: Maybe<Store>
   /** 회원탈퇴 시 사용자 정보가 모두 초기화됩 */
   unregister: Scalars['Boolean']

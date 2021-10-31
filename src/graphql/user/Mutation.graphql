@@ -1,3 +1,17 @@
+type Mutation {
+  "고유 이름 또는 이메일과 비밀번호를 전송하면 JWT 인증 토큰을 반환함"
+  login(uniqueNameOrEmail: NonEmptyString!, passwordHash: NonEmptyString!): UserAuthentication
+
+  "JWT 인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환함"
+  logout: Boolean!
+
+  "회원가입에 필요한 정보를 주면 성공했을 때 인증 토큰을 반환함"
+  register(input: RegisterInput!): UserAuthentication
+
+  "회원탈퇴 시 사용자 정보가 모두 초기화됩"
+  unregister: Boolean!
+}
+
 input RegisterInput {
   uniqueName: NonEmptyString!
   email: EmailAddress!
@@ -15,18 +29,4 @@ input RegisterInput {
 type UserAuthentication {
   userUniqueName: NonEmptyString!
   jwt: JWT!
-}
-
-type Mutation {
-  "고유 이름 또는 이메일과 비밀번호를 전송하면 JWT 인증 토큰을 반환함"
-  login(uniqueNameOrEmail: NonEmptyString!, passwordHash: NonEmptyString!): UserAuthentication
-
-  "JWT 인증 토큰과 같이 요청하면 로그아웃 성공 여부를 반환함"
-  logout: Boolean!
-
-  "회원가입에 필요한 정보를 주면 성공했을 때 인증 토큰을 반환함"
-  register(input: RegisterInput!): UserAuthentication
-
-  "회원탈퇴 시 사용자 정보가 모두 초기화됩"
-  unregister: Boolean!
 }

@@ -21,8 +21,8 @@ GRANT ALL ON SCHEMA deleted TO sindy;
 -- logout_time 이전 JWT 토큰은 유효하지 않음
 CREATE TABLE "user" (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   unique_name varchar(50) NOT NULL UNIQUE,
   email varchar(50) NOT NULL UNIQUE,
   name varchar(50) NOT NULL,
@@ -42,14 +42,14 @@ CREATE TABLE "user" (
   naver_oauth text UNIQUE,
   kakao_oauth text UNIQUE,
   password_hash text NOT NULL,
-  logout_time timestamptz NOT NULL DEFAULT NOW()
+  logout_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- user_id: 매장 소유자
 CREATE TABLE store (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   name varchar(50) NOT NULL,
   town varchar(20) NOT NULL,
   address varchar(50) NOT NULL,
@@ -70,34 +70,36 @@ CREATE TABLE store (
 -- store_id: 메뉴가 속한 매장
 CREATE TABLE menu (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   name varchar(50) NOT NULL,
   price int NOT NULL,
   is_sold_out boolean NOT NULL,
   image_urls text [] NOT NULL,
   category int NOT NULL,
+  description text,
+  --
   store_id bigint NOT NULL REFERENCES store ON DELETE CASCADE
 );
 
 CREATE TABLE news (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   title varchar(100) NOT NULL,
   contents text [] NOT NULL,
   category int NOT NULL,
-  store_id bigint NOT NULL REFERENCES store ON DELETE CASCADE,
+  image_urls text [],
   --
-  image_urls text []
+  store_id bigint NOT NULL REFERENCES store ON DELETE CASCADE
 );
 
 -- user_id: 피드를 작성한 사용자
 -- store_id: 피드에 태그된 매장
 CREATE TABLE feed (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   rating int NOT NULL,
   contents text [] NOT NULL,
   image_urls text [] NOT NULL,
@@ -109,8 +111,8 @@ CREATE TABLE feed (
 
 CREATE TABLE trend (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   category int NOT NULL,
   title varchar(100) NOT NULL,
   contents text [] NOT NULL,
@@ -119,8 +121,8 @@ CREATE TABLE trend (
 
 CREATE TABLE "comment" (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   contents text [] NOT NULL,
   image_url text,
   --
@@ -132,8 +134,8 @@ CREATE TABLE "comment" (
 -- type: 0 = 매장, 1 = 메뉴
 CREATE TABLE bucket (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   name varchar(50) NOT NULL,
   "type" int NOT NULL,
   user_id uuid NOT NULL REFERENCES "user" ON DELETE CASCADE
@@ -141,14 +143,14 @@ CREATE TABLE bucket (
 
 CREATE TABLE hashtag (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   name varchar(50) NOT NULL UNIQUE
 );
 
 CREATE TABLE user_x_liked_store (
   user_id uuid REFERENCES "user" ON DELETE CASCADE,
   store_id bigint REFERENCES store ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (user_id, store_id)
 );
@@ -156,7 +158,7 @@ CREATE TABLE user_x_liked_store (
 CREATE TABLE user_x_liked_menu (
   user_id uuid REFERENCES "user" ON DELETE CASCADE,
   menu_id bigint REFERENCES menu ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (user_id, menu_id)
 );
@@ -164,7 +166,7 @@ CREATE TABLE user_x_liked_menu (
 CREATE TABLE user_x_liked_feed (
   user_id uuid REFERENCES "user" ON DELETE CASCADE,
   feed_id bigint REFERENCES feed ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (user_id, feed_id)
 );
@@ -172,7 +174,7 @@ CREATE TABLE user_x_liked_feed (
 CREATE TABLE user_x_liked_news (
   user_id uuid REFERENCES "user" ON DELETE CASCADE,
   news_id bigint REFERENCES news ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (user_id, news_id)
 );
@@ -180,7 +182,7 @@ CREATE TABLE user_x_liked_news (
 CREATE TABLE user_x_liked_comment (
   user_id uuid REFERENCES "user" ON DELETE CASCADE,
   comment_id bigint REFERENCES "comment" ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (user_id, comment_id)
 );
@@ -188,7 +190,7 @@ CREATE TABLE user_x_liked_comment (
 CREATE TABLE user_x_liked_trend (
   user_id uuid REFERENCES "user" ON DELETE CASCADE,
   trend_id bigint REFERENCES trend ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (user_id, trend_id)
 );
@@ -196,7 +198,7 @@ CREATE TABLE user_x_liked_trend (
 CREATE TABLE bucket_x_store (
   bucket_id bigint REFERENCES bucket ON DELETE CASCADE,
   store_id bigint REFERENCES store ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (bucket_id, store_id)
 );
@@ -204,7 +206,7 @@ CREATE TABLE bucket_x_store (
 CREATE TABLE bucket_x_menu (
   bucket_id bigint REFERENCES bucket ON DELETE CASCADE,
   menu_id bigint REFERENCES menu ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (bucket_id, menu_id)
 );
@@ -212,7 +214,7 @@ CREATE TABLE bucket_x_menu (
 CREATE TABLE leader_user_x_follower_user (
   leader_user_id uuid REFERENCES "user" ON DELETE CASCADE,
   follower_user_id uuid REFERENCES "user" ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (leader_user_id, follower_user_id)
 );
@@ -222,7 +224,7 @@ CREATE TABLE leader_user_x_follower_user (
 CREATE TABLE news_x_tagged_menu (
   news_id bigint REFERENCES news ON DELETE CASCADE,
   menu_id bigint REFERENCES menu ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   x int NOT NULL,
   y int NOT NULL,
   nth_image int NOT NULL,
@@ -235,7 +237,7 @@ CREATE TABLE news_x_tagged_menu (
 CREATE TABLE feed_x_rated_menu (
   feed_id bigint REFERENCES feed ON DELETE CASCADE,
   menu_id bigint REFERENCES menu ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   x int NOT NULL,
   y int NOT NULL,
   nth_image int NOT NULL,
@@ -246,7 +248,7 @@ CREATE TABLE feed_x_rated_menu (
 CREATE TABLE store_x_hashtag (
   store_id bigint REFERENCES store ON DELETE CASCADE,
   hashtag_id bigint REFERENCES hashtag ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (store_id, hashtag_id)
 );
@@ -254,7 +256,7 @@ CREATE TABLE store_x_hashtag (
 CREATE TABLE menu_x_hashtag (
   menu_id bigint REFERENCES menu ON DELETE CASCADE,
   hashtag_id bigint REFERENCES hashtag ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (menu_id, hashtag_id)
 );
@@ -262,16 +264,16 @@ CREATE TABLE menu_x_hashtag (
 CREATE TABLE feed_x_hashtag (
   feed_id bigint REFERENCES feed ON DELETE CASCADE,
   hashtag_id bigint REFERENCES hashtag ON DELETE CASCADE,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   --
   PRIMARY KEY (feed_id, hashtag_id)
 );
 
 CREATE TABLE deleted."user" (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
-  deletion_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  deletion_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   email varchar(50) NOT NULL UNIQUE,
   name varchar(50) NOT NULL,
   phone varchar(20),
@@ -290,8 +292,8 @@ CREATE TABLE deleted."user" (
 
 CREATE TABLE deleted.store (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   name varchar(50) NOT NULL,
   registration_number char(10) NOT NULL UNIQUE,
   town varchar(20) NOT NULL,
@@ -307,18 +309,19 @@ CREATE TABLE deleted.store (
 
 CREATE TABLE deleted.menu (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   name varchar(50) NOT NULL,
   price int NOT NULL,
   image_urls text [] NOT NULL,
+  description text,
   store_id bigint NOT NULL REFERENCES deleted.store ON DELETE CASCADE
 );
 
 CREATE TABLE deleted.news (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   title varchar(100) NOT NULL,
   contents text [] NOT NULL,
   category int NOT NULL,
@@ -331,8 +334,8 @@ CREATE TABLE deleted.news (
 -- store_id: 피드에 태그된 매장
 CREATE TABLE deleted.feed (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   rating int NOT NULL,
   contents text [] NOT NULL,
   image_urls text [] NOT NULL,
@@ -343,8 +346,8 @@ CREATE TABLE deleted.feed (
 
 CREATE TABLE deleted.comment (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   contents text [] NOT NULL,
   user_id uuid NOT NULL REFERENCES deleted."user" ON DELETE CASCADE,
   feed_id bigint NOT NULL REFERENCES deleted.feed ON DELETE CASCADE
@@ -352,8 +355,8 @@ CREATE TABLE deleted.comment (
 
 CREATE TABLE deleted.bucket (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
-  modification_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modification_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   name varchar(50) NOT NULL,
   "type" int NOT NULL,
   user_id uuid NOT NULL REFERENCES "user" ON DELETE CASCADE
@@ -361,7 +364,7 @@ CREATE TABLE deleted.bucket (
 
 CREATE TABLE deleted.hashtag (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  creation_time timestamptz NOT NULL DEFAULT NOW(),
+  creation_time timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   name varchar(50) NOT NULL UNIQUE
 );
 
