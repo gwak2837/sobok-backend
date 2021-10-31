@@ -45,27 +45,58 @@ $ yarn
 
 ### Start PostgreSQL server
 
-```bash
-$ docker volume create {도커볼륨이름}
-$ docker run \
+```shell
+DOCKER_VOLUME_NAME=도커볼륨이름
+POSTGRES_HOST=DB서버주소
+POSTGRES_USER=DB계정이름
+POSTGRES_PASSWORD=DB계정암호
+POSTGRES_DB=DB이름
+
+# generate the server.key and server.crt https://www.postgresql.org/docs/14/ssl-tcp.html
+openssl req -new -nodes -text -out root.csr -keyout root.key -subj "/CN=$POSTGRES_HOST"
+chmod og-rwx root.key
+
+openssl x509 -req -in root.csr -text -days 3650 \
+  -extfile /etc/ssl/openssl.cnf -extensions v3_ca \
+  -signkey root.key -out root.crt
+
+openssl req -new -nodes -text -out server.csr \
+  -keyout server.key -subj "/CN=$POSTGRES_HOST"
+
+openssl x509 -req -in server.csr -text -days 365 \
+  -CA root.crt -CAkey root.key -CAcreateserial \
+  -out server.crt
+
+# set postgres (alpine) user as owner of the server.key and permissions to 600
+sudo chown 0:70 server.key
+sudo chmod 640 server.key
+
+# start a postgres docker container, mapping the .key and .crt into the image.
+sudo docker volume create $DOCKER_VOLUME_NAME
+sudo docker run \
   -d \
-  -e POSTGRES_USER={DB계정이름} \
-  -e POSTGRES_PASSWORD={DB계정비밀번호} \
-  -e POSTGRES_DB={DB이름} \
+  -e POSTGRES_USER=$POSTGRES_USER \
+  -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+  -e POSTGRES_DB=$POSTGRES_DB \
   -e LANG=ko_KR.utf8 \
   -e LC_COLLATE=C \
   -e POSTGRES_INITDB_ARGS=--data-checksums \
   -p 5432:5432 \
-  -v {도커볼륨이름}:/var/lib/postgresql/data \
+  -v "$PWD/server.crt:/var/lib/postgresql/server.crt:ro" \
+  -v "$PWD/server.key:/var/lib/postgresql/server.key:ro" \
+  -v $DOCKER_VOLUME_NAME:/var/lib/postgresql/data \
   --name postgres \
   --restart=always \
-  postgres:14-alpine
+  postgres:14-alpine \
+  -c ssl=on \
+  -c ssl_cert_file=/var/lib/postgresql/server.crt \
+  -c ssl_key_file=/var/lib/postgresql/server.key
 ```
 
 도커 명령어를 통해 PostgreSQL 서버 컨테이너와 볼륨을 생성합니다.
 
 ```bash
-$ yarn import-db {환경 변수 파일 위치}
+yarn import-db 환경변수파일위치
 ```
 
 그리고 PostgreSQL 서버에 접속해서 [`database/initialization.sql`](database/initialization.sql)에 있는 SQL DDL을 실행하고 CSV 파일로 되어 있는 더미데이터를 넣어줍니다.
@@ -73,12 +104,11 @@ $ yarn import-db {환경 변수 파일 위치}
 ### Create environment variables
 
 ```
-POSTGRES_HOST=
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-POSTGRES_DB=
+PORT=4000
 
-JWT_SECRET_KEY=
+CONNECTION_STRING=postgresql://DB계정이름:DB계정암호@DB서버주소:포트/DB이름
+
+JWT_SECRET_KEY=임의의문자열
 
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
@@ -89,7 +119,8 @@ FACEBOOK_APP_SECRET=
 FRONTEND_URL=
 BACKEND_URL=
 
-PORT=4000
+# for yarn generate-db
+POSTGRES_DB=DB이름
 ```
 
 루트 폴더에 `.env`, `.env.development`, `.env.test` 파일을 생성하고 프로젝트에서 사용되는 환경 변수를 설정합니다.
@@ -126,6 +157,10 @@ Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문�
 
 ```shell
 $ ssh -i {비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}
+```
+
+```shell
+$ scp -i {비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}:{CA 인증서 경로}/root.crt ./
 ```
 
 ## Scripts
