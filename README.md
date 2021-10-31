@@ -43,6 +43,30 @@ $ yarn
 
 그리고 프로젝트 폴더에서 VSCode를 실행하면 오른쪽 아래에 '권장 확장 프로그램 설치' 알림이 뜨는데, 프로젝트에서 권장하는 확장 프로그램(ESLint, Prettier 등)을 모두 설치합니다.
 
+### Create environment variables
+
+```
+PORT=4000
+
+CONNECTION_STRING=postgresql://DB계정이름:DB계정암호@DB서버주소:포트/DB이름
+
+JWT_SECRET_KEY=임의의문자열
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+FACEBOOK_APP_ID=
+FACEBOOK_APP_SECRET=
+
+FRONTEND_URL=
+BACKEND_URL=
+
+# for yarn generate-db
+POSTGRES_DB=DB이름
+```
+
+루트 폴더에 `.env`, `.env.development`, `.env.test` 파일을 생성하고 프로젝트에서 사용되는 환경 변수를 설정합니다.
+
 ### Start PostgreSQL server
 
 ```shell
@@ -51,6 +75,25 @@ POSTGRES_HOST=DB서버주소
 POSTGRES_USER=DB계정이름
 POSTGRES_PASSWORD=DB계정암호
 POSTGRES_DB=DB이름
+
+# Install Docker Engine on Ubuntu https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+sudo apt remove docker docker-engine docker.io containerd runc
+
+sudo apt update
+sudo apt install \
+  ca-certificates \
+  curl \
+  gnupg \
+  lsb-release
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io
 
 # generate the server.key and server.crt https://www.postgresql.org/docs/14/ssl-tcp.html
 openssl req -new -nodes -text -out root.csr -keyout root.key -subj "/CN=$POSTGRES_HOST"
@@ -101,30 +144,6 @@ yarn import-db 환경변수파일위치
 
 그리고 PostgreSQL 서버에 접속해서 [`database/initialization.sql`](database/initialization.sql)에 있는 SQL DDL을 실행하고 CSV 파일로 되어 있는 더미데이터를 넣어줍니다.
 
-### Create environment variables
-
-```
-PORT=4000
-
-CONNECTION_STRING=postgresql://DB계정이름:DB계정암호@DB서버주소:포트/DB이름
-
-JWT_SECRET_KEY=임의의문자열
-
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-
-FACEBOOK_APP_ID=
-FACEBOOK_APP_SECRET=
-
-FRONTEND_URL=
-BACKEND_URL=
-
-# for yarn generate-db
-POSTGRES_DB=DB이름
-```
-
-루트 폴더에 `.env`, `.env.development`, `.env.test` 파일을 생성하고 프로젝트에서 사용되는 환경 변수를 설정합니다.
-
 ### Start Node.js server
 
 ```shell
@@ -149,19 +168,25 @@ $ docker-compose up --detach --build --force-recreate
 
 (Cloud Run 환경과 동일한) Docker 환경에서 Node.js 서버를 실행합니다.
 
-## Deploy to Cloud Run
+## Cloud
+
+### GCP Cloud Run
 
 Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문에 GitHub로 commit을 push할 때마다 Cloud Run에 자동으로 배포됩니다.
 
-### Connect to Oracle Instance
+### Oracle Instance
 
 ```shell
-$ ssh -i {비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}
+$ ssh -i {Oracle Instance 비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}
 ```
 
+SSH 접속하기
+
 ```shell
-$ scp -i {비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}:{CA 인증서 경로}/root.crt ./
+$ scp -i {Oracle Instance 비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}:{CA 인증서 경로}/root.crt ./
 ```
+
+SCP로 파일 다운로드 받기
 
 ## Scripts
 
