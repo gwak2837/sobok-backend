@@ -22,9 +22,6 @@ module.exports = {
       },
     ],
   },
-  node: {
-    __dirname: true,
-  },
   output: {
     filename: 'index.js',
     path: resolve(__dirname, 'dist'),
