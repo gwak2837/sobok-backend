@@ -136,7 +136,7 @@ sudo docker run \
   -c ssl_key_file=/var/lib/postgresql/server.key
 ```
 
-도커 명령어를 통해 PostgreSQL 서버 컨테이너와 볼륨을 생성합니다.
+도커를 통해 PostgreSQL 컨테이너와 도커 볼륨을 생성하고, OpenSSL을 이용해 자체 서명된 인증서를 생성해서 SSL 연결을 활성화합니다.
 
 ```bash
 yarn import-db 환경변수파일위치
