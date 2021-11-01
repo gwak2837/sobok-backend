@@ -33,7 +33,7 @@ $ docker-compose --version
 ### Download codes
 
 ```bash
-$ git clone https://github.com/teamsindy20/sobok-backend.git
+$ git clone https://github.com/rmfpdlxmtidl/sobok-backend.git
 $ cd sobok-backend
 $ git checkout main
 $ yarn
