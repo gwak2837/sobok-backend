@@ -12,7 +12,7 @@ COPY .yarnrc.yml codegen.yml package.json tsconfig.json webpack.config.js yarn.l
 RUN yarn && yarn build
 
 # Install only dependency packages
-FROM node:16-alpine
+FROM node:16-alpine AS runner
 
 ENV NODE_ENV=production
 
@@ -22,4 +22,4 @@ COPY --from=builder /server/dist dist
 
 EXPOSE $PORT
 
-ENTRYPOINT ["node", "dist"]
+ENTRYPOINT ["node", "dist/index.js"]
