@@ -10,7 +10,7 @@ export const pool = new Pool({
   ...(process.env.NODE_ENV === 'production' && {
     ssl: {
       rejectUnauthorized: true,
-      ca: process.env.CA_CERTIFICATE,
+      ca: `-----BEGIN CERTIFICATE-----\n${process.env.CA_CERTIFICATE}\n-----END CERTIFICATE-----`,
       checkServerIdentity: () => {
         return undefined
       },
