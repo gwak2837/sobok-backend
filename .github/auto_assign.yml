@@ -6,6 +6,7 @@ addAssignees: author
 
 # 리뷰어 명단
 reviewers:
+  - rmfpdlxmtidl
 
 # 최소 리뷰어 등록 수
 # default: 0 => 리뷰어 명단에 있는 모든 리뷰어 등록

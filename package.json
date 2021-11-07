@@ -2,15 +2,15 @@
   "name": "sobok-backend",
   "version": "0.1.0",
   "description": "sobok-backend",
-  "homepage": "https://github.com/teamsindy20/sobok-backend#readme",
+  "homepage": "https://github.com/rmfpdlxmtidl/sobok-backend#readme",
   "bugs": {
-    "url": "https://github.com/teamsindy20/sobok-backend/issues",
+    "url": "https://github.com/rmfpdlxmtidl/sobok-backend/issues",
     "email": "teamsindy20@gmail.com"
   },
   "license": "GPL-3.0-only",
   "author": "sindy <teamsindy20@gmail.com>",
   "main": "dist/index.js",
-  "repository": "https://github.com/teamsindy20/sobok-backend.git",
+  "repository": "https://github.com/rmfpdlxmtidl/sobok-backend.git",
   "scripts": {
     "clean": "rm -rf .yarn/cache .yarn/unplugged .yarn/install-state.gz dist .pnp.cjs yarn.lock",
     "dev": "NODE_ENV=development concurrently \"webpack\" \"nodemon -r dotenv/config dist/index.js dotenv_config_path=.env.development --trace-warnings\"",

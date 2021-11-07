@@ -62,3 +62,5 @@ for deleted_table in "${deleted_tables[@]}"; do
   columns=$(head -1 database/data/${deleted_table}.csv)
   psql $CONNECTION_STRING -c "COPY ${deleted_table}(${columns}) FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/data/${deleted_table}.csv
 done
+
+./database/export $ENV_FILE_PATH

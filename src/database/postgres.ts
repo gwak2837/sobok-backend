@@ -7,7 +7,11 @@ export const pool = new Pool({
   connectionString: process.env.CONNECTION_STRING,
   ...(process.env.NODE_ENV === 'production' && {
     ssl: {
-      rejectUnauthorized: false,
+      rejectUnauthorized: true,
+      ca: process.env.CA_CERTIFICATE,
+      checkServerIdentity: () => {
+        return undefined
+      },
     },
   }),
 })
@@ -26,12 +30,3 @@ export async function poolQuery(query: string, values?: unknown[]) {
     }
   })
 }
-
-// export async function transactionQuery(client: PoolClient, sql: string, values?: unknown[]) {
-//   return client.query(sql, values).catch(async (error) => {
-//     await client.query('ROLLBACK')
-//     client.release()
-//     if (process.env.NODE_ENV === 'production') throw new DatabaseQueryError('Database query error')
-//     else throw new DatabaseQueryError(error)
-//   })
-// }

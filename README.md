@@ -33,7 +33,7 @@ $ docker-compose --version
 ### Download codes
 
 ```bash
-$ git clone https://github.com/teamsindy20/sobok-backend.git
+$ git clone https://github.com/rmfpdlxmtidl/sobok-backend.git
 $ cd sobok-backend
 $ git checkout main
 $ yarn
@@ -69,13 +69,15 @@ POSTGRES_DB=DB이름
 
 ### Start PostgreSQL server
 
-```shell
-DOCKER_VOLUME_NAME=도커볼륨이름
-POSTGRES_HOST=DB서버주소
-POSTGRES_USER=DB계정이름
-POSTGRES_PASSWORD=DB계정암호
-POSTGRES_DB=DB이름
+#### Connect to Oracle Instance with SSH
 
+```shell
+$ ssh -i {Oracle Instance 비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}
+```
+
+#### Install Docker
+
+```shell
 # Install Docker Engine on Ubuntu https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
 sudo apt remove docker docker-engine docker.io containerd runc
 
@@ -94,9 +96,21 @@ echo \
 
 sudo apt update
 sudo apt install docker-ce docker-ce-cli containerd.io
+```
+
+#### Run PostgreSQL container
+
+```shell
+# Set variables
+DOCKER_VOLUME_NAME=도커볼륨이름
+POSTGRES_HOST=DB서버주소
+POSTGRES_USER=DB계정이름
+POSTGRES_PASSWORD=DB계정암호
+POSTGRES_DB=DB이름
 
 # generate the server.key and server.crt https://www.postgresql.org/docs/14/ssl-tcp.html
-openssl req -new -nodes -text -out root.csr -keyout root.key -subj "/CN=$POSTGRES_HOST"
+openssl req -new -nodes -text -out root.csr \
+  -keyout root.key -subj "/CN=Sindy"
 chmod og-rwx root.key
 
 openssl x509 -req -in root.csr -text -days 3650 \
@@ -114,6 +128,25 @@ openssl x509 -req -in server.csr -text -days 365 \
 sudo chown 0:70 server.key
 sudo chmod 640 server.key
 
+# set client connection policy
+echo "
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# 'local' is for Unix domain socket connections only
+local   all             all                                     trust
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            trust
+# IPv6 local connections:
+host    all             all             ::1/128                 trust
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+local   replication     all                                     trust
+host    replication     all             127.0.0.1/32            trust
+host    replication     all             ::1/128                 trust
+
+hostssl all all all scram-sha-256
+" > pg_hba.conf
+
 # start a postgres docker container, mapping the .key and .crt into the image.
 sudo docker volume create $DOCKER_VOLUME_NAME
 sudo docker run \
@@ -121,28 +154,49 @@ sudo docker run \
   -e POSTGRES_USER=$POSTGRES_USER \
   -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
   -e POSTGRES_DB=$POSTGRES_DB \
-  -e LANG=ko_KR.utf8 \
+  -e LANG=ko_KR.UTF8 \
   -e LC_COLLATE=C \
   -e POSTGRES_INITDB_ARGS=--data-checksums \
+  --name postgres \
   -p 5432:5432 \
+  --restart=always \
+  --shm-size=256MB \
   -v "$PWD/server.crt:/var/lib/postgresql/server.crt:ro" \
   -v "$PWD/server.key:/var/lib/postgresql/server.key:ro" \
+  -v "$PWD/pg_hba.conf:/var/lib/postgresql/pg_hba.conf" \
   -v $DOCKER_VOLUME_NAME:/var/lib/postgresql/data \
-  --name postgres \
-  --restart=always \
   postgres:14-alpine \
   -c ssl=on \
   -c ssl_cert_file=/var/lib/postgresql/server.crt \
-  -c ssl_key_file=/var/lib/postgresql/server.key
+  -c ssl_key_file=/var/lib/postgresql/server.key \
+  -c hba_file=/var/lib/postgresql/pg_hba.conf
+
+DOCKER_VOLUME_NAME=sobok
+POSTGRES_HOST=152.70.244.168
+POSTGRES_USER=sindy
+POSTGRES_PASSWORD=sindy159!
+POSTGRES_DB=sobok
+sudo docker rm -f postgres
+sudo docker volume rm sobok
+
+sudo docker logs postgres
+sudo docker exec -it postgres bash
+cd /var/lib/postgresql
 ```
 
 도커를 통해 PostgreSQL 컨테이너와 도커 볼륨을 생성하고, OpenSSL을 이용해 자체 서명된 인증서를 생성해서 SSL 연결을 활성화합니다.
+
+```shell
+$ scp -i {Oracle Instance 비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}:{CA 인증서 경로}/root.crt ./
+```
+
+SCP로 root 인증서 다운로드 받기
 
 ```bash
 yarn import-db 환경변수파일위치
 ```
 
-그리고 PostgreSQL 서버에 접속해서 [`database/initialization.sql`](database/initialization.sql)에 있는 SQL DDL을 실행하고 CSV 파일로 되어 있는 더미데이터를 넣어줍니다.
+그리고 `import-db` 스크립트를 실행해 [`database/initialization.sql`](database/initialization.sql)와 CSV 파일로 되어 있는 더미데이터를 넣어줍니다.
 
 ### Start Node.js server
 
@@ -174,27 +228,13 @@ $ docker-compose up --detach --build --force-recreate
 
 Cloud Run이 GitHub 저장소 변경 사항을 자동으로 감지하기 때문에 GitHub로 commit을 push할 때마다 Cloud Run에 자동으로 배포됩니다.
 
-### Oracle Instance
-
-```shell
-$ ssh -i {Oracle Instance 비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}
-```
-
-SSH 접속하기
-
-```shell
-$ scp -i {Oracle Instance 비밀키 경로} {Oracle Instance 사용자 이름}@{Oracle Instance 공용 IP}:{CA 인증서 경로}/root.crt ./
-```
-
-SCP로 파일 다운로드 받기
-
 ## Scripts
 
-### `test`
+#### `test`
 
 실행 중인 GraphQL 서버에 테스트용 GraphQL 쿼리를 요청하고 응답을 검사합니다. 이 스크립트를 실행 하기 전에 `localhost` 또는 원격에서 GraphQL API 서버를 실행해야 합니다.
 
-### `generate-db`
+#### `generate-db`
 
 ```bash
 $ yarn generate-db {환경 변수 파일 위치}
@@ -202,7 +242,7 @@ $ yarn generate-db {환경 변수 파일 위치}
 
 PostgreSQL 데이터베이스 구조를 바탕으로 TypeScript 기반 자료형이 담긴 파일을 생성합니다.
 
-### `export-db`
+#### `export-db`
 
 ```bash
 $ yarn export-db {환경 변수 파일 위치}
@@ -210,7 +250,7 @@ $ yarn export-db {환경 변수 파일 위치}
 
 PostgreSQL 데이터베이스에 있는 모든 스키마의 모든 테이블을 CSV 파일로 저장합니다. 더미 데이터 CSV 파일을 변경하기 전에 수행합니다.
 
-### `import-db`
+#### `import-db`
 
 ```bash
 $ yarn import-db {환경 변수 파일 위치}

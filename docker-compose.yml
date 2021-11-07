@@ -6,6 +6,10 @@ services:
     container_name: sobok-graphql-server
     env_file: .env
     image: sobok-graphql-server:latest
-    restart: always
+    # restart: always
     ports:
       - $PORT:$PORT
+#     volumes:
+#       - 'sobok:/server'
+# volumes:
+#   sobok:

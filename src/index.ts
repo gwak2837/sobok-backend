@@ -6,7 +6,9 @@ pool
   .query('SELECT CURRENT_TIMESTAMP')
   .then(({ rows }) =>
     console.log(
-      '🚅 Connected to PostgreSQL server at ' + new Date(rows[0].current_timestamp).toLocaleString()
+      `🚅 Connected to ${process.env.CONNECTION_STRING} at ${new Date(
+        rows[0].current_timestamp
+      ).toLocaleString()}`
     )
   )
   .catch((error) => {
