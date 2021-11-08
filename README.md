@@ -170,18 +170,6 @@ sudo docker run \
   -c ssl_cert_file=/var/lib/postgresql/server.crt \
   -c ssl_key_file=/var/lib/postgresql/server.key \
   -c hba_file=/var/lib/postgresql/pg_hba.conf
-
-DOCKER_VOLUME_NAME=sobok
-POSTGRES_HOST=152.70.244.168
-POSTGRES_USER=sindy
-POSTGRES_PASSWORD=sindy159!
-POSTGRES_DB=sobok
-sudo docker rm -f postgres
-sudo docker volume rm sobok
-
-sudo docker logs postgres
-sudo docker exec -it postgres bash
-cd /var/lib/postgresql
 ```
 
 도커를 통해 PostgreSQL 컨테이너와 도커 볼륨을 생성하고, OpenSSL을 이용해 자체 서명된 인증서를 생성해서 SSL 연결을 활성화합니다.
@@ -191,6 +179,8 @@ $ scp -i {Oracle Instance 비밀키 경로} {Oracle Instance 사용자 이름}@{
 ```
 
 SCP로 root 인증서 다운로드 받기
+
+#### Initialize database
 
 ```bash
 yarn import-db 환경변수파일위치
