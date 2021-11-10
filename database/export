@@ -8,17 +8,18 @@ fi
 
 export $(grep -v '^#' $ENV_FILE_PATH | xargs)
 
-echo $CONNECTION_STRING
+CONNECTION_STRING_WITH_SSL=$CONNECTION_STRING?sslmode=require
+echo $CONNECTION_STRING_WITH_SSL
 
 rm -r database/data
 mkdir database/data
 
-psql $CONNECTION_STRING -Atc "SELECT schema_name FROM information_schema.schemata" |
+psql $CONNECTION_STRING_WITH_SSL -Atc "SELECT schema_name FROM information_schema.schemata" |
   while read SCHEMA; do
     if [[ "$SCHEMA" != "pg_catalog" && "$SCHEMA" != "information_schema" ]]; then
-      psql $CONNECTION_STRING -Atc "SELECT tablename FROM pg_tables WHERE schemaname='$SCHEMA'" |
+      psql $CONNECTION_STRING_WITH_SSL -Atc "SELECT tablename FROM pg_tables WHERE schemaname='$SCHEMA'" |
         while read TBL; do
-          psql $CONNECTION_STRING -c "COPY $SCHEMA.$TBL TO STDOUT WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" >database/data/$SCHEMA.$TBL.csv
+          psql $CONNECTION_STRING_WITH_SSL -c "COPY $SCHEMA.$TBL TO STDOUT WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" >database/data/$SCHEMA.$TBL.csv
         done
     fi
   done

@@ -5,9 +5,9 @@ import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
 
 import { poolQuery } from '../database/postgres'
+import { setPassportStrategies } from '../express/passport'
 import { resolvers } from '../graphql'
 import typeDefs from '../graphql/generated/schema.graphql'
-import { setPassportStrategies } from '../lib/passport'
 import { verifyJWT } from '../utils/jwt'
 import user from './sql/user.sql'
 
