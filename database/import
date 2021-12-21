@@ -8,9 +8,10 @@ fi
 
 export $(grep -v '^#' $ENV_FILE_PATH | xargs)
 
-echo $CONNECTION_STRING
+CONNECTION_STRING_WITH_SSL=$CONNECTION_STRING?sslmode=require
+echo $CONNECTION_STRING_WITH_SSL
 
-psql $CONNECTION_STRING -f database/initialization.sql
+psql $CONNECTION_STRING_WITH_SSL -f database/initialization.sql
 
 # 테이블 순서 중요
 public_tables=(
@@ -54,13 +55,13 @@ deleted_tables=(
 for public_table in "${public_tables[@]}"; do
   echo ${public_table}
   columns=$(head -1 database/data/${public_table}.csv)
-  psql $CONNECTION_STRING -c "COPY ${public_table}(${columns}) FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/data/${public_table}.csv
+  psql $CONNECTION_STRING_WITH_SSL -c "COPY ${public_table}(${columns}) FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/data/${public_table}.csv
 done
 
 for deleted_table in "${deleted_tables[@]}"; do
   echo ${deleted_table}
   columns=$(head -1 database/data/${deleted_table}.csv)
-  psql $CONNECTION_STRING -c "COPY ${deleted_table}(${columns}) FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/data/${deleted_table}.csv
+  psql $CONNECTION_STRING_WITH_SSL -c "COPY ${deleted_table}(${columns}) FROM STDIN WITH CSV DELIMITER ',' HEADER ENCODING 'UTF-8'" <database/data/${deleted_table}.csv
 done
 
 ./database/export $ENV_FILE_PATH

@@ -34,9 +34,6 @@ CREATE TABLE "user" (
   birth date,
   image_url text,
   nickname varchar(50),
-  feed_count int NOT NULL DEFAULT 0,
-  follower_count int NOT NULL DEFAULT 0,
-  following_count int NOT NULL DEFAULT 0,
   --
   google_oauth text UNIQUE,
   naver_oauth text UNIQUE,

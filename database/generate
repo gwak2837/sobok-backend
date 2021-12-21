@@ -8,7 +8,8 @@ fi
 
 export $(grep -v '^#' $ENV_FILE_PATH | xargs)
 
-echo $CONNECTION_STRING
+CONNECTION_STRING_WITH_SSL=$CONNECTION_STRING?sslmode=require
+echo $CONNECTION_STRING_WITH_SSL
 
-schemats postgres $CONNECTION_STRING -o src/database/${POSTGRES_DB}.ts
+NODE_TLS_REJECT_UNAUTHORIZED=0 schemats postgres $CONNECTION_STRING_WITH_SSL -o src/database/${POSTGRES_DB}.ts
 prettier src/database/${POSTGRES_DB}.ts --write
